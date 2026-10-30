@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101214" />
+    <meta
+      name="description"
+      content="EVE Model Viewer 2.0：浏览物品目录、舰船渲染图与交互式三维模型。"
+    />
+    <title>EVE Model Viewer 2.0</title>
+    <link rel="icon" type="image/svg+xml" href="./mark.svg" />
+    <link rel="stylesheet" href="./styles.css?v=affiliation-groups-v5" />
+    <script type="module" src="./app.js?v=r2-resources-v1"></script>
+  </head>
+  <body>
+    <svg class="icon-defs" aria-hidden="true">
+      <defs>
+        <symbol id="i-grid" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </symbol>
+        <symbol id="i-search" viewBox="0 0 24 24">
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m16 16 5 5" />
+        </symbol>
+        <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" /></symbol>
+        <symbol id="i-cube" viewBox="0 0 24 24">
+          <path d="m12 2 9 5v10l-9 5-9-5V7zM3 7l9 5 9-5M12 12v10M7.5 4.5l9 5v5" />
+        </symbol>
+        <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></symbol>
+        <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 1 7M4 3v7h7" /></symbol>
+        <symbol id="i-expand" viewBox="0 0 24 24">
+          <path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6" />
+        </symbol>
+        <symbol id="i-ship" viewBox="0 0 24 24">
+          <path d="m12 2 3 9 6 7-7-2-2 6-2-6-7 2 6-7z" />
+        </symbol>
+        <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" /></symbol>
+      </defs>
+    </svg>
+    <header class="topbar">
+      <button
+        class="icon-button mobile-menu"
+        id="menu-toggle"
+        aria-label="打开物品目录"
+        data-i18n-aria-label="openCatalog"
+        aria-expanded="false"
+      >
+        <svg><use href="#i-menu" /></svg>
+      </button>
+      <a href="#group=-1" class="brand" aria-label="EVE Model Viewer 2.0 首页" data-i18n-aria-label="home"
+        ><img src="./mark.svg" alt="" width="30" height="30" /><span
+          >EVE Model Viewer <span class="app-version">2.0</span></span
+        ></a
+      >
+      <select
+        class="language-select"
+        data-language
+        data-i18n-aria-label="language"
+        aria-label="语言"
+      >
+        <option value="zh-CN" lang="zh-CN">中文</option>
+        <option value="en" lang="en">English</option>
+      </select>
+    </header>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar" aria-label="物品目录" data-i18n-aria-label="catalog">
+        <div class="sidebar-caption">
+          <span data-i18n="catalog">目录</span><span id="catalog-count"></span>
+        </div>
+        <nav id="catalog-tree" aria-label="目录与组" data-i18n-aria-label="catalog">
+          <div class="tree-loading" data-i18n="loading">正在读取本地目录…</div>
+        </nav>
+      </aside>
+      <main id="main" tabindex="-1">
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <section class="page-heading">
+          <h1 id="page-title"></h1>
+        </section>
+        <section class="toolbar" aria-label="筛选与搜索" data-i18n-aria-label="filters">
+          <div class="scope-tabs" role="group" aria-label="资源范围" data-i18n-aria-label="scope">
+            <button id="scope-ready" class="active" aria-pressed="true">
+              <span data-i18n="ready">已采集</span
+              ><span id="ready-badge" class="count-badge"></span></button
+            ><button id="scope-all" aria-pressed="false" data-i18n="all">全部目录</button>
+          </div>
+          <label class="search-field"
+            ><svg><use href="#i-search" /></svg
+            ><input
+              id="search"
+              type="search"
+              placeholder="搜索名称或编号"
+              data-i18n-placeholder="searchHint"
+              aria-label="搜索所有物品的名称或 Type ID"
+              data-i18n-aria-label="searchHint"
+            /><kbd>/</kbd></label
+          >
+        </section>
+        <section class="filter-row" aria-label="种族与排序" data-i18n-aria-label="filters">
+          <div id="race-filters" class="race-filters"></div>
+          <label class="sort-field"
+            ><span data-i18n="sort">排序</span
+            ><select id="sort" aria-label="物品排序" data-i18n-aria-label="sort">
+              <option value="race" data-i18n="raceSort">种族 · 名称</option>
+              <option value="name" data-i18n="nameSort">英文名称 A–Z</option>
+              <option value="id" data-i18n="id">Type ID</option>
+            </select></label
+          >
+        </section>
+        <div class="results-heading">
+          <span id="results-count" aria-live="polite" data-i18n="loading">正在读取物品…</span>
+        </div>
+        <div id="card-scroll" class="card-scroll" tabindex="0" role="region" aria-labelledby="results-count">
+          <div id="cards" class="cards" aria-live="polite"></div>
+          <div id="empty-state" class="empty-state" hidden>
+            <svg><use href="#i-cube" /></svg>
+            <h2 id="empty-title">此组尚未采集模型</h2>
+            <p id="empty-description"></p>
+            <button id="empty-action" class="primary-button">查看目录物品</button>
+          </div>
+        </div>
+        <footer class="page-footer">
+          <span>EVE Model Viewer <span class="app-version">2.0</span></span><span data-i18n="credit">素材 © CCP Games · 非官方项目</span>
+        </footer>
+      </main>
+    </div>
+    <dialog id="model-dialog" aria-labelledby="detail-title">
+      <div class="dialog-top">
+        <span
+          ><svg><use href="#i-cube" /></svg><span data-i18n="model">三维模型</span><span id="detail-dna" hidden></span></span
+        ><button
+          id="close-dialog"
+          class="icon-button"
+          aria-label="关闭模型查看器"
+          data-i18n-aria-label="close"
+        >
+          <svg><use href="#i-close" /></svg>
+        </button>
+      </div>
+      <div class="detail-layout">
+        <div id="viewer-stage" class="viewer-stage">
+          <div class="stage-grid" aria-hidden="true"></div>
+          <div id="viewer-mount"></div>
+          <canvas id="viewer-snapshot" aria-hidden="true" hidden></canvas>
+          <div id="viewer-loading" class="viewer-loading" role="status">
+            <span class="loading-ring"></span><strong data-i18n="loadingModel">正在加载模型</strong
+            ><span id="loading-detail">读取本地几何与材质…</span
+            ><progress id="model-progress" max="1" value="0"></progress>
+          </div>
+          <div id="viewer-error" class="viewer-error" hidden>
+            <strong data-i18n="modelFailed">模型暂时无法显示</strong>
+            <p id="viewer-error-text"></p>
+            <button id="retry-model" class="primary-button" data-i18n="retry">重新加载</button>
+          </div>
+          <div id="hull-variants" class="hull-variants" hidden>
+            <section id="hull-variants-panel" class="hull-variants-panel" aria-labelledby="hull-variants-toggle" hidden>
+              <p id="hull-variants-status" role="status"></p>
+              <div id="hull-variants-list" class="hull-variants-list"></div>
+            </section>
+            <button id="hull-variants-toggle" class="hull-variants-toggle" aria-expanded="false" aria-controls="hull-variants-panel">
+              <svg class="hull-variants-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 14 5-5 5 5" /></svg>
+            </button>
+          </div>
+          <div class="stage-bottom">
+            <span data-i18n="gestures">拖动旋转 · 滚轮缩放 · 右键平移</span>
+            <div class="stage-actions">
+              <button
+                id="stage-reset-view"
+                class="icon-button"
+                aria-label="重置视角"
+                title="重置视角"
+                data-i18n-aria-label="reset"
+                data-i18n-title="reset"
+              >
+                <svg><use href="#i-reset" /></svg>
+              </button>
+              <button
+                id="fullscreen"
+                class="icon-button"
+                aria-label="全屏查看模型"
+                data-i18n-aria-label="fullscreen"
+              >
+                <svg><use href="#i-expand" /></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <aside class="detail-info">
+          <div id="detail-race" class="detail-race"></div>
+          <h2 id="detail-title"></h2>
+          <div class="detail-tags">
+            <span id="detail-group"></span><span id="detail-tech"></span
+            ><span data-i18n="skin">默认涂装</span>
+          </div>
+          <dl class="detail-stats">
+            <div>
+              <dt data-i18n="id">物品编号</dt>
+              <dd id="detail-id"></dd>
+            </div>
+            <div>
+              <dt data-i18n="graphic">图形编号</dt>
+              <dd id="detail-graphic"></dd>
+            </div>
+            <div>
+              <dt data-i18n="triangles">三角面</dt>
+              <dd id="detail-triangles"></dd>
+            </div>
+            <div>
+              <dt data-i18n="size">模型资源</dt>
+              <dd id="detail-size"></dd>
+            </div>
+          </dl>
+          <p id="detail-warnings" role="note" hidden></p>
+          <div class="detail-scroll">
+          <div class="viewer-settings">
+            <label class="toggle-row" for="skybox-select"><span data-i18n="skybox">背景</span><select id="skybox-select"><option value="none">无背景</option></select></label>
+            <small id="skybox-status" role="status" hidden></small>
+            <label class="toggle-row" for="flight-mode"
+              ><span data-i18n="flight">飞行状态</span
+              ><select id="flight-mode">
+                <option value="cruise" data-i18n="cruise">巡航</option>
+                <option value="idle" data-i18n="idle">待机</option>
+                <option value="paused" data-i18n="paused">暂停动画</option>
+              </select></label
+            ><label class="toggle-row" id="hull-animation-row" for="hull-animation" hidden
+              ><span data-i18n="animation">船体动作</span
+              ><select id="hull-animation"></select></label
+            ><label class="toggle-row" id="gate-state-row" for="gate-state" hidden>
+              <span data-i18n="gateState">星门状态</span><select id="gate-state">
+                <option value="Inactive" data-i18n="gateInactive">未激活</option>
+                <option value="Active_Unlinked" data-i18n="gateUnlinked">已激活</option>
+                <option value="Active_Linked" data-i18n="gateLinked" selected>已连接</option>
+              </select></label>
+            <div class="toggle-row" id="gate-events" hidden><span data-i18n="gateTransit">跃迁预览</span>
+              <button id="gate-arrival" type="button" data-i18n="gateArrival">到达</button>
+              <button id="gate-departure" type="button" data-i18n="gateDeparture">离开</button></div>
+            <label class="toggle-row" for="auto-rotate"
+              ><span data-i18n="rotate">自动旋转</span
+              ><input type="checkbox" id="auto-rotate" /><span
+                class="toggle-visual"
+                aria-hidden="true"
+              ></span></label
+            ><label class="toggle-row" for="ambient-occlusion"
+              ><span data-i18n="occlusion">部件遮蔽</span
+              ><input type="checkbox" id="ambient-occlusion" checked /><span
+                class="toggle-visual"
+                aria-hidden="true"
+              ></span></label
+            >
+            <label class="toggle-row" for="show-effects"><span data-i18n="showEffects">特效</span><input type="checkbox" id="show-effects" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+            <details class="material-settings texture-settings">
+              <summary data-i18n="hullTextures">船体贴图</summary>
+              <label class="toggle-row" for="show-textures"><span data-i18n="allTextures">全部贴图</span><input type="checkbox" id="show-textures" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-AlbedoMap"><span data-i18n="textureAlbedo">颜色纹理</span><input type="checkbox" id="texture-AlbedoMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-NormalMap"><span data-i18n="textureNormal">法线细节</span><input type="checkbox" id="texture-NormalMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-RoughnessMap"><span data-i18n="textureRoughness">粗糙度</span><input type="checkbox" id="texture-RoughnessMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-MaterialMap"><span data-i18n="textureMaterial">材质分区</span><input type="checkbox" id="texture-MaterialMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-PaintMaskMap"><span data-i18n="texturePaint">涂装／透明遮罩</span><input type="checkbox" id="texture-PaintMaskMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-GlowMap"><span data-i18n="textureGlow">发光</span><input type="checkbox" id="texture-GlowMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-DirtMap"><span data-i18n="textureDirt">污垢</span><input type="checkbox" id="texture-DirtMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-DustNoiseMap"><span data-i18n="textureDust">尘埃噪声</span><input type="checkbox" id="texture-DustNoiseMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-SailsDetailMap"><span data-i18n="textureSails">帆面细节</span><input type="checkbox" id="texture-SailsDetailMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-PatternMask1Map"><span data-i18n="texturePattern1">投影涂装 1</span><input type="checkbox" id="texture-PatternMask1Map" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-PatternMask2Map"><span data-i18n="texturePattern2">投影涂装 2</span><input type="checkbox" id="texture-PatternMask2Map" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+            </details>
+            <label class="exposure-label" for="exposure"
+              ><span data-i18n="brightness">灯光亮度</span
+              ><output id="exposure-value">0.7</output></label
+            ><input type="range" id="exposure" min="0.1" max="3" step="0.1" value="0.7" />
+            <label class="exposure-label" for="reflection"><span data-i18n="reflection">反射强度</span><output id="reflection-value">0.7</output></label>
+            <input type="range" id="reflection" min="0" max="3" step="0.1" value="0.7" />
+            <details class="material-settings" open>
+              <summary data-i18n="materialSettings">光照与材质</summary>
+              <label class="exposure-label" for="sun"><span data-i18n="sun">主光</span><output id="sun-value">1.0</output></label>
+              <input type="range" id="sun" min="0" max="3" step="0.1" value="1" />
+              <label class="exposure-label" for="fill"><span data-i18n="fill">补光</span><output id="fill-value">1.0</output></label>
+              <input type="range" id="fill" min="0" max="3" step="0.1" value="1" />
+              <label class="exposure-label" for="f0"><span data-i18n="f0">金属反射（F0）</span><output id="f0-value">1.0</output></label>
+              <input type="range" id="f0" min="0" max="3" step="0.1" value="1" />
+              <label class="exposure-label" for="roughness"><span data-i18n="roughness">粗糙度</span><output id="roughness-value">1.0</output></label>
+              <input type="range" id="roughness" min="0.1" max="3" step="0.1" value="1" />
+            </details>
+            <button id="reset-render" class="reset-button" data-i18n="resetRender">恢复默认</button>
+            <button
+              id="reset-view"
+              class="reset-button"
+            >
+              <svg><use href="#i-reset" /></svg><span data-i18n="reset">重置视角</span>
+            </button>
+          </div>
+          <div class="model-export">
+            <div class="model-export-buttons">
+              <button id="export-glb" class="reset-button" disabled data-i18n="exportGlb">导出 GLB</button>
+              <button id="export-obj" class="reset-button" disabled data-i18n="exportObj">导出 OBJ</button>
+            </div>
+            <p class="export-hint" data-i18n="exportHint">GLB 含标准材质与动画，不含天空盒和网页专用光效；OBJ 仅含当前姿态的几何。</p>
+            <p id="export-status" role="status" aria-live="polite" hidden></p>
+          </div>
+          <div class="detail-navigation">
+            <button
+              id="previous-ship"
+              aria-label="上一艘舰船"
+              data-i18n-aria-label="previous"
+              data-i18n="previous"
+            >
+              ← 上一艘</button
+            ><span id="detail-position"></span
+            ><button
+              id="next-ship"
+              aria-label="下一艘舰船"
+              data-i18n-aria-label="next"
+              data-i18n="next"
+            >
+              下一艘 →
+            </button>
+          </div>
+          </div>
+        </aside>
+      </div>
+    </dialog>
+  </body>
+</html>
+
+
+
+
+
+

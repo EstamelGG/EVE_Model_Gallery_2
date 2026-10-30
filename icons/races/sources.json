@@ -1,0 +1,21 @@
+{
+  "copyright": "CCP Games",
+  "icons": {
+    "amarr": {
+      "source": "res:/ui/texture/race/amarr.png",
+      "md5": "4b1fdcd635183bbe1520c9ddc5cd9531"
+    },
+    "caldari": {
+      "source": "res:/ui/texture/race/caldari.png",
+      "md5": "1e78449a48cd40c09cea1e7a36a8c611"
+    },
+    "gallente": {
+      "source": "res:/ui/texture/race/gallente.png",
+      "md5": "5b0f9ca22efeca7e131791c6e427e53f"
+    },
+    "minmatar": {
+      "source": "res:/ui/texture/race/minmatar.png",
+      "md5": "f61792cc84063003cc84d3c7dcc47da8"
+    }
+  }
+}
