@@ -10,7 +10,11 @@ export function prepareRenderImages(root) {
       preview.setAttribute('aria-busy', 'false');
     };
     const failed = () => {
-      if (image.dataset.icon) {
+      if (image.dataset.fallback) {
+        const fallback = image.dataset.fallback;
+        delete image.dataset.fallback;
+        image.src = fallback;
+      } else if (image.dataset.icon) {
         const fallback = image.dataset.icon;
         delete image.dataset.icon;
         image.classList.add('official-icon');

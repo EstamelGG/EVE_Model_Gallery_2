@@ -13,7 +13,7 @@ import { createAffiliationResolver } from './affiliation.mjs';
 import { createViewerTransition } from './viewer-transition.mjs?v=progressive-v1';
 import { configureResourceBase, resourceURL } from './resource-location.mjs?v=pages-backgrounds-v1';
 import { resourceActivity, createResourceBatch, loadJSON, trackResource } from './resource-activity.mjs?v=resource-plan-sky-fade-v1';
-import { prepareRenderImages } from './render-images.mjs?v=stable-card-window-v1';
+import { prepareRenderImages } from './render-images.mjs?v=render-fallback-v1';
 import { createLoadingRows } from './loading-rows.mjs?v=loading-panel-progress-v1';
 import { normalizeKillCount } from './kill-count.mjs';
 import { normalizeDisplaySettings, textureRoles, performanceControls, applyPostprocessingSettings } from './display-settings.mjs?v=performance-controls-v1';
@@ -180,7 +180,7 @@ resourceActivity.subscribe(() => {
 });
 function renderPreview(item, badge = '') {
   return `<div class="render-preview" data-image-state="loading" aria-busy="true">${badge}
-    <img data-render src="${renderURL(item)}" data-icon="https://images.evetech.net/types/${item.id}/icon?size=64" alt="${esc(t('poster', { name: localizedName(item.name) }))}" loading="lazy" decoding="async" width="512" height="512">
+    <img data-render src="${renderURL(item)}" ${renderFallbacks[item.id] ? `data-fallback="${esc(resourceURL(renderFallbacks[item.id]))}"` : ''} data-icon="https://images.evetech.net/types/${item.id}/icon?size=64" alt="${esc(t('poster', { name: localizedName(item.name) }))}" loading="lazy" decoding="async" width="512" height="512">
     <span class="loading-ring render-spinner" aria-hidden="true"></span>
     <span class="render-image-error" role="img" aria-label="${esc(t('renderUnavailable'))}">${icon('ship', 'placeholder-cube')}</span>
   </div>`;
@@ -189,9 +189,10 @@ function renderPreview(item, badge = '') {
 const state = { group: -1, race: 0, scope: 'ready', query: '', sort: 'id', item: 0 };
 const defaultSort = (group) => group === -1 ? 'id' : 'race';
 let revealedGroup = null;
-// Proven visual aliases share one official render URL and the browser cache.
+let renderFallbacks = {};
+// Official availability belongs to the actual item, including visual aliases.
 const renderURL = (item) =>
-  `https://images.evetech.net/types/${item.nativeTypeID || item.id}/render?size=256`;
+  `https://images.evetech.net/types/${item.id}/render?size=256`;
 // Keep the displayed exposure literal; the old 2x offset clipped pale hulls.
 const exposureForLevel = (level) => Number(level);
 const renderSettings = () => normalizeRenderSettings(Object.fromEntries(
@@ -1513,7 +1514,10 @@ async function init() {
     frontendPublishedAt = config.frontendPublishedAt;
     renderPublicationDate();
     configureResourceBase(config.resourceBaseURL, config.backgroundBaseURL, config.backgroundFiles);
+    const fallbackIndex = loadJSON('./github-assets/renders/index.json', {cache:'no-cache'}, {optional:true})
+      .catch(() => ({}));
     data = await loadJSON(resourceURL('./data/catalog-index.json'), { cache: 'no-cache' });
+    renderFallbacks = (await fallbackIndex).items || {};
     const identities = await loadJSON('./icons/identities.json?v=meta-groups-v1');
     const resolveAffiliation = createAffiliationResolver(identities);
     const identityByID = new Map([...identities.races, ...identities.factions].map(r => [r.id, r]));
