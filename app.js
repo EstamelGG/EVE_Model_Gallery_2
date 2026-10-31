@@ -4,7 +4,7 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=viewer-heading-v1';
+} from './i18n.mjs?v=fixed-eve-system-v4';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=lighting-quality-v1';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
@@ -16,6 +16,7 @@ import { resourceActivity, createResourceBatch, loadJSON, trackResource } from '
 import { prepareRenderImages } from './render-images.mjs?v=render-fallback-v1';
 import { createLoadingRows } from './loading-rows.mjs?v=loading-panel-progress-v1';
 import { normalizeKillCount } from './kill-count.mjs';
+import { resetView, cancelViewReset } from './view-reset.mjs';
 import { normalizeDisplaySettings, textureRoles, performanceControls, applyPostprocessingSettings } from './display-settings.mjs?v=performance-controls-v1';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
@@ -59,12 +60,18 @@ function renderPublicationDate() {
 }
 const sponsorCharacterID = 2113974546;
 let sponsorName = '', sponsorRequest = null, sponsorStatus = '';
+let sponsorCopyTimer;
 function renderSponsor() {
   const name = $('sponsor-name');
   name.removeAttribute('data-i18n');
   name.textContent = sponsorName || (sponsorStatus === 'characterLoadFailed' ? `ID ${sponsorCharacterID}` : t('loading'));
-  $('copy-sponsor-name').disabled = !sponsorName;
-  $('sponsor-status').textContent = sponsorStatus ? t(sponsorStatus) : '';
+  const button = $('copy-sponsor-name');
+  button.disabled = !sponsorName;
+  button.dataset.i18n = sponsorStatus === 'nameCopied' ? 'nameCopied' : 'copyName';
+  button.textContent = t(button.dataset.i18n);
+  const status = $('sponsor-status');
+  status.hidden = !sponsorStatus || sponsorStatus === 'nameCopied';
+  status.textContent = status.hidden ? '' : t(sponsorStatus);
 }
 async function loadSponsor() {
   if (sponsorName || sponsorRequest) return;
@@ -97,6 +104,13 @@ $('copy-sponsor-name').addEventListener('click', async () => {
     sponsorStatus = 'nameCopied';
   } catch {
     sponsorStatus = 'copyNameFailed';
+  }
+  clearTimeout(sponsorCopyTimer);
+  if (sponsorStatus === 'nameCopied') {
+    sponsorCopyTimer = setTimeout(() => {
+      sponsorStatus = '';
+      renderSponsor();
+    }, 2000);
   }
   renderSponsor();
 });
@@ -617,7 +631,7 @@ async function render() {
   ]
     .map(
       (r) =>
-        `<button data-race="${r.id}" class="${state.race === r.id ? 'active' : ''}" aria-pressed="${state.race === r.id}">${r.id ? raceMark(r.id) : ''}${esc(r.id ? localizedName(r) : t('allRaces'))}<span class="filter-count">${fmt(raceCounts.get(r.id) || 0)}</span></button>`,
+        `<button data-race="${r.id}" class="${state.race === r.id ? 'active' : ''}" aria-pressed="${state.race === r.id}">${r.id ? raceMark(r.id) : ''}<span class="filter-label">${esc(r.id ? localizedName(r) : t('allRaces'))}</span><span class="filter-count">${fmt(raceCounts.get(r.id) || 0)}</span></button>`,
     )
     .join('');
   filtered = base.filter((i) => !state.race || i.affiliationID === state.race);
@@ -754,7 +768,9 @@ function disposeViewer() {
   activeViewer?.skybox?.dispose();
   clearTimeout(modelTimer);
   if (activeViewer) {
+    cancelViewReset(activeViewer);
     activeViewer.disposeFPS?.();
+    activeViewer.disposeAutoRotate?.();
     activeViewer.disposeDimensionFrame?.();
     activeViewer.disposeBloom?.();
     activeViewer.releasePreload?.();
@@ -816,7 +832,7 @@ async function switchAppearance(viewer, item, module, isCurrent) {
     source, item.nativeTypeID || item.id, item.dna);
   if (activeViewer !== viewer) { viewer.disposeNative?.(); return true; }
   if (isCurrent()) setModelLoadStage(4);
-  viewer.shipEffects = item.effects ? await module.installShipEffects(viewer, item.effects, $('flight-mode').value) : null;
+  viewer.shipEffects = item.effects ? await module.installShipEffects(viewer, item.effects, 'cruise') : null;
   if (activeViewer !== viewer) { viewer.shipEffects?.dispose(); return true; }
   viewer.readyItem = item;
   viewer.dataset.appearanceTypeId = String(item.id);
@@ -931,7 +947,8 @@ async function loadModel(item, profile = null) {
     viewer.setAttribute('shadow-intensity', '0');
     if (profile) viewer.setAttribute('scale', `${profile.scale} ${profile.scale} ${profile.scale}`);
     viewer.setAttribute('rotation-per-second', '6deg');
-    viewer.setAttribute('auto-rotate-delay', '20000');
+    viewer.setAttribute('auto-rotate-delay', '5000');
+    viewer.disposeAutoRotate = viewerAPI.installSmoothAutoRotate(viewer);
     if ($('auto-rotate').checked) viewer.setAttribute('auto-rotate', '');
     viewer.addEventListener('load', async () => {
       if (activeViewer !== viewer) return;
@@ -992,6 +1009,10 @@ async function loadModel(item, profile = null) {
         if (!isCurrent()) return;
         viewer.disposeDimensionFrame = module.watchDimensionFrame(viewer, $('dimension-frame'));
         if (data.nativePreview) viewer.pendingNativeSurfaces = module.prepareNativeSurfaces(viewer);
+        // Filter normals before revealing geometry, including while native
+        // materials, backgrounds and effects are still arriving.
+        viewer.disposeOcclusion = module.installHullOcclusion(composer);
+        viewer.dataset.occlusionSurface = 'depth-writing-geometry';
         // Backgrounds are optional: they can arrive after the hull is usable.
         if (viewer.equipmentPreview) viewer.disposeEquipment = await module.installEquipmentPreview(viewer);
         else void installSkybox(viewer, item, module);
@@ -1029,7 +1050,7 @@ async function loadModel(item, profile = null) {
         if (item.effects && !viewer.equipmentPreview) {
           const effects = await (
             await viewerModule
-          ).installShipEffects(viewer, item.effects, $('flight-mode').value);
+          ).installShipEffects(viewer, item.effects, 'cruise');
           if (activeViewer !== viewer) {
             effects.dispose();
             return;
@@ -1040,8 +1061,6 @@ async function loadModel(item, profile = null) {
           $('gate-state').value = 'Active_Linked';
           applyDisplaySettings();
         }
-        viewer.disposeOcclusion = (await viewerModule).installHullOcclusion(composer);
-        viewer.dataset.occlusionSurface = 'depth-writing-geometry';
         const clips = viewer.availableAnimations;
         $('hull-animation-row').hidden = !clips.length;
         $('hull-animation').replaceChildren(
@@ -1057,7 +1076,7 @@ async function loadModel(item, profile = null) {
           const normal = clips.find((name) => viewer.equipmentPreview ? /inactive|deactive|idle/i.test(name) : name.endsWith('.NormalLoop')) || clips[0];
           $('hull-animation').value = normal;
           viewer.animationName = normal;
-          if ($('flight-mode').value !== 'paused') playHullAnimation(viewer);
+          playHullAnimation(viewer);
         }
         if (isCurrent()) setModelLoadStage(5);
         if (savedView) await (await viewerModule).restoreView(viewer, savedView);
@@ -1218,7 +1237,6 @@ function renderDetail() {
   $('detail-tech').textContent = factionVariant ? (locale.startsWith('zh') ? '势力' : 'Faction') : `T${item.techLevel}`;
   $('detail-race').innerHTML = `${raceMark(item.affiliationID)}${esc(raceName(item.affiliationID))}`;
   $('detail-id').textContent = item.id;
-  $('detail-graphic').textContent = item.graphicID ?? '—';
   renderDimensions(itemDimensions.get(item));
   $('detail-triangles').textContent = item.triangles == null ? '—' : fmt(item.triangles);
   const omissions = [];
@@ -1424,7 +1442,10 @@ function setupEvents() {
   });
   $('auto-rotate').checked = false;
   $('auto-rotate').addEventListener('change', () => {
-    if (activeViewer) activeViewer.toggleAttribute('auto-rotate', $('auto-rotate').checked);
+    if (activeViewer) {
+      cancelViewReset(activeViewer);
+      activeViewer.autoRotate = $('auto-rotate').checked;
+    }
   });
   try { $('invert-wheel').checked = localStorage.getItem('viewer.invertWheel') === 'true'; } catch {}
   $('invert-wheel').addEventListener('change', () => {
@@ -1436,13 +1457,6 @@ function setupEvents() {
     if (event.target.value !== '' && !event.target.validity.badInput) applyKillCount(event.target.value);
   });
   $('kill-count-input').addEventListener('change', event => applyKillCount(event.target.value || $('kill-count').value));
-  $('flight-mode').addEventListener('change', () => {
-    activeViewer?.shipEffects?.setMode($('flight-mode').value);
-    if (activeViewer?.availableAnimations.length) {
-      if ($('flight-mode').value === 'paused') activeViewer.pause();
-      else playHullAnimation(activeViewer);
-    }
-  });
   $('gate-state').addEventListener('change', () => activeViewer?.shipEffects?.gate?.setState($('gate-state').value));
   $('gate-arrival').addEventListener('click', () => activeViewer?.shipEffects?.gate?.trigger('arrival'));
   $('gate-departure').addEventListener('click', () => activeViewer?.shipEffects?.gate?.trigger('departure'));
@@ -1450,7 +1464,7 @@ function setupEvents() {
     if (activeViewer) {
       activeViewer.animationName = $('hull-animation').value;
       activeViewer.currentTime = 0;
-      if ($('flight-mode').value !== 'paused') playHullAnimation(activeViewer);
+      playHullAnimation(activeViewer);
     }
   });
   for (const key of Object.keys(renderDefaults)) $(key).addEventListener('input', applyRenderSettings);
@@ -1461,19 +1475,11 @@ function setupEvents() {
     for (const id of Object.values(performanceControls)) $(id).checked = true;
     applyDisplaySettings();
   });
-  const resetView = () => {
-    if (activeViewer) {
-      activeViewer.cameraOrbit = `35deg 70deg ${activeViewer.dataset.homeDistance ? activeViewer.dataset.homeDistance + 'm' : 'auto'}`;
-      activeViewer.cameraTarget = 'auto auto auto';
-      activeViewer.fieldOfView = '30deg';
-      activeViewer.resetTurntableRotation();
-      activeViewer.jumpCameraToGoal();
-    }
-  };
-  $('reset-view').addEventListener('click', resetView);
+  const resetCurrentView = () => { if (activeViewer) resetView(activeViewer); };
+  $('reset-view').addEventListener('click', resetCurrentView);
   $('export-glb').addEventListener('click', () => exportCurrentModel('glb'));
   $('export-obj').addEventListener('click', () => exportCurrentModel('obj'));
-  $('stage-reset-view').addEventListener('click', resetView);
+  $('stage-reset-view').addEventListener('click', resetCurrentView);
   $('fullscreen').addEventListener('click', toggleViewerExpanded);
   document.addEventListener('fullscreenchange', () => {
     setViewerExpanded(document.fullscreenElement === $('model-dialog'));

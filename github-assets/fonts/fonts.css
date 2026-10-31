@@ -6,6 +6,9 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+  ascent-override: 95%;
+  descent-override: 26%;
+  line-gap-override: 0%;
 }
 
 @font-face {
@@ -14,6 +17,9 @@
   font-weight: 700;
   font-style: normal;
   font-display: swap;
+  ascent-override: 95%;
+  descent-override: 26%;
+  line-gap-override: 0%;
 }
 
 @font-face {
@@ -22,6 +28,9 @@
   font-weight: 400;
   font-style: italic;
   font-display: swap;
+  ascent-override: 95%;
+  descent-override: 26%;
+  line-gap-override: 0%;
 }
 
 @font-face {
@@ -30,6 +39,9 @@
   font-weight: 700;
   font-style: italic;
   font-display: swap;
+  ascent-override: 95%;
+  descent-override: 26%;
+  line-gap-override: 0%;
 }
 
 @font-face {

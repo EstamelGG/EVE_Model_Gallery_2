@@ -13,9 +13,9 @@
     <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png?v=2" />
     <link rel="icon" type="image/svg+xml" sizes="any" href="./mark.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png?v=2" />
-    <link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=2" />
-    <link rel="stylesheet" href="./styles.css?v=eve-sidebar-fixed-v2" />
-    <script type="module" src="./app.js?v=equipment-sidebar-fixed-v2"></script>
+    <link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=metrics-v3" />
+    <link rel="stylesheet" href="./styles.css?v=global-font-metrics-v11" />
+    <script type="module" src="./app.js?v=smooth-view-reset-v11"></script>
   </head>
   <body>
     <svg class="icon-defs" aria-hidden="true">
@@ -84,7 +84,7 @@
         <div class="about-brand"><img src="./mark.svg" alt="" width="48" height="48"/><div><h2>EVE Model Viewer <span class="app-version">2.0</span></h2><p><span data-i18n="developer">开发者</span> · <strong>EstamelGG</strong></p></div></div>
         <dl class="about-release"><dt data-i18n="frontendPublished">前端发布时间</dt><dd><time id="frontend-published" data-i18n="localPreview">本地预览 · 尚未发布</time></dd></dl>
         <section class="about-section"><h3 data-i18n="copyrightTitle">版权与素材</h3><p data-i18n="copyrightBody">EVE Online 及相关游戏模型、纹理、渲染图、物品与势力图标的版权归 CCP Games 所有。本网站由玩家开发，与 CCP Games 无隶属关系，也未经其背书。</p><p class="about-muted" data-i18n="iconCredits">物品渲染图与图标来自 EVE 官方图像服务，势力图标来自游戏资源；界面操作图标采用内嵌 SVG。</p></section>
-        <section class="about-sponsor"><h3 data-i18n="sponsorTitle">支持这个项目</h3><p data-i18n="sponsorBody">如果这个网站对你有帮助，欢迎通过游戏内转账赞助开发。</p><div class="sponsor-recipient"><img id="sponsor-portrait" alt="" width="48" height="48" hidden/><div class="sponsor-identity"><span data-i18n="gameID">游戏 ID</span><strong id="sponsor-name" aria-live="polite" data-i18n="loading">加载中…</strong></div><button id="copy-sponsor-name" class="header-button" type="button" disabled data-i18n="copyName">复制名称</button></div><p id="sponsor-status" class="about-muted" role="status"></p><p class="about-muted" data-i18n="sponsorThanks">感谢每一份支持。</p></section>
+        <section class="about-sponsor"><h3 data-i18n="sponsorTitle">支持这个项目</h3><p data-i18n="sponsorBody">如果这个网站对你有帮助，欢迎通过游戏内转账赞助开发。</p><div class="sponsor-recipient"><img id="sponsor-portrait" alt="" width="48" height="48" hidden/><div class="sponsor-identity"><span data-i18n="gameID">游戏 ID</span><strong id="sponsor-name" aria-live="polite" data-i18n="loading">加载中…</strong></div><button id="copy-sponsor-name" aria-live="polite" class="header-button" type="button" disabled data-i18n="copyName">复制名称</button></div><p id="sponsor-status" class="about-muted" role="status" hidden></p><p class="about-muted" data-i18n="sponsorThanks">感谢每一份支持。</p></section>
         <a class="about-repository" href="https://github.com/EstamelGG/EVE_Model_Gallery_2" target="_blank" rel="noopener noreferrer" data-i18n="viewWebRepository">在 GitHub 查看网页仓库 ↗</a>
       </div>
     </dialog>
@@ -169,6 +169,7 @@
           <div class="stage-grid" aria-hidden="true"></div>
           <div id="viewer-mount"></div>
           <canvas id="viewer-snapshot" aria-hidden="true" hidden></canvas>
+          <div class="viewer-overlay">
           <div class="viewer-heading">
             <h2 id="stage-title"></h2>
             <p id="stage-subtitle" lang="en" hidden></p>
@@ -187,6 +188,7 @@
             ><progress id="model-progress" max="5" value="0"></progress>
             <span id="loading-count"></span>
             <ul id="loading-resources" class="loading-resources"></ul>
+          </div>
           </div>
           <div id="viewer-error" class="viewer-error" hidden>
             <strong data-i18n="modelFailed">模型暂时无法显示</strong>
@@ -240,10 +242,6 @@
               <dd id="detail-id"></dd>
             </div>
             <div>
-              <dt data-i18n="graphic">图形编号</dt>
-              <dd id="detail-graphic"></dd>
-            </div>
-            <div>
               <dt data-i18n="triangles">三角面</dt>
               <dd id="detail-triangles"></dd>
             </div>
@@ -259,14 +257,7 @@
               <legend data-i18n="sceneSettings">场景与操作</legend>
             <label class="toggle-row" for="skybox-select"><span data-i18n="skybox">背景</span><select id="skybox-select"><option value="none">无背景</option></select></label>
             <small id="skybox-status" role="status" hidden></small>
-            <label class="toggle-row" for="flight-mode"
-              ><span data-i18n="flight">飞行状态</span
-              ><select id="flight-mode">
-                <option value="cruise" data-i18n="cruise">巡航</option>
-                <option value="idle" data-i18n="idle">待机</option>
-                <option value="paused" data-i18n="paused">暂停动画</option>
-              </select></label
-            ><label class="toggle-row" id="hull-animation-row" for="hull-animation" hidden
+            <label class="toggle-row" id="hull-animation-row" for="hull-animation" hidden
               ><span data-i18n="animation">船体动作</span
               ><select id="hull-animation"></select></label
             ><label class="toggle-row" id="gate-state-row" for="gate-state" hidden>
@@ -298,7 +289,6 @@
               <label class="toggle-row" for="show-effects"><span data-i18n="showEffects">特效</span><input type="checkbox" id="show-effects" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
               <label class="toggle-row" for="show-occlusion"><span data-i18n="showOcclusion">环境遮蔽</span><input type="checkbox" id="show-occlusion" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
               <label class="toggle-row" for="show-bloom"><span data-i18n="showBloom">泛光</span><input type="checkbox" id="show-bloom" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <small data-i18n="performanceHint">关闭部分选项可提高流畅度</small>
             </fieldset>
             <fieldset class="settings-group">
               <legend data-i18n="hullAppearance">船体外观</legend>
@@ -330,8 +320,8 @@
               ><span data-i18n="brightness">灯光亮度</span
               ><output id="exposure-value">0.7</output></label
             ><input type="range" id="exposure" min="0.1" max="3" step="0.1" value="0.7" />
-            <label class="exposure-label" for="reflection"><span data-i18n="reflection">反射强度</span><output id="reflection-value">1.0</output></label>
-            <input type="range" id="reflection" min="0" max="3" step="0.1" value="1" />
+            <label class="exposure-label" for="reflection"><span data-i18n="reflection">反射强度</span><output id="reflection-value">0.7</output></label>
+            <input type="range" id="reflection" min="0" max="3" step="0.1" value="0.7" />
             <label class="exposure-label" for="bloom"><span data-i18n="bloom">灯光辉光</span><output id="bloom-value">0.2</output></label>
             <input type="range" id="bloom" min="0" max="3" step="0.1" value="0.2" />
             <details class="material-settings" open>
