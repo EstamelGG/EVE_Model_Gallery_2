@@ -4,7 +4,7 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=dimension-frame-v1';
+} from './i18n.mjs?v=settings-groups-v1';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=lighting-quality-v1';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
@@ -16,7 +16,7 @@ import { resourceActivity, createResourceBatch, loadJSON, trackResource } from '
 import { prepareRenderImages } from './render-images.mjs?v=stable-card-window-v1';
 import { createLoadingRows } from './loading-rows.mjs?v=loading-panel-progress-v1';
 import { normalizeKillCount } from './kill-count.mjs';
-import { normalizeDisplaySettings, textureRoles } from './display-settings.mjs?v=3';
+import { normalizeDisplaySettings, textureRoles, performanceControls, applyPostprocessingSettings } from './display-settings.mjs?v=performance-controls-v1';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -198,12 +198,10 @@ function applyRenderSettings() {
   activeViewer.renderSettings = values;
   activeViewer.setAttribute('exposure', exposureForLevel(values.exposure));
   activeViewer.setRenderSettings?.(values);
-  const bloom = activeViewer.querySelector('bloom-effect');
-  bloom?.setAttribute('strength', String(values.bloom));
-  bloom?.setAttribute('blend-mode', values.bloom > 0 ? 'default' : 'skip');
+  applyPostprocessingSettings(activeViewer);
 }
 const displaySettings = () => normalizeDisplaySettings({
-  effects: $('show-effects').checked,
+  ...Object.fromEntries(Object.entries(performanceControls).map(([key, id]) => [key, $(id).checked])),
   textures: Object.fromEntries(textureRoles.map(role => [role, $('texture-'+role).checked])),
 });
 function syncTextureControls() {
@@ -231,6 +229,10 @@ function applyKillCount(value) {
 }
 function applyDisplaySettings() {
   const values = displaySettings();
+  try {
+    localStorage.setItem('viewer.performance', JSON.stringify(Object.fromEntries(
+      Object.keys(performanceControls).map(key => [key, values[key]]))));
+  } catch {}
   syncTextureControls();
   syncKillMarkControls();
   if (!activeViewer) return;
@@ -238,6 +240,7 @@ function applyDisplaySettings() {
   activeViewer.dataset.displaySettings = JSON.stringify(values);
   activeViewer.setDisplaySettings?.(values);
   activeViewer.shipEffects?.setVisible(values.effects);
+  applyPostprocessingSettings(activeViewer);
 }
 let data,
   catalogLoader,
@@ -827,7 +830,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=dimension-arrows-v1')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=performance-controls-v1')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -1029,6 +1032,7 @@ async function loadModel(item, profile = null) {
     // Preserve HDR precision and multisample the geometry before postprocessing.
     const composer = document.createElement('effect-composer');
     const budget = postprocessingBudget(item.triangles);
+    viewer.postprocessingBudget = budget;
     composer.setAttribute('render-mode', 'quality');
     composer.setAttribute('msaa', String(budget.msaa));
     const occlusion = document.createElement('ssao-effect');
@@ -1065,6 +1069,7 @@ async function loadModel(item, profile = null) {
     viewer.append(composer);
     $('viewer-mount').append(viewer);
     viewer.disposeBloom = viewerAPI.installViewerBloom(viewer, bloom);
+    applyPostprocessingSettings(viewer);
     viewer.disposeFPS = viewerAPI.watchViewerFPS(viewer, fps => {
       if (activeViewer === viewer) $('viewer-fps').textContent = `${fps ?? '—'} FPS`;
     });
@@ -1231,7 +1236,11 @@ function closeMenu() {
 
 function setupEvents() {
   for (const role of textureRoles) $('texture-'+role).addEventListener('change', applyDisplaySettings);
-  $('show-effects').addEventListener('change', applyDisplaySettings);
+  try {
+    const saved = normalizeDisplaySettings(JSON.parse(localStorage.getItem('viewer.performance') || '{}') || {});
+    for (const [key, id] of Object.entries(performanceControls)) $(id).checked = saved[key];
+  } catch {}
+  for (const id of Object.values(performanceControls)) $(id).addEventListener('change', applyDisplaySettings);
   $('show-textures').addEventListener('change', () => {
     for (const role of textureRoles) $('texture-'+role).checked = $('show-textures').checked;
     applyDisplaySettings();
@@ -1388,7 +1397,7 @@ function setupEvents() {
     for (const [key, value] of Object.entries(renderDefaultsForDNA(currentItem?.dna))) $(key).value = value;
     applyRenderSettings();
     for (const role of textureRoles) $('texture-'+role).checked = true;
-    $('show-effects').checked = true;
+    for (const id of Object.values(performanceControls)) $(id).checked = true;
     applyDisplaySettings();
   });
   const resetView = () => {
