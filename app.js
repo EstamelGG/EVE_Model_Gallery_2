@@ -161,7 +161,7 @@ const defaultSort = (group) => group === -1 ? 'id' : 'race';
 let revealedGroup = null;
 // Proven visual aliases share one official render URL and the browser cache.
 const renderURL = (item) =>
-  `https://images.evetech.net/types/${item.nativeTypeID || item.id}/render?size=${matchMedia("(max-width: 680px), (pointer: coarse)").matches ? 128 : 256}`;
+  `https://images.evetech.net/types/${item.nativeTypeID || item.id}/render?size=256`;
 // Keep the displayed exposure literal; the old 2x offset clipped pale hulls.
 const exposureForLevel = (level) => Number(level);
 const renderSettings = () => normalizeRenderSettings(Object.fromEntries(
