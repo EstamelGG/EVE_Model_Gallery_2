@@ -4,7 +4,7 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=model-loading-v2';
+} from './i18n.mjs?v=about-v1';
 import { viewerProfile } from './viewer-profile.mjs?v=samples32';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=dna-lighting-v6';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
@@ -24,6 +24,33 @@ const esc = (value) =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
   );
 const fmt = (value) => Number(value).toLocaleString(locale);
+let frontendPublishedAt;
+function renderPublicationDate() {
+  const element = $('frontend-published');
+  const date = frontendPublishedAt ? new Date(frontendPublishedAt) : null;
+  if (!date || !Number.isFinite(date.getTime())) {
+    element.removeAttribute('datetime');
+    element.textContent = t('localPreview');
+    return;
+  }
+  element.dateTime = date.toISOString();
+  element.textContent = new Intl.DateTimeFormat(locale, {
+    timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(date) + ' (UTC+8)';
+}
+// About stays usable even when the remote catalog cannot be loaded.
+$('open-about').addEventListener('click', () => {
+  renderPublicationDate();
+  $('about-dialog').showModal();
+});
+$('close-about').addEventListener('click', () => $('about-dialog').close());
+$('about-dialog').addEventListener('click', event => {
+  if (event.target !== $('about-dialog')) return;
+  const rect = event.target.getBoundingClientRect();
+  if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)
+    $('about-dialog').close();
+});
 let activityTimer;
 let modelLoadBatch, modelLoadStage = 1;
 const modelLoadSteps = ['loadingCatalog', 'loadingAssets', 'loadingMaterials', 'loadingEnvironment', 'preparing'];
@@ -1190,6 +1217,7 @@ function setupEvents() {
     if (
       event.key === '/' &&
       !$('model-dialog').open &&
+      !$('about-dialog').open &&
       !['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)
     ) {
       event.preventDefault();
@@ -1212,6 +1240,7 @@ applyTranslations();
 for (const select of document.querySelectorAll('[data-language]')) {
   select.addEventListener('change', () => {
     setLocale(select.value);
+    renderPublicationDate();
     renderActivity();
     if (data) {
       buildTree();
@@ -1229,6 +1258,8 @@ function renderCatalogError() {
 async function init() {
   try {
     const config = await loadJSON('./site-config.json', { cache: 'no-cache' }, { optional: true });
+    frontendPublishedAt = config.frontendPublishedAt;
+    renderPublicationDate();
     configureResourceBase(config.resourceBaseURL);
     data = await loadJSON(resourceURL('./data/catalog-index.json'), { cache: 'no-cache' });
     const identities = await loadJSON('./icons/identities.json?v=meta-groups-v1');

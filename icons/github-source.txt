@@ -1,0 +1,6 @@
+GitHub Invertocat (white), official unmodified SVG.
+Copyright and trademarks: GitHub, Inc.
+Source: https://brand.github.com/GitHub_Logos.zip
+Archive entry: GitHub Logos/SVG/GitHub_Invertocat_White.svg
+Usage guidelines: https://brand.github.com/foundations/logo
+Used to link to the project's GitHub repository.

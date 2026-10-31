@@ -94,6 +94,35 @@ svg {
   color: #f0f0ee;
   text-decoration: none;
 }
+.brand-lockup { display: flex; flex-direction: column; gap: 4px; }
+.developer-credit { padding-left: 42px; color: var(--muted); font-size: 10px; }
+.developer-credit strong { color: #bdc2c7; font-weight: 500; margin-left: 4px; }
+.header-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.header-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 10px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: #b6bec5; text-decoration: none; font-size: 12px; white-space: nowrap; }
+.header-button:hover { color: var(--accent); border-color: #dfbc8033; background: #dfbc8008; }
+.header-button svg { width: 16px; height: 16px; }
+.header-button .github-mark { width: 16px; height: auto; flex-shrink: 0; }
+.header-actions .language-select { margin-left: 0; }
+#about-dialog { width: min(540px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); }
+.about-content { padding: 26px; font-size: 12px; line-height: 1.8; }
+.about-brand { display: flex; align-items: center; gap: 14px; }
+.about-brand h2 { margin: 0; font-size: 20px; line-height: 1.4; font-weight: 600; letter-spacing: -.5px; }
+.about-brand p { margin: 5px 0 0; color: var(--muted); }
+.about-brand strong { font-weight: 500; color: var(--text); }
+.about-release { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px 16px; margin: 24px 0 0; padding-bottom: 20px; border-bottom: 1px solid var(--line); font-size: 11px; }
+.about-release dt { color: var(--muted); }
+.about-release dd { margin: 0; }
+.about-section { margin-top: 22px; }
+.about-content h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+.about-content p { margin: 8px 0; }
+.about-muted { color: var(--muted); }
+.about-sponsor { margin: 22px 0; padding: 17px 18px; border: 1px solid #dfbc8033; border-radius: 7px; background: #dfbc8007; }
+.about-sponsor h3 { color: var(--accent); }
+.sponsor-recipient { display: flex; align-items: baseline; gap: 16px; margin: 14px 0; }
+.sponsor-recipient span { color: var(--muted); font-size: 11px; }
+.sponsor-recipient strong { font-family: Consolas, monospace; font-size: 20px; font-weight: 500; color: var(--accent); user-select: all; }
+.about-repository { color: #c3cbd2; text-underline-offset: 4px; font-size: 11px; }
+.about-repository:hover { color: var(--accent); }
 .brand-light {
   font-weight: 350;
   color: #b6bcc1;
@@ -1595,3 +1624,16 @@ model-viewer::part(default-progress-bar) {
 .model-export-buttons button:disabled { opacity: .45; cursor: default; }
 .export-hint, #export-status { margin: 8px 0 0; font-size: 11px; line-height: 1.6; color: #9cabb5; }
 #export-status { color: #dcc28b; }
+
+/* Keep header actions and the developer credit visible on narrow screens. */
+@media (max-width: 680px) {
+  .topbar { height: 104px; padding: 10px 16px; gap: 8px 12px; flex-wrap: wrap; }
+  .brand-lockup { flex: 1; }
+  .developer-credit { padding-left: 0; }
+  .header-actions { width: 100%; justify-content: flex-end; gap: 6px; }
+  .header-button { padding: 6px 9px; font-size: 11px; }
+  .sidebar { top: 104px; height: calc(100dvh - 104px); }
+  .about-content { padding: 20px; }
+  .about-brand h2 { font-size: 17px; }
+  .about-brand img { width: 38px; height: 38px; }
+}
