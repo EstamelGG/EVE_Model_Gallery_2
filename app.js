@@ -4,7 +4,7 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=settings-groups-v1';
+} from './i18n.mjs?v=resource-plan-sky-fade-v1';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=lighting-quality-v1';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
@@ -12,7 +12,7 @@ import { hullKey, hullVariantGroups } from './hull-variants.mjs?v=affiliation-gr
 import { createAffiliationResolver } from './affiliation.mjs';
 import { createViewerTransition } from './viewer-transition.mjs?v=progressive-v1';
 import { configureResourceBase, resourceURL } from './resource-location.mjs?v=pages-backgrounds-v1';
-import { resourceActivity, createResourceBatch, loadJSON, trackResource } from './resource-activity.mjs?v=download-progress-v1';
+import { resourceActivity, createResourceBatch, loadJSON, trackResource } from './resource-activity.mjs?v=resource-plan-sky-fade-v1';
 import { prepareRenderImages } from './render-images.mjs?v=stable-card-window-v1';
 import { createLoadingRows } from './loading-rows.mjs?v=loading-panel-progress-v1';
 import { normalizeKillCount } from './kill-count.mjs';
@@ -114,17 +114,22 @@ $('about-dialog').addEventListener('click', event => {
     $('about-dialog').close();
 });
 let activityTimer;
-let modelLoadBatch, modelLoadStage = 1;
+let modelLoadBatch, modelLoadStage = 1, modelLoadComplete = false;
 const loadingRows = createLoadingRows($('loading-resources'));
 const modelLoadSteps = ['loadingCatalog', 'loadingAssets', 'loadingMaterials', 'loadingEnvironment', 'preparing'];
 function beginModelLoading() {
+  modelLoadComplete = false;
   loadingRows.reset();
   modelLoadBatch?.stop();
   modelLoadBatch = createResourceBatch();
   $('viewer-loading').hidden = false;
   setModelLoadStage(1);
 }
-function finishModelLoading() {
+function finishModelLoading(force = false) {
+  modelLoadComplete = true;
+  modelLoadBatch?.skipUnrequested(url => /\/backgrounds\//.test(url) && activeViewer?.backgroundLoading);
+  if (!force && activeViewer?.backgroundLoading) { renderModelLoading(); return; }
+  renderModelLoading();
   loadingRows.reset();
   modelLoadBatch?.stop();
   modelLoadBatch = null;
@@ -136,15 +141,23 @@ function setModelLoadStage(stage) {
 }
 function renderModelLoading() {
   if (!modelLoadBatch) return;
-  const { pending, completed } = modelLoadBatch.snapshot();
+  const { pending, completed, total, planned, failed } = modelLoadBatch.snapshot();
+  $('viewer-loading').hidden = false;
+  const title = $('viewer-loading').querySelector('strong');
+  title.dataset.i18n = modelLoadComplete ? 'loadingResources' : 'loadingModel';
+  title.textContent = t(title.dataset.i18n);
   const step = t('loadingStep', { step: modelLoadStage, total: modelLoadSteps.length, name: t(modelLoadSteps[modelLoadStage - 1]) });
+  $('loading-detail').hidden = modelLoadComplete;
   $('loading-detail').textContent = step;
   // This bar measures completed steps, not a guessed download percentage.
-  $('model-progress').max = modelLoadSteps.length;
-  $('model-progress').value = modelLoadStage - 1;
+  $('model-progress').max = planned ? Math.max(1,total) : modelLoadSteps.length;
+  $('model-progress').value = planned ? completed : modelLoadStage - 1;
   $('model-progress').setAttribute('aria-label', step);
   $('model-progress').setAttribute('aria-valuetext', step);
-  $('loading-count').textContent = t('loadingResourceCount', { completed: modelLoadStage - 1, total: modelLoadSteps.length, resources: completed, pending: pending.length });
+  $('loading-count').textContent = planned
+    ? t('loadingResourceTotal', {completed, total, pending:pending.length}) + (failed ? t('loadingResourceFailed', {count:failed}) : '')
+    : t('loadingResourceCount', { completed: modelLoadStage - 1, total: modelLoadSteps.length, resources: completed, pending: pending.length });
+  $('model-progress').setAttribute('aria-valuetext', $('loading-count').textContent);
   loadingRows.update(pending, t);
 }
 function renderActivity() {
@@ -636,6 +649,7 @@ async function installSkybox(viewer, item, module) {
   const select = $('skybox-select'), status = $('skybox-status');
   select.disabled = true; select.onchange = null; status.hidden = true;
   select.replaceChildren(new Option(t('skyboxNone'), 'none'));
+  viewer.backgroundLoading = true;
   try {
     const catalog = await viewer.assetSession.json('data/backgrounds.json');
     if (activeViewer !== viewer) return;
@@ -650,20 +664,38 @@ async function installSkybox(viewer, item, module) {
     let change = 0;
     const apply = async () => {
       const token = ++change;
-      status.hidden = false; status.textContent = t('skyboxLoading');
+      status.hidden = true;
+      viewer.backgroundLoading = select.value !== 'none';
+      if (!modelLoadBatch && viewer.backgroundLoading) {
+        modelLoadBatch = createResourceBatch();
+        modelLoadComplete = true;
+      }
+      const entry = module.selectedBackground(catalog, viewer.previewRace, select.value);
+      if (entry && modelLoadBatch) modelLoadBatch.plan([entry.url,entry.stars].filter(Boolean).map(resourceURL));
+      renderModelLoading();
       try {
         await viewer.skybox.select(select.value);
         if (activeViewer !== viewer || token !== change) return;
         try { localStorage.setItem('viewer.skybox', select.value); } catch {}
         status.hidden = true;
       } catch {
-        if (activeViewer === viewer && token === change) status.textContent = t('skyboxError');
+        if (activeViewer === viewer && token === change) { status.hidden = false; status.textContent = t('skyboxError'); }
+      } finally {
+        if (activeViewer === viewer && token === change) {
+          viewer.backgroundLoading = false;
+          if (modelLoadComplete) finishModelLoading();
+          else renderModelLoading();
+        }
       }
     };
     select.onchange = apply;
     await apply();
   } catch {
-    if (activeViewer === viewer) { status.hidden = false; status.textContent = t('skyboxMissing'); }
+    if (activeViewer === viewer) {
+      viewer.backgroundLoading = false;
+      status.hidden = false; status.textContent = t('skyboxMissing');
+      if (modelLoadComplete) finishModelLoading();
+    }
   }
 }
 
@@ -731,7 +763,7 @@ function modelError(key) {
   if (activeViewer) activeViewer.exportReady = false;
   syncExportButtons();
   clearTimeout(modelTimer);
-  finishModelLoading();
+  finishModelLoading(true);
   $('viewer-error').hidden = false;
   $('viewer-error-text').dataset.i18n = key;
   $('viewer-error-text').textContent = t(key);
@@ -753,6 +785,9 @@ async function switchAppearance(viewer, item, module, isCurrent) {
     return true;
   }
   if (!new URL(source).pathname.endsWith('.gltf')) return false;
+  await module.planViewerResources(viewer, {...item, model:source}, data.nativePreview, $('skybox-select').value, modelLoadBatch);
+  if (activeViewer !== viewer || !isCurrent()) return true;
+  renderModelLoading();
   void module.prefetchViewerAssets(viewer, item.effects, !!data.nativePreview).catch(() => {});
   const document = await viewer.assetSession.json(source);
   if (activeViewer !== viewer || !isCurrent()) return true;
@@ -830,7 +865,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=pages-backgrounds-v1')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=resource-plan-sky-fade-v1')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -844,15 +879,20 @@ async function loadModel(item, profile = null) {
     viewer.assetSession = viewerSession;
     viewer.previewRace = viewerSession.race;
     activeViewer = viewer;
+    let backgroundID = 'auto';
+    try { backgroundID = localStorage.getItem('viewer.skybox') || 'auto'; } catch {}
+    const source = modelURL(item);
+    await viewerAPI.planViewerResources(viewer, {...item, model:source}, data.nativePreview, backgroundID, modelLoadBatch);
+    if (activeViewer !== viewer || !isCurrent()) return;
+    renderModelLoading();
     void viewerAPI.prefetchViewerAssets(viewer, item.effects, !!data.nativePreview).catch(() => {});
     if (data.nativePreview && !nativeSettings) {
-      nativeSettings = loadJSON(resourceURL(data.nativePreview), { cache: 'no-cache' })
+      nativeSettings = viewer.assetSession.json(data.nativePreview)
         .catch(error => { nativeSettings = null; throw error; });
       nativeSettings.catch(() => {});
     }
     // The loader's cache keys are literal strings. Preload and viewer.src
     // must use the same absolute URL or the model and its buffers load twice.
-    const source = modelURL(item);
     const preload = await (await viewerModule).preloadModel(viewer, source, () => {});
     if (activeViewer !== viewer) { preload.release(); return; }
     viewer.releasePreload = preload.release;
@@ -1207,7 +1247,7 @@ function closeDetail(route = true) {
   setViewerExpanded(false);
   if (document.fullscreenElement === $('model-dialog')) document.exitFullscreen().catch(() => {});
   ++detailRevision;
-  finishModelLoading();
+  finishModelLoading(true);
   if (!$('model-dialog').open) return;
   suppressedClose = true;
   $('model-dialog').close();
@@ -1328,7 +1368,7 @@ function setupEvents() {
       return;
     }
     ++detailRevision;
-    finishModelLoading();
+    finishModelLoading(true);
     viewerTransition.reset();
     disposeViewer();
     viewerSession?.dispose();
