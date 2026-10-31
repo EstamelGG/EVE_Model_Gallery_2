@@ -1,4 +1,4 @@
-import { hullVariants } from './hull-variants.mjs?v=affiliation-groups-v5';
+import { hullVariants } from './hull-variants.mjs?v=subsystems-v1';
 // Cache pending requests too, so route changes and item dialogs share one load.
 export function createCatalogLoader(index, fetchJSON, decorate = (item) => item, { requireSearchDNA = false } = {}) {
   const groups = new Map(index.categories.flatMap((c) => c.groups.map((g) => [g.id, g])));

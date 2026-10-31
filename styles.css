@@ -1951,3 +1951,9 @@ model-viewer::part(default-progress-bar) {
   .detail-info { padding: 12px; }
   .viewer-settings .settings-group .toggle-row { min-height: 32px; }
 }
+.subsystem-settings[hidden] { display: none; }
+.subsystem-field { display: grid; gap: 4px; margin: 0 0 8px; }
+.subsystem-field > span { font-size: 12px; color: #a5acb7; }
+.viewer-settings .subsystem-settings .subsystem-field select { width: 100%; min-width: 0; max-width: 100%; padding: 6px 8px; font: inherit; font-size: 12px; color: var(--text); background: #1a1e23; border: 1px solid #363d46; border-radius: 4px; }
+.subsystem-field select:focus-visible { outline: 2px solid #79b9e5; outline-offset: 2px; }
+.subsystem-status { margin: 0 0 10px; color: #a5acb7; font-size: 11px; line-height: 1.6; }

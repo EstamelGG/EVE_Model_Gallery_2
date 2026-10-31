@@ -4,11 +4,11 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=fixed-eve-system-v4';
+} from './i18n.mjs?v=subsystems-v1';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=lighting-quality-v1';
-import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
-import { hullKey, hullVariantGroups } from './hull-variants.mjs?v=affiliation-groups-v5';
+import { createCatalogLoader } from './catalog-loader.mjs?v=subsystems-v1';
+import { hullKey, hullVariantGroups } from './hull-variants.mjs?v=subsystems-v1';
 import { createAffiliationResolver } from './affiliation.mjs';
 import { createViewerTransition } from './viewer-transition.mjs?v=progressive-v1';
 import { configureResourceBase, resourceURL } from './resource-location.mjs?v=pages-backgrounds-v1';
@@ -16,6 +16,7 @@ import { resourceActivity, createResourceBatch, loadJSON, trackResource } from '
 import { prepareRenderImages } from './render-images.mjs?v=render-fallback-v1';
 import { createLoadingRows } from './loading-rows.mjs?v=loading-panel-progress-v1';
 import { normalizeKillCount } from './kill-count.mjs';
+import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName } from './subsystems.mjs';
 import { resetView, cancelViewReset } from './view-reset.mjs';
 import { normalizeDisplaySettings, textureRoles, performanceControls, applyPostprocessingSettings } from './display-settings.mjs?v=performance-controls-v1';
 const $ = (id) => document.getElementById(id);
@@ -289,6 +290,37 @@ let viewerModule,
   nativeSettings;
 let renderRevision = 0, detailRevision = 0;
 let variantState = { hull: '', open: false, items: null, status: '' };
+let subsystemBaseItem = null;
+const subsystemSelections = new Map();
+
+function renderSubsystems() {
+  const config = subsystemBaseItem?.id === currentItem?.id
+    ? subsystemConfiguration(subsystemBaseItem, currentItem?.subsystemSelection) : null;
+  const panel = $('subsystem-settings');
+  panel.hidden = currentItem?.groupID !== 963;
+  if (panel.hidden) return;
+  const focused = document.activeElement?.dataset.subsystemSlot;
+  $('subsystem-options').innerHTML = (config?.spec.slots || []).map((slot, index) =>
+    `<label class="subsystem-field"><span>${t('subsystem' + slot.key)}</span><select data-subsystem-slot="${index}" aria-label="${t('subsystem' + slot.key)}" aria-describedby="subsystem-status"${!config.code ? ' disabled' : ''}>
+    ${!config.code ? `<option>${t('subsystemDefault')}</option>` : ''}
+    ${slot.options.map(option => `<option value="${option.variant}"${String(option.variant) === config.code[index] ? ' selected' : ''}${!subsystemOptionAvailable(config, index, option.variant) ? ' disabled' : ''}>${esc(subsystemOptionName(localizedName(option.name)))}</option>`).join('')}</select></label>`
+  ).join('');
+  $('subsystem-status').textContent = config?.code
+    ? t('subsystemReady', { ready: config.readyCount, total: Object.keys(config.spec.variants).length })
+    : t('subsystemUnavailable');
+  $('reset-subsystems').disabled = !config?.spec.variants[config.spec.default]?.available || config.code === config.spec.default;
+  if (focused != null) panel.querySelector(`[data-subsystem-slot="${focused}"]`)?.focus({ preventScroll: true });
+}
+
+function changeSubsystems(code) {
+  const config = subsystemConfiguration(subsystemBaseItem, code);
+  if (!config || config.code !== code || code === currentItem?.subsystemSelection) return;
+  subsystemSelections.set(subsystemBaseItem.id, code);
+  currentItem = subsystemItem(subsystemBaseItem, code);
+  ++detailRevision;
+  renderDetail();
+  loadModel(currentItem);
+}
 const viewerTransition = createViewerTransition($('viewer-stage'), $('viewer-snapshot'));
 
 function renderVariants() {
@@ -957,7 +989,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=1c18b2415cc2b7b4')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=4bab592b20cfb4ff')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -1289,16 +1321,18 @@ async function openItem(id, route = true) {
     await render();
     if (revision !== detailRevision) return;
   }
-  currentItem = item;
+  subsystemBaseItem = item;
+  currentItem = subsystemItem(item, subsystemSelections.get(item.id));
   state.item = id;
   if (route) saveRoute();
   renderDetail();
-  loadModel(item);
+  loadModel(currentItem);
 }
 
 function renderDetail() {
   if (!currentItem) return;
   renderVariants();
+  renderSubsystems();
   const item = currentItem;
   $('detail-title').textContent = localizedName(item.name) || `ID ${item.id}`;
   $('skybox-select').closest('label').hidden = item.renderKind === 'equipment';
@@ -1373,6 +1407,7 @@ function closeDetail(route = true) {
   viewerSession?.dispose();
   viewerSession = null;
   currentItem = null;
+  subsystemBaseItem = null;
   variantState = { hull: '', open: false, items: null, status: '' };
   state.item = 0;
   document.body.style.overflow = '';
@@ -1516,6 +1551,14 @@ function setupEvents() {
   });
   $('previous-ship').addEventListener('click', () => moveShip(-1));
   $('hull-variants-toggle').addEventListener('click', toggleVariants);
+  $('subsystem-options').addEventListener('change', event => {
+    const slot = event.target.dataset.subsystemSlot;
+    if (slot == null || !currentItem?.subsystemSelection) return;
+    const code = [...currentItem.subsystemSelection];
+    code[Number(slot)] = event.target.value;
+    changeSubsystems(code.join(''));
+  });
+  $('reset-subsystems').addEventListener('click', () => changeSubsystems(subsystemBaseItem?.subsystems?.default));
   $('hull-variants-list').addEventListener('click', event => {
     const card = event.target.closest('[data-variant]');
     if (card && !card.disabled && Number(card.dataset.variant) !== currentItem?.id) openItem(Number(card.dataset.variant));
