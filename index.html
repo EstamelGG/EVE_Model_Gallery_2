@@ -13,8 +13,8 @@
     <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png?v=2" />
     <link rel="icon" type="image/svg+xml" sizes="any" href="./mark.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png?v=2" />
-    <link rel="stylesheet" href="./styles.css?v=long-axis-overlay-v1" />
-    <script type="module" src="./app.js?v=long-axis-v1"></script>
+    <link rel="stylesheet" href="./styles.css?v=dimension-frame-v1" />
+    <script type="module" src="./app.js?v=dimension-frame-proportions-v1"></script>
   </head>
   <body>
     <svg class="icon-defs" aria-hidden="true">
@@ -168,9 +168,13 @@
           <div class="stage-grid" aria-hidden="true"></div>
           <div id="viewer-mount"></div>
           <canvas id="viewer-snapshot" aria-hidden="true" hidden></canvas>
-          <div class="viewer-long-axis">
-            <span data-i18n="longAxis">长轴</span>
-            <span id="detail-long-axis">—</span>
+          <div class="viewer-dimensions">
+            <canvas id="dimension-frame" width="168" height="108" aria-hidden="true"></canvas>
+            <div class="dimension-values">
+              <span class="dimension-x"><span data-i18n="dimensionWidth">宽 X</span><strong id="dimension-x">—</strong></span>
+              <span class="dimension-y"><span data-i18n="dimensionHeight">高 Y</span><strong id="dimension-y">—</strong></span>
+              <span class="dimension-z"><span data-i18n="dimensionLength">长 Z</span><strong id="dimension-z">—</strong></span>
+            </div>
           </div>
           <div id="viewer-loading" class="viewer-loading" role="status">
             <span class="loading-ring"></span><strong data-i18n="loadingModel">正在加载模型</strong

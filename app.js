@@ -4,7 +4,7 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=long-axis-v1';
+} from './i18n.mjs?v=dimension-frame-v1';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=lighting-quality-v1';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
@@ -26,16 +26,21 @@ const esc = (value) =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
   );
 const fmt = (value) => Number(value).toLocaleString(locale);
-const itemLongAxes = new WeakMap();
-function formatLongAxis(meters) {
+const itemDimensions = new WeakMap();
+function formatDimension(meters) {
   if (!Number.isFinite(meters) || meters <= 0) return '—';
   const rounded = Math.round(meters);
   return rounded >= 1000 ? `${Number((rounded / 1000).toFixed(2))}KM` : `${rounded}M`;
 }
-function updateLongAxis(item, dimensions) {
+function renderDimensions(dimensions) {
+  for (const axis of ['x', 'y', 'z']) {
+    $('dimension-' + axis).textContent = formatDimension(dimensions?.[axis]);
+  }
+}
+function updateDimensions(item, dimensions) {
   if (!dimensions) return;
-  itemLongAxes.set(item, Math.max(dimensions.x, dimensions.y, dimensions.z));
-  if (currentItem === item) $('detail-long-axis').textContent = formatLongAxis(itemLongAxes.get(item));
+  itemDimensions.set(item, dimensions);
+  if (currentItem === item) renderDimensions(itemDimensions.get(item));
 }
 let frontendPublishedAt;
 function renderPublicationDate() {
@@ -704,11 +709,13 @@ function disposeViewer() {
   clearTimeout(modelTimer);
   if (activeViewer) {
     activeViewer.disposeFPS?.();
+    activeViewer.disposeDimensionFrame?.();
     activeViewer.disposeBloom?.();
     activeViewer.releasePreload?.();
     activeViewer.disposeOcclusion?.();
     activeViewer.shipEffects?.dispose();
     activeViewer.disposeNative?.();
+    activeViewer.pendingNativeSurfaces?.dispose();
     activeViewer.remove();
     activeViewer = null;
   }
@@ -796,7 +803,7 @@ async function loadModel(item, profile = null) {
       try {
         if (await operation) {
           if (activeViewer !== viewer || !isCurrent()) return;
-          updateLongAxis(item, viewer.sourceDimensions);
+          updateDimensions(item, viewer.sourceDimensions);
           applyRenderSettings();
           setModelLoadStage(5);
           if (savedView) await module.restoreView(viewer, savedView);
@@ -820,7 +827,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=kill-marks-v1')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=dimension-frame-proportions-v1')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -848,7 +855,7 @@ async function loadModel(item, profile = null) {
     viewer.releasePreload = preload.release;
     // Keep source meters before the viewer normalizes the model for rendering.
     viewer.sourceDimensions = preload.dimensions;
-    updateLongAxis(item, viewer.sourceDimensions);
+    updateDimensions(item, viewer.sourceDimensions);
     profile ||= viewerProfile(preload.dimensions);
     viewer.killCount = normalizeKillCount($('kill-count').value);
     viewer.renderSettings = renderSettings();
@@ -926,6 +933,8 @@ async function loadModel(item, profile = null) {
         viewer.dataset.renderProfile = JSON.stringify(profile);
         const module = await viewerModule;
         if (!isCurrent()) return;
+        viewer.disposeDimensionFrame = module.watchDimensionFrame(viewer, $('dimension-frame'));
+        if (data.nativePreview) viewer.pendingNativeSurfaces = module.prepareNativeSurfaces(viewer);
         // Backgrounds are optional: they can arrive after the hull is usable.
         void installSkybox(viewer, item, module);
         if (!savedView) {
@@ -1144,7 +1153,7 @@ function renderDetail() {
   $('detail-race').innerHTML = `${raceMark(item.affiliationID)}${esc(raceName(item.affiliationID))}`;
   $('detail-id').textContent = item.id;
   $('detail-graphic').textContent = item.graphicID ?? '—';
-  $('detail-long-axis').textContent = formatLongAxis(itemLongAxes.get(item));
+  renderDimensions(itemDimensions.get(item));
   $('detail-triangles').textContent = item.triangles == null ? '—' : fmt(item.triangles);
   const omissions = [];
   if (item.warnings?.some(w => w.startsWith('未显示残骸烟雾/碎屑粒子'))) omissions.push(t('missingParticles'));
