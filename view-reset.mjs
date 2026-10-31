@@ -7,6 +7,7 @@ export function cancelViewReset(viewer) {
 
 export function resetView(viewer, {
   reducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false,
+  target = 'auto auto auto', preserveOrbit = false,
 } = {}) {
   cancelViewReset(viewer);
   const autoRotate = viewer.autoRotate;
@@ -28,11 +29,13 @@ export function resetView(viewer, {
     if (event.detail?.source === 'user-interaction') finish();
   };
 
-  viewer.cameraOrbit = `35deg 70deg ${viewer.dataset.homeDistance ? viewer.dataset.homeDistance + 'm' : 'auto'}`;
-  viewer.cameraTarget = 'auto auto auto';
-  viewer.fieldOfView = '30deg';
+  if (!preserveOrbit) {
+    viewer.cameraOrbit = `35deg 70deg ${viewer.dataset.homeDistance ? viewer.dataset.homeDistance + 'm' : 'auto'}`;
+    viewer.fieldOfView = '30deg';
+  }
+  viewer.cameraTarget = target;
   if (reducedMotion) {
-    viewer.resetTurntableRotation();
+    if (!preserveOrbit) viewer.resetTurntableRotation();
     viewer.jumpCameraToGoal();
     return;
   }
@@ -50,11 +53,20 @@ export function resetView(viewer, {
     if (!viewer.isConnected) { finish(); return; }
     const progress = Math.min(1, (time - start) / duration);
     const eased = progress * progress * (3 - 2 * progress);
-    viewer.resetTurntableRotation(startYaw + yawDelta * eased);
+    if (!preserveOrbit) viewer.resetTurntableRotation(startYaw + yawDelta * eased);
     if (progress === 1) {
-      viewer.resetTurntableRotation();
+      if (!preserveOrbit) viewer.resetTurntableRotation();
       finish();
     } else frame = requestAnimationFrame(animate);
   };
   frame = requestAnimationFrame(animate);
+}
+
+export function recenteredTarget(view, center) {
+  if (!view.center) return view.target;
+  return Object.fromEntries(['x','y','z'].map(axis => [axis, view.target[axis]+center[axis]-view.center[axis]]));
+}
+
+export function recenterView(viewer, target, options = {}) {
+  resetView(viewer, {...options, target:`${target.x}m ${target.y}m ${target.z}m`, preserveOrbit:true});
 }

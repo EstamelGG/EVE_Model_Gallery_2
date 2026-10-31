@@ -4,20 +4,20 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=subsystem-assembly-v1';
+} from './i18n.mjs?v=subsystem-local-swap-v1';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=lighting-quality-v1';
 import { createCatalogLoader } from './catalog-loader.mjs?v=subsystem-assembly-v1';
 import { hullKey, hullVariantGroups } from './hull-variants.mjs?v=subsystem-assembly-v1';
 import { createAffiliationResolver } from './affiliation.mjs';
-import { createViewerTransition } from './viewer-transition.mjs?v=progressive-v1';
+import { createViewerTransition } from './viewer-transition.mjs?v=crossfade-v1';
 import { configureResourceBase, resourceURL } from './resource-location.mjs?v=pages-backgrounds-v1';
 import { resourceActivity, createResourceBatch, loadJSON, trackResource } from './resource-activity.mjs?v=resource-plan-sky-fade-v1';
 import { prepareRenderImages } from './render-images.mjs?v=render-fallback-v1';
 import { createLoadingRows } from './loading-rows.mjs?v=loading-panel-progress-v1';
 import { normalizeKillCount } from './kill-count.mjs';
 import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName, subsystemGroups, subsystemSlots, isStrategicCruiser, withSubsystems } from './subsystems.mjs?v=assembly-v1';
-import { resetView, cancelViewReset } from './view-reset.mjs';
+import { resetView, recenterView, cancelViewReset } from './view-reset.mjs?v=recenter-v1';
 import { normalizeDisplaySettings, textureRoles, performanceControls, applyPostprocessingSettings } from './display-settings.mjs?v=performance-controls-v1';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
@@ -788,13 +788,13 @@ async function installSkybox(viewer, item, module) {
     const apply = async () => {
       const token = ++change;
       status.hidden = true;
-      viewer.backgroundLoading = select.value !== 'none';
+      viewer.backgroundLoading = !viewer.skybox.isReady(select.value);
       if (!modelLoadBatch && viewer.backgroundLoading) {
         modelLoadBatch = createResourceBatch();
         modelLoadComplete = true;
       }
       const entry = module.selectedBackground(catalog, viewer.previewRace, select.value);
-      if (entry && modelLoadBatch) modelLoadBatch.plan([entry.url,entry.stars].filter(Boolean).map(resourceURL));
+      if (entry && viewer.backgroundLoading && modelLoadBatch) modelLoadBatch.plan([entry.url,entry.stars].filter(Boolean).map(resourceURL));
       renderModelLoading();
       try {
         await viewer.skybox.select(select.value);
@@ -947,7 +947,47 @@ async function switchAppearance(viewer, item, module, isCurrent) {
   return true;
 }
 
+async function switchSubsystemsInPlace(viewer, item) {
+  const token = viewer.subsystemRequest = (viewer.subsystemRequest || 0)+1;
+  const isCurrent = () => activeViewer === viewer && viewer.subsystemRequest === token && currentItem === item && $('model-dialog').open;
+  viewerTransition.reset();
+  if (!modelLoadBatch) beginModelLoading();
+  viewer.exportReady = false;syncExportButtons();
+  $('viewer-error').hidden = true;
+  const operation = (viewer.subsystemSwitch || Promise.resolve()).catch(() => {}).then(async () => {
+    if (!isCurrent()) return;
+    const applied = await viewer.subsystemAssembly.replace(item,isCurrent);
+    if (!applied || !isCurrent()) return;
+    viewer.readyItem = item;
+    viewer.appearanceURL = modelURL(item);
+    viewer.dataset.subsystemSelection = item.subsystemSelection;
+    viewer.dataset.subsystemUpdates = String(Number(viewer.dataset.subsystemUpdates || 0)+1);
+    viewer.disposeSubsystemLabels = viewerAPI.installSubsystemLabels(viewer, () => item.subsystemParts.map((part,i) => ({
+      title:t('subsystem'+subsystemSlots[i]),name:subsystemOptionName(localizedName(part.name)),
+    })));
+    updateDimensions(item,viewer.sourceDimensions);
+    viewer.disposeDimensionFrame?.();
+    viewer.disposeDimensionFrame = viewerAPI.watchDimensionFrame(viewer,$('dimension-frame'));
+    applyDisplaySettings();renderSubsystems();
+    await viewerAPI.waitForFrame(viewer);
+    if (isCurrent()) { viewer.exportReady = true;syncExportButtons();finishModelLoading(); }
+  });
+  viewer.subsystemSwitch = operation;
+  try { await operation; }
+  catch (error) {
+    console.error('Subsystem update failed',error);
+    if (!isCurrent()) return;
+    currentItem = viewer.readyItem;
+    subsystemSelections.set(currentItem.id,currentItem.subsystemSelection);
+    renderDetail();finishModelLoading(true);
+    $('subsystem-status').textContent = t('subsystemUpdateFailed');
+    viewer.exportReady = true;syncExportButtons();
+  }
+}
+
 async function loadModel(item, profile = null) {
+  if (!profile && item.subsystemParts && activeViewer?.subsystemAssembly && activeViewer.readyItem?.id === item.id)
+    return switchSubsystemsInPlace(activeViewer,item);
   if (!modelLoadBatch) beginModelLoading();
   setModelLoadStage(2);
   const request = viewerTransition.begin(activeViewer, viewerAPI);
@@ -992,7 +1032,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=86812cfdaca749de')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=9a2a64bb4059023f')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -1057,6 +1097,7 @@ async function loadModel(item, profile = null) {
     viewer.addEventListener('load', async () => {
       if (activeViewer !== viewer) return;
       if (isCurrent()) setModelLoadStage(3);
+      let newViewTarget;
       try {
         viewer.releasePreload?.();
         viewer.jumpCameraToGoal();
@@ -1152,9 +1193,10 @@ async function loadModel(item, profile = null) {
         }
         if (isCurrent()) setModelLoadStage(4);
         if (item.effects && !viewer.equipmentPreview) {
-          const effects = await (
-            await viewerModule
-          ).installShipEffects(viewer, item.effects, 'cruise');
+          const module = await viewerModule;
+          const effects = item.subsystemParts
+            ? await module.installSubsystemParts(viewer,item,data.nativePreview ? await nativeSettings : null)
+            : await module.installShipEffects(viewer, item.effects, 'cruise');
           if (activeViewer !== viewer) {
             effects.dispose();
             return;
@@ -1197,7 +1239,16 @@ async function loadModel(item, profile = null) {
           playHullAnimation(viewer);
         });
         if (isCurrent()) setModelLoadStage(5);
-        if (savedView) await (await viewerModule).restoreView(viewer, savedView);
+        if (savedView) newViewTarget = await (await viewerModule).restoreView(viewer, savedView, {recenter:true});
+        else if (viewerTransition.view) {
+          // Different preview kinds keep their own framing, but still move the
+          // target from the preceding view instead of snapping to a new center.
+          newViewTarget = viewer.getCameraTarget();
+          const target = viewerTransition.view.target;
+          viewer.cameraTarget = `${target.x}m ${target.y}m ${target.z}m`;
+          await viewer.updateComplete;
+          viewer.jumpCameraToGoal();
+        }
         composer.queueRender();
         await (await viewerModule).waitForFrame(viewer);
         if (activeViewer !== viewer || !isCurrent()) return;
@@ -1207,11 +1258,14 @@ async function loadModel(item, profile = null) {
         return;
       }
       clearTimeout(modelTimer);
+      const priorTarget = viewerTransition.view?.target;
       viewerTransition.finish(request);
+      if (newViewTarget && priorTarget && ['x','y','z'].some(axis => Math.abs(newViewTarget[axis]-priorTarget[axis]) > 1e-6)) recenterView(viewer, newViewTarget);
       finishModelLoading();
       $('viewer-error').hidden = true;
       if (activeViewer === viewer) {
         viewer.readyItem = item;
+        if (item.subsystemParts) viewer.dataset.subsystemSelection = item.subsystemSelection;
         if (item.subsystemParts) {
           viewer.disposeSubsystemLabels = viewerAPI.installSubsystemLabels(viewer, () => item.subsystemParts.map((part, i) => ({
             title:t('subsystem' + subsystemSlots[i]), name:subsystemOptionName(localizedName(part.name)),

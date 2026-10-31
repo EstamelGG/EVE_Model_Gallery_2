@@ -108,6 +108,7 @@ const messages = {
   subsystemDefault: ['默认外形', 'Default appearance'],
   subsystemReady: ['切换后更新外形 · 可用搭配 {ready} / {total}', 'Changes update the hull · {ready} / {total} configurations ready'],
   subsystemUnavailable: ['子系统部件暂不可用，当前显示默认外形。', 'Subsystem parts are unavailable. Showing the default appearance.'],
+  subsystemUpdateFailed: ['组件更新失败，已保留原搭配，请重试。', 'Component update failed. The previous configuration is preserved; please retry.'],
   subsystemReset: ['恢复默认搭配', 'Reset configuration'],
   hullAppearance: ['船体外观', 'Hull appearance'],
   advancedMaterialSettings: ['高级调节', 'Advanced adjustments'],

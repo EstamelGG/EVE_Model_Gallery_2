@@ -22,7 +22,8 @@ export function assembleGeometry(parts) {
     extras: { ccpdec: { staticHull: true, bonePalette: [] } },
   };
   for (const key of arrays) out[key] = [];
-  for (const [slot, part] of parts.entries()) {
+  for (const [index, part] of parts.entries()) {
+    const slot = part.slot ?? index;
     const d = clone(part.document),
       off = Object.fromEntries(arrays.map((k) => [k, out[k].length]));
     const prefix = `s${slot + 1}_`,
