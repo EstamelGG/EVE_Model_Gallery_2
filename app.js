@@ -36,9 +36,9 @@ function renderPublicationDate() {
   }
   element.dateTime = date.toISOString();
   element.textContent = new Intl.DateTimeFormat(locale, {
-    timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
+    timeZone: 'UTC', year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', hour12: false,
-  }).format(date) + ' (UTC+8)';
+  }).format(date) + ' (UTC+0)';
 }
 // About stays usable even when the remote catalog cannot be loaded.
 $('open-about').addEventListener('click', () => {
@@ -290,12 +290,15 @@ function buildTree() {
     [...document.querySelectorAll('.tree-category[open]')].map((el) => Number(el.dataset.category)),
   );
   const treeScroll = $('catalog-tree').scrollTop;
-  $('catalog-count').textContent = t('categories', { count: fmt(data.categories.length) });
+  const visibleCategories = data.categories
+    .map(cat => ({ ...cat, groups: cat.groups.filter(group => group.readyCount > 0) }))
+    .filter(cat => cat.groups.length > 0);
+  $('catalog-count').textContent = t('categories', { count: fmt(visibleCategories.length) });
   const readyByGroup = new Map(data.categories.flatMap(c =>
     c.groups.filter(g => g.readyCount).map(g => [g.id, g.readyCount])));
   const total = data.categories.reduce((sum, cat) => sum + cat.count, 0);
   const ready = [...readyByGroup.values()].reduce((sum, count) => sum + count, 0);
-  $('catalog-tree').innerHTML = `<button class="group-link all-models-link" data-group="-1"><span>${esc(t('allModels'))}</span><span class="tree-count">${fmt(ready)}/${fmt(total)}</span></button>` + data.categories
+  $('catalog-tree').innerHTML = `<button class="group-link all-models-link" data-group="-1"><span>${esc(t('allModels'))}</span><span class="tree-count">${fmt(ready)}/${fmt(total)}</span></button>` + visibleCategories
     .map(
       (
         cat,
