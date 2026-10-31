@@ -118,9 +118,11 @@ svg {
 .about-muted { color: var(--muted); }
 .about-sponsor { margin: 22px 0; padding: 17px 18px; border: 1px solid #dfbc8033; border-radius: 7px; background: #dfbc8007; }
 .about-sponsor h3 { color: var(--accent); }
-.sponsor-recipient { display: flex; align-items: baseline; gap: 16px; margin: 14px 0; }
+.sponsor-recipient { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 14px 0; }
+.sponsor-recipient img { border-radius: 5px; object-fit: cover; }
+.sponsor-identity { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .sponsor-recipient span { color: var(--muted); font-size: 11px; }
-.sponsor-recipient strong { font-family: Consolas, monospace; font-size: 20px; font-weight: 500; color: var(--accent); user-select: all; }
+.sponsor-recipient strong { font-family: Consolas, monospace; font-size: 20px; font-weight: 500; color: var(--accent); user-select: all; overflow-wrap: anywhere; }
 .about-repository { color: #c3cbd2; text-underline-offset: 4px; font-size: 11px; }
 .about-repository:hover { color: var(--accent); }
 .brand-light {

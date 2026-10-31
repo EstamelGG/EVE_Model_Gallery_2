@@ -4,7 +4,7 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=progressive-v1';
+} from './i18n.mjs?v=sponsor-character-v1';
 import { viewerProfile } from './viewer-profile.mjs?v=samples32';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=dna-lighting-v6';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
@@ -40,10 +40,54 @@ function renderPublicationDate() {
     hour: '2-digit', minute: '2-digit', hour12: false,
   }).format(date) + ' (UTC+0)';
 }
+const sponsorCharacterID = 2113974546;
+let sponsorName = '', sponsorRequest = null, sponsorStatus = '';
+function renderSponsor() {
+  const name = $('sponsor-name');
+  name.removeAttribute('data-i18n');
+  name.textContent = sponsorName || (sponsorStatus === 'characterLoadFailed' ? `ID ${sponsorCharacterID}` : t('loading'));
+  $('copy-sponsor-name').disabled = !sponsorName;
+  $('sponsor-status').textContent = sponsorStatus ? t(sponsorStatus) : '';
+}
+async function loadSponsor() {
+  if (sponsorName || sponsorRequest) return;
+  sponsorStatus = '';
+  renderSponsor();
+  const portrait = $('sponsor-portrait');
+  portrait.onload = () => { portrait.hidden = false; };
+  portrait.onerror = () => { portrait.hidden = true; };
+  portrait.src = `https://images.evetech.net/characters/${sponsorCharacterID}/portrait?size=128`;
+  sponsorRequest = (async () => {
+    try {
+      const response = await fetch(`https://esi.evetech.net/latest/characters/${sponsorCharacterID}/?datasource=tranquility`, { signal: AbortSignal.timeout(15000) });
+      if (!response.ok) throw new Error(`Character request failed: ${response.status}`);
+      const character = await response.json();
+      if (typeof character.name !== 'string' || !character.name.trim()) throw new Error('Missing character name');
+      sponsorName = character.name;
+    } catch {
+      sponsorStatus = 'characterLoadFailed';
+    } finally {
+      sponsorRequest = null;
+      renderSponsor();
+    }
+  })();
+  await sponsorRequest;
+}
+$('copy-sponsor-name').addEventListener('click', async () => {
+  if (!sponsorName) return;
+  try {
+    await navigator.clipboard.writeText(sponsorName);
+    sponsorStatus = 'nameCopied';
+  } catch {
+    sponsorStatus = 'copyNameFailed';
+  }
+  renderSponsor();
+});
 // About stays usable even when the remote catalog cannot be loaded.
 $('open-about').addEventListener('click', () => {
   renderPublicationDate();
   $('about-dialog').showModal();
+  loadSponsor();
 });
 $('close-about').addEventListener('click', () => $('about-dialog').close());
 $('about-dialog').addEventListener('click', event => {
@@ -1256,6 +1300,7 @@ for (const select of document.querySelectorAll('[data-language]')) {
   select.addEventListener('change', () => {
     setLocale(select.value);
     renderPublicationDate();
+    renderSponsor();
     renderActivity();
     if (data) {
       buildTree();
