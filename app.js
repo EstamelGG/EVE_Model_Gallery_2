@@ -4,7 +4,7 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=kill-marks-v1';
+} from './i18n.mjs?v=long-axis-v1';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=lighting-quality-v1';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
@@ -26,6 +26,17 @@ const esc = (value) =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
   );
 const fmt = (value) => Number(value).toLocaleString(locale);
+const itemLongAxes = new WeakMap();
+function formatLongAxis(meters) {
+  if (!Number.isFinite(meters) || meters <= 0) return '—';
+  const rounded = Math.round(meters);
+  return rounded >= 1000 ? `${Number((rounded / 1000).toFixed(2))}KM` : `${rounded}M`;
+}
+function updateLongAxis(item, dimensions) {
+  if (!dimensions) return;
+  itemLongAxes.set(item, Math.max(dimensions.x, dimensions.y, dimensions.z));
+  if (currentItem === item) $('detail-long-axis').textContent = formatLongAxis(itemLongAxes.get(item));
+}
 let frontendPublishedAt;
 function renderPublicationDate() {
   const element = $('frontend-published');
@@ -785,6 +796,7 @@ async function loadModel(item, profile = null) {
       try {
         if (await operation) {
           if (activeViewer !== viewer || !isCurrent()) return;
+          updateLongAxis(item, viewer.sourceDimensions);
           applyRenderSettings();
           setModelLoadStage(5);
           if (savedView) await module.restoreView(viewer, savedView);
@@ -834,6 +846,9 @@ async function loadModel(item, profile = null) {
     const preload = await (await viewerModule).preloadModel(viewer, source, () => {});
     if (activeViewer !== viewer) { preload.release(); return; }
     viewer.releasePreload = preload.release;
+    // Keep source meters before the viewer normalizes the model for rendering.
+    viewer.sourceDimensions = preload.dimensions;
+    updateLongAxis(item, viewer.sourceDimensions);
     profile ||= viewerProfile(preload.dimensions);
     viewer.killCount = normalizeKillCount($('kill-count').value);
     viewer.renderSettings = renderSettings();
@@ -1017,7 +1032,7 @@ async function loadModel(item, profile = null) {
     // buffer uses fewer pixels on large meshes.
     ao.resolution.scale = budget.aoScale;
     ao.luminanceInfluence = 0.15;
-    occlusion.setAttribute('blend-mode', $('ambient-occlusion').checked ? 'default' : 'skip');
+    occlusion.setAttribute('blend-mode', 'default');
     // Offscreen HDR buffers need an explicit final tone-map pass; renderer
     // exposure alone does not affect the composited image without it.
     const colorGrade = document.createElement('color-grade-effect');
@@ -1129,6 +1144,7 @@ function renderDetail() {
   $('detail-race').innerHTML = `${raceMark(item.affiliationID)}${esc(raceName(item.affiliationID))}`;
   $('detail-id').textContent = item.id;
   $('detail-graphic').textContent = item.graphicID ?? '—';
+  $('detail-long-axis').textContent = formatLongAxis(itemLongAxes.get(item));
   $('detail-triangles').textContent = item.triangles == null ? '—' : fmt(item.triangles);
   const omissions = [];
   if (item.warnings?.some(w => w.startsWith('未显示残骸烟雾/碎屑粒子'))) omissions.push(t('missingParticles'));
@@ -1341,11 +1357,6 @@ function setupEvents() {
     if (event.target.value !== '' && !event.target.validity.badInput) applyKillCount(event.target.value);
   });
   $('kill-count-input').addEventListener('change', event => applyKillCount(event.target.value || $('kill-count').value));
-  $('ambient-occlusion').addEventListener('change', () => {
-    activeViewer
-      ?.querySelector('ssao-effect')
-      ?.setAttribute('blend-mode', $('ambient-occlusion').checked ? 'default' : 'skip');
-  });
   $('flight-mode').addEventListener('change', () => {
     activeViewer?.shipEffects?.setMode($('flight-mode').value);
     if (activeViewer?.availableAnimations.length) {
@@ -1366,8 +1377,6 @@ function setupEvents() {
   for (const key of Object.keys(renderDefaults)) $(key).addEventListener('input', applyRenderSettings);
   $('reset-render').addEventListener('click', () => {
     for (const [key, value] of Object.entries(renderDefaultsForDNA(currentItem?.dna))) $(key).value = value;
-    $('ambient-occlusion').checked = true;
-    $('ambient-occlusion').dispatchEvent(new Event('change'));
     applyRenderSettings();
     for (const role of textureRoles) $('texture-'+role).checked = true;
     $('show-effects').checked = true;

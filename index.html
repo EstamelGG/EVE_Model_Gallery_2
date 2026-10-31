@@ -13,8 +13,8 @@
     <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png?v=2" />
     <link rel="icon" type="image/svg+xml" sizes="any" href="./mark.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png?v=2" />
-    <link rel="stylesheet" href="./styles.css?v=kill-marks-v1" />
-    <script type="module" src="./app.js?v=kill-marks-v1"></script>
+    <link rel="stylesheet" href="./styles.css?v=long-axis-overlay-v1" />
+    <script type="module" src="./app.js?v=long-axis-v1"></script>
   </head>
   <body>
     <svg class="icon-defs" aria-hidden="true">
@@ -168,6 +168,10 @@
           <div class="stage-grid" aria-hidden="true"></div>
           <div id="viewer-mount"></div>
           <canvas id="viewer-snapshot" aria-hidden="true" hidden></canvas>
+          <div class="viewer-long-axis">
+            <span data-i18n="longAxis">长轴</span>
+            <span id="detail-long-axis">—</span>
+          </div>
           <div id="viewer-loading" class="viewer-loading" role="status">
             <span class="loading-ring"></span><strong data-i18n="loadingModel">正在加载模型</strong
             ><span id="loading-detail">读取本地几何与材质…</span
@@ -272,12 +276,6 @@
             ><label class="toggle-row" for="invert-wheel"
               ><span data-i18n="invertWheel">滚轮反转</span
               ><input type="checkbox" id="invert-wheel" /><span
-                class="toggle-visual"
-                aria-hidden="true"
-              ></span></label
-            ><label class="toggle-row" for="ambient-occlusion"
-              ><span data-i18n="occlusion">部件遮蔽</span
-              ><input type="checkbox" id="ambient-occlusion" checked /><span
                 class="toggle-visual"
                 aria-hidden="true"
               ></span></label
