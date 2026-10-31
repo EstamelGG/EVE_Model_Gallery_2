@@ -671,6 +671,7 @@ function disposeViewer() {
   activeViewer?.skybox?.dispose();
   clearTimeout(modelTimer);
   if (activeViewer) {
+    activeViewer.disposeFPS?.();
     activeViewer.releasePreload?.();
     activeViewer.disposeOcclusion?.();
     activeViewer.shipEffects?.dispose();
@@ -678,6 +679,7 @@ function disposeViewer() {
     activeViewer.remove();
     activeViewer = null;
   }
+  $('viewer-fps').textContent = '— FPS';
   $('viewer-mount').replaceChildren();
 }
 
@@ -707,6 +709,7 @@ async function switchAppearance(viewer, item, module, isCurrent) {
     return true;
   }
   if (!new URL(source).pathname.endsWith('.gltf')) return false;
+  void module.prefetchViewerAssets(viewer, item.effects, !!data.nativePreview).catch(() => {});
   const document = await viewer.assetSession.json(source);
   if (activeViewer !== viewer || !isCurrent()) return true;
   if (!module.canReuseHull(viewer.baseDocument || viewer.originalGltfJson, viewer.src, document, source)) return false;
@@ -782,7 +785,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=stable-light-pool-v1')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=viewer-fps-v1')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -796,6 +799,12 @@ async function loadModel(item, profile = null) {
     viewer.assetSession = viewerSession;
     viewer.previewRace = viewerSession.race;
     activeViewer = viewer;
+    void viewerAPI.prefetchViewerAssets(viewer, item.effects, !!data.nativePreview).catch(() => {});
+    if (data.nativePreview && !nativeSettings) {
+      nativeSettings = loadJSON(resourceURL(data.nativePreview), { cache: 'no-cache' })
+        .catch(error => { nativeSettings = null; throw error; });
+      nativeSettings.catch(() => {});
+    }
     // The loader's cache keys are literal strings. Preload and viewer.src
     // must use the same absolute URL or the model and its buffers load twice.
     const source = modelURL(item);
@@ -998,6 +1007,9 @@ async function loadModel(item, profile = null) {
     composer.append(occlusion, colorGrade, antialias);
     viewer.append(composer);
     $('viewer-mount').append(viewer);
+    viewer.disposeFPS = viewerAPI.watchViewerFPS(viewer, fps => {
+      if (activeViewer === viewer) $('viewer-fps').textContent = `${fps ?? '—'} FPS`;
+    });
     // Intercept inside the shadow root, including non-composed wheel events.
     // Let model-viewer retain its FOV limits, damping and fixed camera radius.
     let forwardingWheel = false;
