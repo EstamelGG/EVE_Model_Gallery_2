@@ -133,6 +133,7 @@ const messages = {
   occlusion: ['部件遮蔽', 'Ambient occlusion'],
   brightness: ['灯光亮度', 'Brightness'],
   reflection: ['反射强度', 'Reflection strength'],
+  bloom: ['灯光辉光', 'Light bloom'],
   materialSettings: ['光照与材质', 'Lighting & materials'],
   sun: ['主光', 'Key light'],
   fill: ['补光', 'Fill lights'],
@@ -227,3 +228,4 @@ export function applyTranslations() {
   }
   for (const select of document.querySelectorAll('[data-language]')) select.value = locale;
 }
+

@@ -4,9 +4,9 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=viewer-fullscreen-v4';
+} from './i18n.mjs?v=lighting-quality-v1';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
-import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=reflection-baseline-v1';
+import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=lighting-quality-v1';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
 import { hullKey, hullVariantGroups } from './hull-variants.mjs?v=affiliation-groups-v5';
 import { createAffiliationResolver } from './affiliation.mjs';
@@ -181,6 +181,9 @@ function applyRenderSettings() {
   activeViewer.renderSettings = values;
   activeViewer.setAttribute('exposure', exposureForLevel(values.exposure));
   activeViewer.setRenderSettings?.(values);
+  const bloom = activeViewer.querySelector('bloom-effect');
+  bloom?.setAttribute('strength', String(values.bloom));
+  bloom?.setAttribute('blend-mode', values.bloom > 0 ? 'default' : 'skip');
 }
 const displaySettings = () => normalizeDisplaySettings({
   effects: $('show-effects').checked,
@@ -785,7 +788,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=viewer-fps-v1')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=lighting-quality-v1')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -1004,7 +1007,16 @@ async function loadModel(item, profile = null) {
     // Keep SMAA for thin edges, with a shorter search on large meshes.
     antialias.setAttribute('quality', budget.smaa);
     antialias.effects[0].requireSeparatePass = true;
-    composer.append(occlusion, colorGrade, antialias);
+    const bloom = document.createElement('bloom-effect');
+    bloom.setAttribute('strength', String(viewer.renderSettings.bloom));
+    bloom.setAttribute('blend-mode', viewer.renderSettings.bloom > 0 ? 'default' : 'skip');
+    bloom.setAttribute('threshold', '1');
+    bloom.setAttribute('smoothing', '0.15');
+    bloom.setAttribute('radius', '0.35');
+    // Extract HDR highlights before exposure/tone mapping. A separate color
+    // pass ensures the bloom is composed in linear space exactly once.
+    colorGrade.effects[0].requireSeparatePass = true;
+    composer.append(occlusion, bloom, colorGrade, antialias);
     viewer.append(composer);
     $('viewer-mount').append(viewer);
     viewer.disposeFPS = viewerAPI.watchViewerFPS(viewer, fps => {
@@ -1432,6 +1444,7 @@ async function init() {
   }
 }
 init();
+
 
 
 
