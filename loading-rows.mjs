@@ -3,10 +3,14 @@ export function createLoadingRows(root) {
   const slots = Array.from({ length: 3 }, () => {
     const row = document.createElement('li');
     const kind = document.createElement('span'), name = document.createElement('code');
-    row.append(kind, name);
+    const ring = document.createElement('span'), progress = document.createElement('span');
+    ring.className = 'loading-ring resource-download-ring';
+    ring.setAttribute('aria-hidden', 'true');
+    progress.className = 'resource-download-percent';
+    row.append(ring, kind, name, progress);
     row.style.opacity = '0';
     root.append(row);
-    return { row, kind, name, key: '', desired: null, timer: null };
+    return { row, kind, name, ring, progress, key: '', desired: null, timer: null };
   });
   function paint(slot) {
     slot.timer = null;
@@ -14,6 +18,11 @@ export function createLoadingRows(root) {
     slot.key = item?.url || '';
     slot.kind.textContent = item?.label || '';
     slot.name.textContent = item?.name || '';
+    const percent = item?.total > 0 && Number.isFinite(item.loaded)
+      ? Math.min(100, Math.floor(item.loaded / item.total * 100)) : null;
+    slot.ring.classList.toggle('determinate', percent !== null);
+    slot.ring.style.setProperty('--download-progress', `${percent ?? 0}%`);
+    slot.progress.textContent = percent !== null ? `${percent}%` : '';
     slot.row.title = item?.url || '';
     slot.row.style.opacity = item ? '1' : '0';
     slot.row.style.transform = 'translateY(0)';

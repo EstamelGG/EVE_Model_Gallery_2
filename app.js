@@ -4,7 +4,7 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=sponsor-character-v1';
+} from './i18n.mjs?v=loading-panel-progress-v1';
 import { viewerProfile } from './viewer-profile.mjs?v=samples32';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=dna-lighting-v6';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
@@ -14,7 +14,7 @@ import { createViewerTransition } from './viewer-transition.mjs?v=progressive-v1
 import { configureResourceBase, resourceURL } from './resource-location.mjs';
 import { resourceActivity, createResourceBatch, loadJSON, trackResource } from './resource-activity.mjs?v=download-progress-v1';
 import { prepareRenderImages } from './render-images.mjs';
-import { createLoadingRows } from './loading-rows.mjs';
+import { createLoadingRows } from './loading-rows.mjs?v=loading-panel-progress-v1';
 import { normalizeDisplaySettings, textureRoles } from './display-settings.mjs?v=3';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
@@ -127,7 +127,7 @@ function renderModelLoading() {
   $('model-progress').value = modelLoadStage - 1;
   $('model-progress').setAttribute('aria-label', step);
   $('model-progress').setAttribute('aria-valuetext', step);
-  $('loading-count').textContent = t('loadingResourceCount', { completed, pending: pending.length });
+  $('loading-count').textContent = t('loadingResourceCount', { completed, total: completed + pending.length, pending: pending.length });
   loadingRows.update(pending, t);
 }
 function renderActivity() {
