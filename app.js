@@ -501,7 +501,8 @@ async function render() {
   $('main').classList.toggle('all-models', state.group === -1);
   $('card-scroll').scrollTop = 0;
   $('cards').setAttribute('aria-busy', 'true');
-  $('cards').textContent = t('loadingCatalog');
+  $('cards').style.height = '';
+  $('cards').innerHTML = `<div class="catalog-loading"><span class="loading-ring" aria-hidden="true"></span><span data-i18n="loadingCatalog">${esc(t('loadingCatalog'))}</span></div>`;
   $('empty-state').hidden = true;
   if (!groupsByID.size) {
     data.items = []; filtered = [];
@@ -1374,6 +1375,8 @@ for (const select of document.querySelectorAll('[data-language]')) {
 }
 
 function renderCatalogError() {
+  $('cards').removeAttribute('aria-busy');
+  $('cards').style.height = '';
   $('cards').innerHTML = `<div class="fatal-error">${esc(t('errorCatalog'))}</div>`;
   $('results-count').textContent = '';
 }
