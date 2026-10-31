@@ -414,6 +414,19 @@ function scheduleCardWindow() {
 
 async function render() {
   const revision = ++renderRevision;
+  const group = state.group === -1 ? null : groupsByID.get(state.group),
+    cat = group?.category;
+  for (const button of document.querySelectorAll('.group-link')) {
+    const active = Number(button.dataset.group) === state.group;
+    button.classList.toggle('active', active);
+    if (active) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  }
+  if (revealedGroup !== state.group) {
+    const details = cat && document.querySelector(`[data-category="${cat.id}"]`);
+    if (details) details.open = true;
+    revealedGroup = state.group;
+  }
   $('main').classList.toggle('all-models', state.group === -1);
   $('card-scroll').scrollTop = 0;
   $('cards').setAttribute('aria-busy', 'true');
@@ -445,8 +458,6 @@ async function render() {
     return;
   }
   $('cards').removeAttribute('aria-busy');
-  const group = state.group === -1 ? null : groupsByID.get(state.group),
-    cat = group?.category;
   const title = state.query ? t('search') : state.group === -1 ? t('allModels') : localizedName(group.name);
   $('page-title').textContent = title;
   $('breadcrumb').innerHTML =
@@ -459,17 +470,6 @@ async function render() {
   $('scope-all').classList.toggle('active', state.scope === 'all');
   $('scope-ready').setAttribute('aria-pressed', state.scope === 'ready');
   $('scope-all').setAttribute('aria-pressed', state.scope === 'all');
-  for (const button of document.querySelectorAll('.group-link')) {
-    const active = Number(button.dataset.group) === state.group;
-    button.classList.toggle('active', active);
-    if (active) button.setAttribute('aria-current', 'page');
-    else button.removeAttribute('aria-current');
-  }
-  if (revealedGroup !== state.group) {
-    const details = cat && document.querySelector(`[data-category="${cat.id}"]`);
-    if (details) details.open = true;
-    revealedGroup = state.group;
-  }
   const base = baseItems();
   const raceCounts = new Map([[0, base.length]]);
   for (const item of base) {
