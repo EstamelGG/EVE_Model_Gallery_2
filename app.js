@@ -11,7 +11,7 @@ import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v
 import { hullKey, hullVariantGroups } from './hull-variants.mjs?v=affiliation-groups-v5';
 import { createAffiliationResolver } from './affiliation.mjs';
 import { createViewerTransition } from './viewer-transition.mjs?v=progressive-v1';
-import { configureResourceBase, resourceURL } from './resource-location.mjs';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=pages-backgrounds-v1';
 import { resourceActivity, createResourceBatch, loadJSON, trackResource } from './resource-activity.mjs?v=download-progress-v1';
 import { prepareRenderImages } from './render-images.mjs?v=stable-card-window-v1';
 import { createLoadingRows } from './loading-rows.mjs?v=loading-panel-progress-v1';
@@ -830,7 +830,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=performance-controls-v1')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=pages-backgrounds-v1')).catch((error) => {
         viewerModule = null;
         throw error;
       });

@@ -21,8 +21,11 @@ function validatedBase(value) {
 export function resourceURL(value) {
   if (!value || /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(value)) return value;
   const path = value.replace(/^\.?\//, '');
+  // Published next to the app, including on project Pages under a subpath.
+  // Ignore legacy Raw configuration for this dedicated website directory.
+  if (path.startsWith('github-assets/')) return './' + path;
   const files = globalThis.__eveBackgroundFiles;
-  const background = path.startsWith('github-assets/') || !!files?.has(path.split(/[?#]/)[0]);
+  const background = !!files?.has(path.split(/[?#]/)[0]);
   const base = (background && globalThis.__eveBackgroundBase) || globalThis.__eveResourceBase;
   return base ? new URL(path, base).href : value;
 }
