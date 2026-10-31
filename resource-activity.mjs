@@ -10,7 +10,15 @@ export function createResourceActivity() {
       const token = Symbol();
       pending.set(token, { url: String(url), kind, name: resourceName(url) });
       emit();
-      return () => { if (pending.delete(token)) emit(); };
+      const finish = () => { if (pending.delete(token)) emit(); };
+      finish.progress = (loaded, total) => {
+        const item = pending.get(token);
+        if (!item) return;
+        item.loaded = Math.max(0, Number(loaded) || 0);
+        item.total = Number.isFinite(total) && total > 0 ? total : 0;
+        emit();
+      };
+      return finish;
     },
   };
 }
@@ -48,15 +56,49 @@ const key = Symbol.for('eve.resourceActivity');
 export const resourceActivity = globalThis[key] ||= createResourceActivity();
 export async function trackResource(url, operation, kind) {
   const finish = resourceActivity.begin(url, kind);
-  try { return await operation(); }
+  try { return await operation(finish.progress); }
   finally { finish(); }
 }
 
+// Fetch bodies expose decoded bytes; compressed Content-Length is not a valid
+// total for those bytes. Keep such requests indeterminate.
+export async function readResourceBody(response, progress) {
+  if (!response.body?.getReader) return response.arrayBuffer();
+  const length = Number(response.headers.get('content-length'));
+  const encoding = response.headers.get('content-encoding');
+  const total = (!encoding || encoding === 'identity') && Number.isFinite(length) && length > 0 ? length : 0;
+  const reader = response.body.getReader(), chunks = [];
+  let loaded = 0;
+  progress(0, total);
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      loaded += value.byteLength;
+      progress(loaded, total >= loaded ? total : 0);
+    }
+  } finally { reader.releaseLock(); }
+  const bytes = new Uint8Array(loaded);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  return bytes.buffer;
+}
+
+export function loadArrayBuffer(url, options, kind) {
+  return trackResource(url, async progress => {
+    const response = await fetch(url, options);
+    if (!response.ok) throw new Error(`Resource unavailable (${response.status}): ${resourceName(url)}`);
+    return readResourceBody(response, progress);
+  }, kind);
+}
+
 export function loadJSON(url, options, { optional = false } = {}) {
-  return trackResource(url, async () => {
+  return trackResource(url, async progress => {
     const response = await fetch(url, options);
     if (optional && response.status === 404) return {};
     if (!response.ok) throw new Error(`Resource unavailable (${response.status}): ${resourceName(url)}`);
-    return response.json();
+    if (!response.body?.getReader) return response.json();
+    return JSON.parse(new TextDecoder().decode(await readResourceBody(response, progress)));
   });
 }

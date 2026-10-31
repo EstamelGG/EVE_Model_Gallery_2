@@ -12,7 +12,7 @@ import { hullKey, hullVariantGroups } from './hull-variants.mjs?v=affiliation-gr
 import { createAffiliationResolver } from './affiliation.mjs';
 import { createViewerTransition } from './viewer-transition.mjs?v=progressive-v1';
 import { configureResourceBase, resourceURL } from './resource-location.mjs';
-import { resourceActivity, createResourceBatch, loadJSON, trackResource } from './resource-activity.mjs?v=model-loading-v2';
+import { resourceActivity, createResourceBatch, loadJSON, trackResource } from './resource-activity.mjs?v=download-progress-v1';
 import { prepareRenderImages } from './render-images.mjs';
 import { createLoadingRows } from './loading-rows.mjs';
 import { normalizeDisplaySettings, textureRoles } from './display-settings.mjs?v=3';
@@ -132,9 +132,13 @@ function renderModelLoading() {
 }
 function renderActivity() {
   const pending = resourceActivity.snapshot(), current = pending.at(-1);
-  const label = current ? `${t(current.kind)} · ${current.name}${pending.length > 1 ? ` (+${pending.length - 1})` : ''}` : '';
+  const percent = current?.total > 0 ? Math.min(100, Math.floor(current.loaded / current.total * 100)) : null;
+  const label = current ? `${t(current.kind)} · ${current.name}${percent !== null ? ` · ${percent}%` : ''}${pending.length > 1 ? ` (+${pending.length - 1})` : ''}` : '';
   for (const status of document.querySelectorAll('[data-resource-status]')) {
     status.hidden = !current;
+    const ring = status.querySelector('.loading-ring');
+    ring.classList.toggle('determinate', percent !== null);
+    ring.style.setProperty('--download-progress', `${percent ?? 0}%`);
     status.querySelector('.resource-status-text').textContent = label;
     status.title = pending.map(item => `${t(item.kind)} · ${item.name}`).join('\n');
   }
@@ -754,7 +758,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=progressive-v1')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=download-progress-v1')).catch((error) => {
         viewerModule = null;
         throw error;
       });

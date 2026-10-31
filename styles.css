@@ -717,6 +717,7 @@ h1 {
 .resource-status[hidden] { display: none; }
 .resource-status-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .resource-status .loading-ring { width: 11px; height: 11px; flex: 0 0 11px; border-width: 1px; }
+.resource-status .loading-ring.determinate { animation: none; border: 0; border-radius: 50%; background: conic-gradient(var(--accent) var(--download-progress), #ffffff20 0); mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0); }
 .dialog-resource-footer { height: 27px; padding: 5px 16px; border-top: 1px solid var(--line); }
 .render-preview { position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; }
 .render-preview img { transition: opacity .18s ease; }
