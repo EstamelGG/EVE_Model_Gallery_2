@@ -4,7 +4,7 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=lighting-quality-v1';
+} from './i18n.mjs?v=kill-marks-v1';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=lighting-quality-v1';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
@@ -15,6 +15,7 @@ import { configureResourceBase, resourceURL } from './resource-location.mjs';
 import { resourceActivity, createResourceBatch, loadJSON, trackResource } from './resource-activity.mjs?v=download-progress-v1';
 import { prepareRenderImages } from './render-images.mjs?v=stable-card-window-v1';
 import { createLoadingRows } from './loading-rows.mjs?v=loading-panel-progress-v1';
+import { normalizeKillCount } from './kill-count.mjs';
 import { normalizeDisplaySettings, textureRoles } from './display-settings.mjs?v=3';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
@@ -196,9 +197,26 @@ function syncTextureControls() {
   $('show-textures').checked = controls.every(input => input.checked);
   $('show-textures').indeterminate = controls.some(input => input.checked) && !controls.every(input => input.checked);
 }
+function syncKillMarkControls() {
+  const available = (activeViewer?.killMarkCount || 0) > 0;
+  $('kill-count').disabled = !available;
+  $('kill-count-input').disabled = !available;
+  $('kill-count-unavailable').hidden = available;
+}
+function applyKillCount(value) {
+  const count = normalizeKillCount(value);
+  $('kill-count').value = count;
+  $('kill-count-input').value = count;
+  if (activeViewer) {
+    activeViewer.killCount = count;
+    activeViewer.setKillCount?.(count);
+  }
+  try { localStorage.setItem('viewer.killCount', String(count)); } catch {}
+}
 function applyDisplaySettings() {
   const values = displaySettings();
   syncTextureControls();
+  syncKillMarkControls();
   if (!activeViewer) return;
   activeViewer.displaySettings = values;
   activeViewer.dataset.displaySettings = JSON.stringify(values);
@@ -683,6 +701,7 @@ function disposeViewer() {
     activeViewer.remove();
     activeViewer = null;
   }
+  syncKillMarkControls();
   $('viewer-fps').textContent = '— FPS';
   $('viewer-mount').replaceChildren();
 }
@@ -789,7 +808,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=emission-bloom-v1')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=kill-marks-v1')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -816,6 +835,7 @@ async function loadModel(item, profile = null) {
     if (activeViewer !== viewer) { preload.release(); return; }
     viewer.releasePreload = preload.release;
     profile ||= viewerProfile(preload.dimensions);
+    viewer.killCount = normalizeKillCount($('kill-count').value);
     viewer.renderSettings = renderSettings();
     viewer.displaySettings = displaySettings();
     viewer.setAttribute('alt', t('modelAlt', { name: localizedName(item.name) }));
@@ -1032,7 +1052,10 @@ async function loadModel(item, profile = null) {
       event.preventDefault();
       event.stopImmediatePropagation();
       forwardingWheel = true;
-      try { viewer.zoom(event.deltaY * (event.deltaMode === 1 ? 18 : 1) / 30); }
+      try {
+        const direction = $('invert-wheel').checked ? -1 : 1;
+        viewer.zoom(direction * event.deltaY * (event.deltaMode === 1 ? 18 : 1) / 30);
+      }
       finally { forwardingWheel = false; }
     }, { capture: true, passive: false });
     modelTimer = setTimeout(() => {
@@ -1308,6 +1331,16 @@ function setupEvents() {
   $('auto-rotate').addEventListener('change', () => {
     if (activeViewer) activeViewer.toggleAttribute('auto-rotate', $('auto-rotate').checked);
   });
+  try { $('invert-wheel').checked = localStorage.getItem('viewer.invertWheel') === 'true'; } catch {}
+  $('invert-wheel').addEventListener('change', () => {
+    try { localStorage.setItem('viewer.invertWheel', String($('invert-wheel').checked)); } catch {}
+  });
+  try { applyKillCount(localStorage.getItem('viewer.killCount') || 0); } catch { applyKillCount(0); }
+  $('kill-count').addEventListener('input', event => applyKillCount(event.target.value));
+  $('kill-count-input').addEventListener('input', event => {
+    if (event.target.value !== '' && !event.target.validity.badInput) applyKillCount(event.target.value);
+  });
+  $('kill-count-input').addEventListener('change', event => applyKillCount(event.target.value || $('kill-count').value));
   $('ambient-occlusion').addEventListener('change', () => {
     activeViewer
       ?.querySelector('ssao-effect')
