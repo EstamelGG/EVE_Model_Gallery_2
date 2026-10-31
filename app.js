@@ -6,7 +6,7 @@ import {
   applyTranslations,
 } from './i18n.mjs?v=viewer-fullscreen-v4';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
-import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=dna-lighting-v6';
+import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=reflection-baseline-v1';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
 import { hullKey, hullVariantGroups } from './hull-variants.mjs?v=affiliation-groups-v5';
 import { createAffiliationResolver } from './affiliation.mjs';
