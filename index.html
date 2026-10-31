@@ -10,8 +10,8 @@
     />
     <title>EVE Model Viewer 2.0</title>
     <link rel="icon" type="image/svg+xml" href="./mark.svg" />
-    <link rel="stylesheet" href="./styles.css?v=affiliation-groups-v5" />
-    <script type="module" src="./app.js?v=r2-resources-v1"></script>
+    <link rel="stylesheet" href="./styles.css?v=model-loading-v2" />
+    <script type="module" src="./app.js?v=model-loading-v2"></script>
   </head>
   <body>
     <svg class="icon-defs" aria-hidden="true">
@@ -123,7 +123,9 @@
           </div>
         </div>
         <footer class="page-footer">
-          <span>EVE Model Viewer <span class="app-version">2.0</span></span><span data-i18n="credit">素材 © CCP Games · 非官方项目</span>
+          <span>EVE Model Viewer <span class="app-version">2.0</span></span>
+          <span class="resource-status" data-resource-status role="status" aria-live="polite" hidden><span class="loading-ring" aria-hidden="true"></span><span class="resource-status-text"></span></span>
+          <span data-i18n="credit">素材 © CCP Games · 非官方项目</span>
         </footer>
       </main>
     </div>
@@ -148,7 +150,9 @@
           <div id="viewer-loading" class="viewer-loading" role="status">
             <span class="loading-ring"></span><strong data-i18n="loadingModel">正在加载模型</strong
             ><span id="loading-detail">读取本地几何与材质…</span
-            ><progress id="model-progress" max="1" value="0"></progress>
+            ><progress id="model-progress" max="5" value="0"></progress>
+            <ul id="loading-resources" class="loading-resources" hidden></ul>
+            <span id="loading-count"></span>
           </div>
           <div id="viewer-error" class="viewer-error" hidden>
             <strong data-i18n="modelFailed">模型暂时无法显示</strong>
@@ -320,6 +324,7 @@
           </div>
         </aside>
       </div>
+      <div class="dialog-resource-footer"><span class="resource-status" data-resource-status role="status" aria-live="polite" hidden><span class="loading-ring" aria-hidden="true"></span><span class="resource-status-text"></span></span></div>
     </dialog>
   </body>
 </html>

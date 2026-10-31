@@ -4,7 +4,7 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=affiliation-groups-v5';
+} from './i18n.mjs?v=model-loading-v2';
 import { viewerProfile } from './viewer-profile.mjs?v=samples32';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=dna-lighting-v6';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
@@ -12,6 +12,8 @@ import { hullKey, hullVariantGroups } from './hull-variants.mjs?v=affiliation-gr
 import { createAffiliationResolver } from './affiliation.mjs';
 import { createViewerTransition } from './viewer-transition.mjs';
 import { configureResourceBase, resourceURL } from './resource-location.mjs';
+import { resourceActivity, createResourceBatch, loadJSON, trackResource } from './resource-activity.mjs?v=model-loading-v2';
+import { prepareRenderImages } from './render-images.mjs';
 import { normalizeDisplaySettings, textureRoles } from './display-settings.mjs?v=3';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
@@ -22,6 +24,60 @@ const esc = (value) =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
   );
 const fmt = (value) => Number(value).toLocaleString(locale);
+let activityTimer;
+let modelLoadBatch, modelLoadStage = 1;
+const modelLoadSteps = ['loadingCatalog', 'loadingAssets', 'loadingMaterials', 'loadingEnvironment', 'preparing'];
+function beginModelLoading() {
+  modelLoadBatch?.stop();
+  modelLoadBatch = createResourceBatch();
+  $('viewer-loading').hidden = false;
+  setModelLoadStage(1);
+}
+function finishModelLoading() {
+  modelLoadBatch?.stop();
+  modelLoadBatch = null;
+  $('viewer-loading').hidden = true;
+}
+function setModelLoadStage(stage) {
+  modelLoadStage = stage;
+  renderModelLoading();
+}
+function renderModelLoading() {
+  if (!modelLoadBatch) return;
+  const { pending, completed } = modelLoadBatch.snapshot();
+  const step = t('loadingStep', { step: modelLoadStage, total: modelLoadSteps.length, name: t(modelLoadSteps[modelLoadStage - 1]) });
+  $('loading-detail').textContent = step;
+  // This bar measures completed steps, not a guessed download percentage.
+  $('model-progress').max = modelLoadSteps.length;
+  $('model-progress').value = modelLoadStage - 1;
+  $('model-progress').setAttribute('aria-label', step);
+  $('model-progress').setAttribute('aria-valuetext', step);
+  $('loading-count').textContent = t('loadingResourceCount', { completed, pending: pending.length });
+  $('loading-resources').innerHTML = pending.slice(-3).map(item =>
+    `<li title="${esc(item.url)}"><span>${esc(t(item.kind))}</span><code>${esc(item.name)}</code></li>`).join('');
+  $('loading-resources').hidden = !pending.length;
+}
+function renderActivity() {
+  const pending = resourceActivity.snapshot(), current = pending.at(-1);
+  const label = current ? `${t(current.kind)} · ${current.name}${pending.length > 1 ? ` (+${pending.length - 1})` : ''}` : '';
+  for (const status of document.querySelectorAll('[data-resource-status]')) {
+    status.hidden = !current;
+    status.querySelector('.resource-status-text').textContent = label;
+    status.title = pending.map(item => `${t(item.kind)} · ${item.name}`).join('\n');
+  }
+  renderModelLoading();
+}
+resourceActivity.subscribe(() => {
+  // Throttle instead of debouncing: a busy stream must not starve the display.
+  if (!activityTimer) activityTimer = setTimeout(() => { activityTimer = null; renderActivity(); }, 80);
+});
+function renderPreview(item, badge = '') {
+  return `<div class="render-preview" data-image-state="loading" aria-busy="true">${badge}
+    <img data-render src="${renderURL(item)}" data-icon="https://images.evetech.net/types/${item.id}/icon?size=64" alt="${esc(t('poster', { name: localizedName(item.name) }))}" loading="lazy" decoding="async" width="512" height="512">
+    <span class="loading-ring render-spinner" aria-hidden="true"></span>
+    <span class="render-image-error" role="img" aria-label="${esc(t('renderUnavailable'))}">${icon('ship', 'placeholder-cube')}</span>
+  </div>`;
+}
 // Group 0 exists in the native catalogue; -1 is the virtual all-models entry.
 const state = { group: -1, race: 0, scope: 'ready', query: '', sort: 'id', item: 0 };
 const defaultSort = (group) => group === -1 ? 'id' : 'race';
@@ -106,7 +162,7 @@ function renderVariants() {
     const cards = group.items.map(item => {
     const selected = item.id === currentItem?.id;
     return `<button type="button" class="hull-variant-card" data-variant="${item.id}"${!item.available ? ' disabled' : ''} aria-pressed="${selected}" title="${esc(localizedName(item.name))}">
-      <img src="${renderURL(item)}" alt="" loading="lazy" decoding="async" width="112" height="112">
+      ${renderPreview(item)}
       <span class="hull-variant-name">${esc(localizedName(item.name))}</span>
       <span class="hull-variant-id">ID ${item.id}</span>
       <span class="hull-variant-state">${!item.available ? t('unavailable') : selected ? t('hullVariantCurrent') : ''}</span>
@@ -114,6 +170,7 @@ function renderVariants() {
     }).join('');
     return `<div class="hull-variant-group${group.items.length > 1 ? ' shared' : ''}" role="group" aria-label="${esc(t('hullVariantShared'))}">${cards}</div>`;
   }).join('');
+  prepareRenderImages(list);
   list.scrollLeft = scroll;
   if (focusedID) list.querySelector(`[data-variant="${focusedID}"]`)?.focus({ preventScroll: true });
 }
@@ -155,7 +212,7 @@ function cardHTML(item, style = '') {
   const badge = tier ? `<span class="tech-corner" data-tier="${tier}" title="${tier === 'faction' ? 'Faction' : 'T' + tier}" aria-label="${tier === 'faction' ? 'Faction' : 'T' + tier}"><svg viewBox="0 0 48 48" aria-hidden="true"><path class="tech-fold" d="M0 0H48L0 48Z"/>${tier === 'faction' ? '<path class="tech-symbol" d="M15 8L22 15L15 22L8 15Z" fill="none" stroke="white" stroke-width="2"/>' : tier === '2' ? '<path class="tech-symbol" d="M11 8H14V22H11ZM17 8H20V22H17Z"/>' : '<path class="tech-symbol" d="M8 9H11V23H8ZM14 9H17V23H14ZM20 9H23V23H20Z"/>'}</svg></span>` : '';
   const tag = item.available ? 'button' : 'article';
   return `<${tag} class="ship-card ${item.available ? '' : 'unavailable'}"${style ? ` style="${style}"` : ''}${item.available ? ` data-item="${item.id}" aria-label="${esc(t('viewModel', { name: localizedName(item.name) }))}"` : ''}>
-      <div class="card-visual">${badge}<img src="${renderURL(item)}" data-icon="https://images.evetech.net/types/${item.id}/icon?size=64" alt="${esc(t('poster', { name: localizedName(item.name) }))}" loading="lazy" decoding="async" width="512" height="512"></div>
+      <div class="card-visual">${renderPreview(item, badge)}</div>
       <div class="card-info"><div class="card-title-row"><span class="card-title">${esc(localizedName(item.name))}</span>${item.available ? '<span class="card-arrow" aria-hidden="true">↗</span>' : `<span class="unavailable-label">${t('unavailable')}</span>`}</div><div class="card-bottom"><span class="card-race">${raceMark(item.affiliationID)}${esc(raceName(item.affiliationID))}</span><span class="card-id">ID ${item.id}</span></div></div>
     </${tag}>`;
 }
@@ -312,6 +369,7 @@ function renderCardWindow() {
     );
   }
   $('cards').innerHTML = parts.join('');
+  prepareRenderImages($('cards'));
 }
 
 function scheduleCardWindow() {
@@ -523,7 +581,7 @@ function modelError(key) {
   if (activeViewer) activeViewer.exportReady = false;
   syncExportButtons();
   clearTimeout(modelTimer);
-  $('viewer-loading').hidden = true;
+  finishModelLoading();
   $('viewer-error').hidden = false;
   $('viewer-error-text').dataset.i18n = key;
   $('viewer-error-text').textContent = t(key);
@@ -548,6 +606,7 @@ async function switchAppearance(viewer, item, module, isCurrent) {
   const document = await viewer.assetSession.json(source);
   if (activeViewer !== viewer || !isCurrent()) return true;
   if (!module.canReuseHull(viewer.baseDocument || viewer.originalGltfJson, viewer.src, document, source)) return false;
+  setModelLoadStage(3);
   viewer.exportReady = false;
   syncExportButtons();
   // Keep the scene, camera, animation, skybox and lighting controls mounted.
@@ -558,6 +617,7 @@ async function switchAppearance(viewer, item, module, isCurrent) {
   viewer.disposeNative = await module.installNativePreview(viewer, await nativeSettings,
     source, item.nativeTypeID || item.id, item.dna);
   if (activeViewer !== viewer) { viewer.disposeNative?.(); return true; }
+  if (isCurrent()) setModelLoadStage(4);
   viewer.shipEffects = item.effects ? await module.installShipEffects(viewer, item.effects, $('flight-mode').value) : null;
   if (activeViewer !== viewer) { viewer.shipEffects?.dispose(); return true; }
   viewer.readyItem = item;
@@ -575,6 +635,8 @@ async function switchAppearance(viewer, item, module, isCurrent) {
 }
 
 async function loadModel(item, profile = null) {
+  if (!modelLoadBatch) beginModelLoading();
+  setModelLoadStage(2);
   const request = viewerTransition.begin(activeViewer, viewerAPI);
   // Capture the old frame before changing light/material defaults. Use the
   // selected model's DNA, not the session's fixed background/reflection race.
@@ -594,10 +656,11 @@ async function loadModel(item, profile = null) {
         if (await operation) {
           if (activeViewer !== viewer || !isCurrent()) return;
           applyRenderSettings();
+          setModelLoadStage(5);
           if (savedView) await module.restoreView(viewer, savedView);
           await module.waitForFrame(viewer);
           if (activeViewer === viewer && isCurrent() && viewerTransition.finish(request)) {
-            $('viewer-loading').hidden = true;
+            finishModelLoading();
             viewer.exportReady = true;
             syncExportButtons();
           }
@@ -610,13 +673,12 @@ async function loadModel(item, profile = null) {
   }
   disposeViewer();
   syncTextureControls();
+  setModelLoadStage(2);
   $('viewer-error').hidden = true;
   $('viewer-loading').hidden = false;
-  $('model-progress').value = 0;
-  $('loading-detail').textContent = t('loadingAssets');
   try {
     if (!viewerModule)
-      viewerModule = import('./vendor/model-viewer-ao.min.js?v=r2-resources-v1').catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=resource-status-v1')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -633,9 +695,7 @@ async function loadModel(item, profile = null) {
     // The loader's cache keys are literal strings. Preload and viewer.src
     // must use the same absolute URL or the model and its buffers load twice.
     const source = modelURL(item);
-    const preload = await (await viewerModule).preloadModel(viewer, source, value => {
-      if (activeViewer === viewer) $('model-progress').value = value * 0.8;
-    });
+    const preload = await (await viewerModule).preloadModel(viewer, source, () => {});
     if (activeViewer !== viewer) { preload.release(); return; }
     viewer.releasePreload = preload.release;
     profile ||= viewerProfile(preload.dimensions);
@@ -657,15 +717,9 @@ async function loadModel(item, profile = null) {
     viewer.setAttribute('rotation-per-second', '6deg');
     viewer.setAttribute('auto-rotate-delay', '20000');
     if ($('auto-rotate').checked) viewer.setAttribute('auto-rotate', '');
-    viewer.addEventListener('progress', (event) => {
-      if (activeViewer !== viewer) return;
-      const value = event.detail.totalProgress;
-      $('model-progress').value = value;
-      $('loading-detail').textContent =
-        value >= 0.98 ? t('preparing') : t('progress', { count: Math.round(value * 100) });
-    });
     viewer.addEventListener('load', async () => {
       if (activeViewer !== viewer) return;
+      if (isCurrent()) setModelLoadStage(3);
       try {
         viewer.releasePreload?.();
         viewer.jumpCameraToGoal();
@@ -720,11 +774,7 @@ async function loadModel(item, profile = null) {
         viewer.dataset.renderProfile = JSON.stringify(profile);
         if (data.nativePreview) {
           if (!nativeSettings)
-            nativeSettings = fetch(resourceURL(data.nativePreview), { cache: 'no-cache' })
-              .then((r) => {
-                if (!r.ok) throw new Error('Missing native preview');
-                return r.json();
-              })
+            nativeSettings = loadJSON(resourceURL(data.nativePreview), { cache: 'no-cache' })
               .catch((error) => {
                 nativeSettings = null;
                 throw error;
@@ -744,6 +794,7 @@ async function loadModel(item, profile = null) {
           viewer.disposeNative = dispose;
           applyDisplaySettings();
         }
+        if (isCurrent()) setModelLoadStage(4);
         await installSkybox(viewer, item, await viewerModule);
         if (item.effects) {
           const effects = await (
@@ -778,6 +829,7 @@ async function loadModel(item, profile = null) {
           viewer.animationName = normal;
           if ($('flight-mode').value !== 'paused') playHullAnimation(viewer);
         }
+        if (isCurrent()) setModelLoadStage(5);
         if (savedView) await (await viewerModule).restoreView(viewer, savedView);
         composer.queueRender();
         await (await viewerModule).waitForFrame(viewer);
@@ -789,7 +841,7 @@ async function loadModel(item, profile = null) {
       }
       clearTimeout(modelTimer);
       viewerTransition.finish(request);
-      $('viewer-loading').hidden = true;
+      finishModelLoading();
       $('viewer-error').hidden = true;
       if (activeViewer === viewer) {
         viewer.readyItem = item;
@@ -858,10 +910,30 @@ function detailList() {
 
 async function openItem(id, route = true) {
   const revision = ++detailRevision;
+  beginModelLoading();
+  // Give feedback in the click's own task, before waiting for the metadata shard.
+  const preview = catalogLoader.itemsByID.get(id) || data.items.find(item => item.id === id);
+  if (!$('model-dialog').open) lastFocus = document.activeElement;
+  currentItem = { ...preview, id, detailPending: true };
+  state.item = id;
+  if (route) saveRoute();
+  renderDetail();
+  $('viewer-error').hidden = true;
+  $('viewer-loading').hidden = false;
+  if (activeViewer) activeViewer.exportReady = false;
+  syncExportButtons();
+  if (!$('model-dialog').open) {
+    $('model-dialog').showModal();
+    document.body.style.overflow = 'hidden';
+  }
   let item;
   try { item = await catalogLoader.item(id, state.group); }
-  catch (error) { renderCatalogError(); console.error(error); return; }
-  if (revision !== detailRevision) return;
+  catch (error) {
+    if (revision === detailRevision && $('model-dialog').open) modelError('errorItemData');
+    console.error(error);
+    return;
+  }
+  if (revision !== detailRevision || !$('model-dialog').open) return;
   if (!item?.available) { closeDetail(false); return; }
   if (!state.query && state.group !== -1 && state.group !== item.groupID) {
     state.group = item.groupID;
@@ -869,15 +941,10 @@ async function openItem(id, route = true) {
     await render();
     if (revision !== detailRevision) return;
   }
-  if (!$('model-dialog').open) lastFocus = document.activeElement;
   currentItem = item;
   state.item = id;
   if (route) saveRoute();
   renderDetail();
-  if (!$('model-dialog').open) {
-    $('model-dialog').showModal();
-    document.body.style.overflow = 'hidden';
-  }
   loadModel(item);
 }
 
@@ -885,7 +952,7 @@ function renderDetail() {
   if (!currentItem) return;
   renderVariants();
   const item = currentItem;
-  $('detail-title').textContent = localizedName(item.name);
+  $('detail-title').textContent = localizedName(item.name) || `ID ${item.id}`;
   $('detail-dna').textContent = item.dna ? `DNA: ${item.dna}` : '';
   $('detail-dna').title = item.dna || '';
   $('detail-dna').hidden = !item.dna;
@@ -895,8 +962,8 @@ function renderDetail() {
   $('detail-tech').textContent = factionVariant ? (locale.startsWith('zh') ? '势力' : 'Faction') : `T${item.techLevel}`;
   $('detail-race').innerHTML = `${raceMark(item.affiliationID)}${esc(raceName(item.affiliationID))}`;
   $('detail-id').textContent = item.id;
-  $('detail-graphic').textContent = item.graphicID;
-  $('detail-triangles').textContent = fmt(item.triangles);
+  $('detail-graphic').textContent = item.graphicID ?? '—';
+  $('detail-triangles').textContent = item.triangles == null ? '—' : fmt(item.triangles);
   const omissions = [];
   if (item.warnings?.some(w => w.startsWith('未显示残骸烟雾/碎屑粒子'))) omissions.push(t('missingParticles'));
   if (item.warnings?.some(w => w.startsWith('缺少发光贴图'))) omissions.push(t('missingGlow'));
@@ -904,7 +971,7 @@ function renderDetail() {
   $('detail-warnings').textContent = omissions.join(' ');
   $('detail-warnings').hidden = !omissions.length;
   $('detail-size').textContent =
-    `${((item.modelBytes + (item.effectsBytes || 0)) / 1024 / 1024).toFixed(1)} MB`;
+    item.modelBytes == null ? '—' : `${((item.modelBytes + (item.effectsBytes || 0)) / 1024 / 1024).toFixed(1)} MB`;
   const list = detailList(),
     index = list.findIndex((i) => i.id === item.id);
   $('detail-position').textContent = `${index + 1} / ${list.length}`;
@@ -917,6 +984,7 @@ function renderDetail() {
 
 function closeDetail(route = true) {
   ++detailRevision;
+  finishModelLoading();
   if (!$('model-dialog').open) return;
   suppressedClose = true;
   $('model-dialog').close();
@@ -975,27 +1043,6 @@ function setupEvents() {
       renderCardWindow();
     }
   }).observe(cardProbe);
-  $('cards').addEventListener(
-    'error',
-    (event) => {
-      if (event.target.tagName === 'IMG') {
-        const image = event.target;
-        if (image.dataset.icon) {
-          const fallback = image.dataset.icon;
-          delete image.dataset.icon;
-          image.classList.add('official-icon');
-          image.src = fallback;
-          return;
-        }
-        event.target.hidden = true;
-        event.target.parentElement.insertAdjacentHTML(
-          'beforeend',
-          icon('ship', 'placeholder-cube'),
-        );
-      }
-    },
-    true,
-  );
   $('race-filters').addEventListener('click', (event) => {
     const button = event.target.closest('[data-race]');
     if (button) {
@@ -1043,6 +1090,8 @@ function setupEvents() {
       suppressedClose = false;
       return;
     }
+    ++detailRevision;
+    finishModelLoading();
     viewerTransition.reset();
     disposeViewer();
     viewerSession?.dispose();
@@ -1070,12 +1119,10 @@ function setupEvents() {
     const card = event.target.closest('[data-variant]');
     if (card && !card.disabled && Number(card.dataset.variant) !== currentItem?.id) openItem(Number(card.dataset.variant));
   });
-  $('hull-variants-list').addEventListener('error', event => {
-    if (event.target.tagName === 'IMG') event.target.classList.add('image-unavailable');
-  }, true);
   $('next-ship').addEventListener('click', () => moveShip(1));
   $('retry-model').addEventListener('click', () => {
-    if (currentItem) loadModel(currentItem);
+    if (currentItem?.detailPending) openItem(currentItem.id, false);
+    else if (currentItem) loadModel(currentItem);
   });
   $('auto-rotate').checked = false;
   $('auto-rotate').addEventListener('change', () => {
@@ -1165,6 +1212,7 @@ applyTranslations();
 for (const select of document.querySelectorAll('[data-language]')) {
   select.addEventListener('change', () => {
     setLocale(select.value);
+    renderActivity();
     if (data) {
       buildTree();
       render();
@@ -1180,16 +1228,10 @@ function renderCatalogError() {
 
 async function init() {
   try {
-    const configResponse = await fetch('./site-config.json', { cache: 'no-cache' });
-    if (!configResponse.ok && configResponse.status !== 404) throw new Error('Cannot read site config');
-    const config = configResponse.ok ? await configResponse.json() : {};
+    const config = await loadJSON('./site-config.json', { cache: 'no-cache' }, { optional: true });
     configureResourceBase(config.resourceBaseURL);
-    const response = await fetch(resourceURL('./data/catalog-index.json'), { cache: 'no-cache' });
-    if (!response.ok) throw new Error(`目录读取失败 (${response.status})`);
-    data = await response.json();
-    const identityResponse = await fetch('./icons/identities.json?v=meta-groups-v1');
-    if (!identityResponse.ok) throw new Error('Missing identity catalog');
-    const identities = await identityResponse.json();
+    data = await loadJSON(resourceURL('./data/catalog-index.json'), { cache: 'no-cache' });
+    const identities = await loadJSON('./icons/identities.json?v=meta-groups-v1');
     const resolveAffiliation = createAffiliationResolver(identities);
     const identityByID = new Map([...identities.races, ...identities.factions].map(r => [r.id, r]));
     const ordered = [...data.races.map(r => r.id), ...identities.factions.map(r => r.id)];
@@ -1197,11 +1239,7 @@ async function init() {
       const r = identityByID.get(id);
       return {id, ...r.name, icon:r.icon};
     });
-    catalogLoader = createCatalogLoader(data, async url => {
-      const response = await fetch(resourceURL(url));
-      if (!response.ok) throw new Error(`目录分片读取失败 (${response.status})`);
-      return response.json();
-    }, item => {
+    catalogLoader = createCatalogLoader(data, url => loadJSON(resourceURL(url)), item => {
       for (const key of ['model', 'effects', 'thumbnail', 'render', 'image']) {
         if (typeof item[key] === 'string') item[key] = resourceURL(item[key]);
       }
