@@ -4,11 +4,11 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=subsystems-v1';
+} from './i18n.mjs?v=subsystem-assembly-v1';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=lighting-quality-v1';
-import { createCatalogLoader } from './catalog-loader.mjs?v=subsystems-v1';
-import { hullKey, hullVariantGroups } from './hull-variants.mjs?v=subsystems-v1';
+import { createCatalogLoader } from './catalog-loader.mjs?v=subsystem-assembly-v1';
+import { hullKey, hullVariantGroups } from './hull-variants.mjs?v=subsystem-assembly-v1';
 import { createAffiliationResolver } from './affiliation.mjs';
 import { createViewerTransition } from './viewer-transition.mjs?v=progressive-v1';
 import { configureResourceBase, resourceURL } from './resource-location.mjs?v=pages-backgrounds-v1';
@@ -16,7 +16,7 @@ import { resourceActivity, createResourceBatch, loadJSON, trackResource } from '
 import { prepareRenderImages } from './render-images.mjs?v=render-fallback-v1';
 import { createLoadingRows } from './loading-rows.mjs?v=loading-panel-progress-v1';
 import { normalizeKillCount } from './kill-count.mjs';
-import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName } from './subsystems.mjs';
+import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName, subsystemGroups, subsystemSlots, isStrategicCruiser, withSubsystems } from './subsystems.mjs?v=assembly-v1';
 import { resetView, cancelViewReset } from './view-reset.mjs';
 import { normalizeDisplaySettings, textureRoles, performanceControls, applyPostprocessingSettings } from './display-settings.mjs?v=performance-controls-v1';
 const $ = (id) => document.getElementById(id);
@@ -306,9 +306,11 @@ function renderSubsystems() {
     ${slot.options.map(option => `<option value="${option.variant}"${String(option.variant) === config.code[index] ? ' selected' : ''}${!subsystemOptionAvailable(config, index, option.variant) ? ' disabled' : ''}>${esc(subsystemOptionName(localizedName(option.name)))}</option>`).join('')}</select></label>`
   ).join('');
   $('subsystem-status').textContent = config?.code
-    ? t('subsystemReady', { ready: config.readyCount, total: Object.keys(config.spec.variants).length })
+    ? t('subsystemReady', { ready: config.readyCount, total: config.total })
     : t('subsystemUnavailable');
-  $('reset-subsystems').disabled = !config?.spec.variants[config.spec.default]?.available || config.code === config.spec.default;
+  $('reset-subsystems').disabled = !config?.defaultAvailable || config.code === config.spec.default;
+  $('show-subsystem-labels').disabled = !config?.code || activeViewer?.readyItem !== currentItem;
+  activeViewer?.disposeSubsystemLabels?.refresh?.();
   if (focused != null) panel.querySelector(`[data-subsystem-slot="${focused}"]`)?.focus({ preventScroll: true });
 }
 
@@ -316,7 +318,7 @@ function changeSubsystems(code) {
   const config = subsystemConfiguration(subsystemBaseItem, code);
   if (!config || config.code !== code || code === currentItem?.subsystemSelection) return;
   subsystemSelections.set(subsystemBaseItem.id, code);
-  currentItem = subsystemItem(subsystemBaseItem, code);
+  currentItem = subsystemItem(subsystemBaseItem, code, location.href);
   ++detailRevision;
   renderDetail();
   loadModel(currentItem);
@@ -837,7 +839,7 @@ async function exportCurrentModel(format) {
     await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
     if (viewer !== activeViewer) return;
     const result = await (await viewerModule).exportModel(viewer, format);
-    const name = `${item.id}-${localizedName(item.name) || 'model'}`.replace(/[<>:"/\\|?*\u0000-\u001f]/g, '_');
+    const name = `${item.id}-${localizedName(item.name) || 'model'}${item.subsystemSelection ? '-' + item.subsystemSelection : ''}`.replace(/[<>:"/\\|?*\u0000-\u001f]/g, '_');
     const url = URL.createObjectURL(result.blob), link = document.createElement('a');
     link.href = url; link.download = `${name}.${format}`;
     document.body.append(link); link.click(); link.remove();
@@ -873,6 +875,7 @@ function disposeViewer() {
     activeViewer.disposeOcclusion?.();
     activeViewer.shipEffects?.dispose();
     activeViewer.disposeNative?.();
+    activeViewer.disposeSubsystemLabels?.();
     activeViewer.disposeEquipment?.();
     activeViewer.pendingNativeSurfaces?.dispose();
     activeViewer.remove();
@@ -957,7 +960,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   if (activeViewer) activeViewer.exportReady = false;
   syncExportButtons();
-  if (activeViewer?.readyItem && viewerAPI && !profile && item.renderKind !== 'equipment' && activeViewer.readyItem.renderKind !== 'equipment') {
+  if (activeViewer?.readyItem && viewerAPI && !profile && !item.subsystemParts && !activeViewer.readyItem.subsystemParts && item.renderKind !== 'equipment' && activeViewer.readyItem.renderKind !== 'equipment') {
     const viewer = activeViewer, module = viewerAPI;
     if (data.nativePreview) {
       const operation = (viewer.appearanceSwitch || Promise.resolve()).catch(() => {}).then(() => switchAppearance(viewer, item, module, isCurrent));
@@ -989,7 +992,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=4bab592b20cfb4ff')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=86812cfdaca749de')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -1006,6 +1009,11 @@ async function loadModel(item, profile = null) {
     let backgroundID = 'auto';
     try { backgroundID = localStorage.getItem('viewer.skybox') || 'auto'; } catch {}
     const source = modelURL(item);
+    if (item.subsystemParts) {
+      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=assembly-v1');
+      await trackResource(source, () => prepareSubsystemModel(viewer.assetSession, item, source, location.href), 'resourceModel');
+      if (activeViewer !== viewer || !isCurrent()) return;
+    }
     await viewerAPI.planViewerResources(viewer, {...item, model:source}, data.nativePreview, backgroundID, modelLoadBatch);
     if (activeViewer !== viewer || !isCurrent()) return;
     renderModelLoading();
@@ -1204,6 +1212,13 @@ async function loadModel(item, profile = null) {
       $('viewer-error').hidden = true;
       if (activeViewer === viewer) {
         viewer.readyItem = item;
+        if (item.subsystemParts) {
+          viewer.disposeSubsystemLabels = viewerAPI.installSubsystemLabels(viewer, () => item.subsystemParts.map((part, i) => ({
+            title:t('subsystem' + subsystemSlots[i]), name:subsystemOptionName(localizedName(part.name)),
+          })));
+          viewer.disposeSubsystemLabels.show?.();
+          renderSubsystems();
+        }
         viewer.dataset.appearanceTypeId = String(item.id);
         viewer.exportReady = true;
         syncExportButtons();
@@ -1307,7 +1322,15 @@ async function openItem(id, route = true) {
     document.body.style.overflow = 'hidden';
   }
   let item;
-  try { item = await catalogLoader.item(id, state.group); }
+  try {
+    item = await catalogLoader.item(id, state.group);
+    if (isStrategicCruiser(item)) {
+      let parts = [];
+      try { parts = (await Promise.all(subsystemGroups.map(group => catalogLoader.group(group)))).flat(); }
+      catch (error) { console.warn('Subsystem metadata unavailable; using the default hull', error); }
+      item = withSubsystems(item, parts);
+    }
+  }
   catch (error) {
     if (revision === detailRevision && $('model-dialog').open) modelError('errorItemData');
     console.error(error);
@@ -1322,7 +1345,7 @@ async function openItem(id, route = true) {
     if (revision !== detailRevision) return;
   }
   subsystemBaseItem = item;
-  currentItem = subsystemItem(item, subsystemSelections.get(item.id));
+  currentItem = subsystemItem(item, subsystemSelections.get(item.id), location.href);
   state.item = id;
   if (route) saveRoute();
   renderDetail();
@@ -1358,7 +1381,8 @@ function renderDetail() {
   $('detail-warnings').textContent = omissions.join(' ');
   $('detail-warnings').hidden = !omissions.length;
   $('detail-size').textContent =
-    item.modelBytes == null ? '—' : `${((item.modelBytes + (item.effectsBytes || 0)) / 1024 / 1024).toFixed(1)} MB`;
+    item.subsystemParts ? t('subsystemResources', {count:item.subsystemParts.length})
+      : item.modelBytes == null ? '—' : `${((item.modelBytes + (item.effectsBytes || 0)) / 1024 / 1024).toFixed(1)} MB`;
   const list = detailList(),
     index = list.findIndex((i) => i.id === item.id);
   $('detail-position').textContent = `${index + 1} / ${list.length}`;
@@ -1559,6 +1583,7 @@ function setupEvents() {
     changeSubsystems(code.join(''));
   });
   $('reset-subsystems').addEventListener('click', () => changeSubsystems(subsystemBaseItem?.subsystems?.default));
+  $('show-subsystem-labels').addEventListener('click', () => activeViewer?.disposeSubsystemLabels?.show?.());
   $('hull-variants-list').addEventListener('click', event => {
     const card = event.target.closest('[data-variant]');
     if (card && !card.disabled && Number(card.dataset.variant) !== currentItem?.id) openItem(Number(card.dataset.variant));

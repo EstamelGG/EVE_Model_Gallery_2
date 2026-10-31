@@ -14,8 +14,8 @@
     <link rel="icon" type="image/svg+xml" sizes="any" href="./mark.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png?v=2" />
     <link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=metrics-v3" />
-    <link rel="stylesheet" href="./styles.css?v=subsystems-v1" />
-    <script type="module" src="./app.js?v=86ee9bb85225e1e2"></script>
+    <link rel="stylesheet" href="./styles.css?v=subsystem-assembly-v1" />
+    <script type="module" src="./app.js?v=c1d9d32b0b309547"></script>
   </head>
   <body>
     <svg class="icon-defs" aria-hidden="true">
@@ -182,6 +182,13 @@
               <span class="dimension-z"><span data-i18n="dimensionLength">长 Z</span><strong id="dimension-z">—</strong></span>
             </div>
           </div>
+          <fieldset id="subsystem-settings" class="settings-group subsystem-settings" hidden>
+            <legend data-i18n="subsystemTitle">子系统搭配</legend>
+            <div id="subsystem-options"></div>
+            <p id="subsystem-status" class="subsystem-status" role="status" aria-live="polite"></p>
+            <button id="show-subsystem-labels" class="reset-button" type="button" data-i18n="subsystemLabels">显示组件位置</button>
+            <button id="reset-subsystems" class="reset-button" type="button" data-i18n="subsystemReset">恢复默认搭配</button>
+          </fieldset>
           <div id="viewer-loading" class="viewer-loading" role="status">
             <span class="loading-ring"></span><strong data-i18n="loadingModel">正在加载模型</strong
             ><span id="loading-detail">读取本地几何与材质…</span
@@ -253,12 +260,6 @@
           <p id="detail-warnings" role="note" hidden></p>
           <div class="detail-scroll">
           <div class="viewer-settings">
-            <fieldset id="subsystem-settings" class="settings-group subsystem-settings" hidden>
-              <legend data-i18n="subsystemTitle">子系统搭配</legend>
-              <div id="subsystem-options"></div>
-              <p id="subsystem-status" class="subsystem-status" role="status" aria-live="polite"></p>
-              <button id="reset-subsystems" class="reset-button" type="button" data-i18n="subsystemReset">恢复默认搭配</button>
-            </fieldset>
             <fieldset class="settings-group">
               <legend data-i18n="sceneSettings">场景与操作</legend>
             <label class="toggle-row" for="skybox-select"><span data-i18n="skybox">背景</span><select id="skybox-select"><option value="none">无背景</option></select></label>
