@@ -411,6 +411,69 @@ function selectGroup(id) {
   $('card-scroll').scrollTop = 0;
 }
 
+const treeIconItems = new Map();
+const treeAnimations = new WeakMap();
+function setTreeExpanded(details, expanded) {
+  const previous = treeAnimations.get(details);
+  if ((previous?.expanded ?? details.open) === expanded) return;
+  const groups = details.querySelector('.tree-groups');
+  const height = details.open ? groups.getBoundingClientRect().height : 0;
+  const opacity = details.open ? getComputedStyle(groups).opacity : 0;
+  const margin = details.open ? getComputedStyle(groups).marginBottom : '0px';
+  previous?.animation.cancel();
+  treeAnimations.delete(details);
+  if (!expanded && groups.contains(document.activeElement)) details.querySelector('summary').focus();
+  groups.inert = !expanded;
+  details.querySelector('summary').setAttribute('aria-expanded', String(expanded));
+  const finish = () => {
+    details.open = expanded;
+    delete details.dataset.treeExpanded;
+    treeAnimations.delete(details);
+  };
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !groups.animate) {
+    finish();
+    return;
+  }
+  // Keep native details open until the closing animation finishes. Measure
+  // the current frame before cancelling so a second click reverses smoothly.
+  details.open = true;
+  const targetHeight = groups.getBoundingClientRect().height;
+  const targetMargin = getComputedStyle(groups).marginBottom;
+  details.dataset.treeExpanded = String(expanded);
+  const animation = groups.animate([
+    { height: `${height}px`, opacity, marginBottom: margin },
+    { height: expanded ? `${targetHeight}px` : '0px', opacity: expanded ? 1 : 0, marginBottom: expanded ? targetMargin : '0px' },
+  ], { duration: 240, easing: 'cubic-bezier(.2, .7, .2, 1)' });
+  treeAnimations.set(details, { animation, expanded });
+  animation.onfinish = finish;
+}
+function treeIcon(key) {
+  return `<span class="tree-icon" aria-hidden="true">${icon('ship')}<img data-tree-icon="${key}" alt="" width="24" height="24" loading="lazy" decoding="async"></span>`;
+}
+function updateTreeIcons() {
+  for (const image of $('catalog-tree').querySelectorAll('[data-tree-icon]')) {
+    const id = treeIconItems.get(image.dataset.treeIcon);
+    if (id === undefined) continue;
+    const url = `https://images.evetech.net/types/${id}/icon?size=64`;
+    if (image.getAttribute('src') === url) continue;
+    image.onload = () => { image.dataset.loaded = 'true'; };
+    image.onerror = () => { delete image.dataset.loaded; };
+    image.src = url;
+  }
+}
+async function loadTreeIcons() {
+  // Use the catalog's first item (lowest type ID), independent of the current
+  // group, language, availability filter or card sort. Share the search load.
+  const items = await catalogLoader.search();
+  for (const item of items) {
+    const category = groupsByID.get(item.groupID)?.category;
+    if (!category) continue;
+    for (const key of ['all', `group:${item.groupID}`, `category:${category.id}`]) {
+      if (!treeIconItems.has(key) || item.id < treeIconItems.get(key)) treeIconItems.set(key, item.id);
+    }
+  }
+  updateTreeIcons();
+}
 function buildTree() {
   const openCategories = new Set(
     [...document.querySelectorAll('.tree-category[open]')].map((el) => Number(el.dataset.category)),
@@ -424,23 +487,24 @@ function buildTree() {
     c.groups.filter(g => g.readyCount).map(g => [g.id, g.readyCount])));
   const total = data.categories.reduce((sum, cat) => sum + cat.count, 0);
   const ready = [...readyByGroup.values()].reduce((sum, count) => sum + count, 0);
-  $('catalog-tree').innerHTML = `<button class="group-link all-models-link" data-group="-1"><span>${esc(t('allModels'))}</span><span class="tree-count">${fmt(ready)}/${fmt(total)}</span></button>` + visibleCategories
+  $('catalog-tree').innerHTML = `<button class="group-link all-models-link" data-group="-1">${treeIcon('all')}<span class="tree-label">${esc(t('allModels'))}</span><span class="tree-count">${fmt(ready)}/${fmt(total)}</span></button>` + visibleCategories
     .map(
       (
         cat,
       ) => `<details class="tree-category" data-category="${cat.id}" ${openCategories.has(cat.id) ? 'open' : ''}>
-    <summary>${icon('chevron')}<span>${esc(localizedName(cat.name))}</span><span class="tree-count">${fmt(cat.groups.reduce((sum, g) => sum + (readyByGroup.get(g.id) || 0), 0))}/${fmt(cat.count)}</span></summary>
+    <summary>${icon('chevron')}${treeIcon(`category:${cat.id}`)}<span class="tree-label">${esc(localizedName(cat.name))}</span><span class="tree-count">${fmt(cat.groups.reduce((sum, g) => sum + (readyByGroup.get(g.id) || 0), 0))}/${fmt(cat.count)}</span></summary>
     <div class="tree-groups">${[...cat.groups]
       .sort((a, b) => (readyByGroup.get(b.id) || 0) - (readyByGroup.get(a.id) || 0))
       .map(
         (g) =>
-          `<button class="group-link" data-group="${g.id}" title="${esc(localizedName(g.name))} · ${esc(t('items', { count: fmt(g.count) }))}"><span>${esc(localizedName(g.name))}</span>${readyByGroup.has(g.id) ? `<span class="group-ready" title="${t('ready')}"></span>` : ''}<span class="tree-count">${fmt(readyByGroup.get(g.id) || 0)}/${fmt(g.count)}</span></button>`,
+          `<button class="group-link" data-group="${g.id}" title="${esc(localizedName(g.name))} · ${esc(t('items', { count: fmt(g.count) }))}">${treeIcon(`group:${g.id}`)}<span class="tree-label">${esc(localizedName(g.name))}</span>${readyByGroup.has(g.id) ? `<span class="group-ready" title="${t('ready')}"></span>` : ''}<span class="tree-count">${fmt(readyByGroup.get(g.id) || 0)}/${fmt(g.count)}</span></button>`,
       )
       .join('')}</div>
   </details>`,
     )
     .join('');
   $('catalog-tree').scrollTop = treeScroll;
+  updateTreeIcons();
 }
 
 function baseItems() {
@@ -573,7 +637,7 @@ async function render() {
   }
   if (revealedGroup !== state.group) {
     const details = cat && document.querySelector(`[data-category="${cat.id}"]`);
-    if (details) details.open = true;
+    if (details) setTreeExpanded(details, true);
     revealedGroup = state.group;
   }
   $('main').classList.toggle('all-models', state.group === -1);
@@ -893,7 +957,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=7ed1869740c71649')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=5b64f096694bb981')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -1061,7 +1125,8 @@ async function loadModel(item, profile = null) {
           $('gate-state').value = 'Active_Linked';
           applyDisplaySettings();
         }
-        const clips = viewer.availableAnimations;
+        const sceneAnimations = viewer.shipEffects?.sceneEffects?.hullAnimations;
+        const clips = sceneAnimations?.names || viewer.availableAnimations;
         $('hull-animation-row').hidden = !clips.length;
         $('hull-animation').replaceChildren(
           ...clips.map((name) => {
@@ -1073,7 +1138,8 @@ async function loadModel(item, profile = null) {
           }),
         );
         if (clips.length) {
-          const normal = clips.find((name) => viewer.equipmentPreview ? /inactive|deactive|idle/i.test(name) : name.endsWith('.NormalLoop')) || clips[0];
+          const normal = sceneAnimations?.initial || clips.find((name) => viewer.equipmentPreview ? /inactive|deactive|idle/i.test(name) : name.endsWith('.NormalLoop')) || clips[0];
+          if (sceneAnimations?.initial) viewer.animationCrossfadeDuration = 0;
           $('hull-animation').value = normal;
           viewer.animationName = normal;
           playHullAnimation(viewer);
@@ -1325,6 +1391,13 @@ function setupEvents() {
     applyDisplaySettings();
   });
   $('catalog-tree').addEventListener('click', (event) => {
+    const summary = event.target.closest('.tree-category > summary');
+    if (summary) {
+      event.preventDefault();
+      const details = summary.parentElement;
+      setTreeExpanded(details, !(treeAnimations.get(details)?.expanded ?? details.open));
+      return;
+    }
     const button = event.target.closest('[data-group]');
     if (button) selectGroup(Number(button.dataset.group));
   });
@@ -1568,6 +1641,7 @@ async function init() {
     readRoute();
     buildTree();
     setupEvents();
+    void loadTreeIcons().catch(error => console.warn('Catalog icons unavailable', error));
     await render();
     if (state.item) openItem(state.item, false);
   } catch (error) {
