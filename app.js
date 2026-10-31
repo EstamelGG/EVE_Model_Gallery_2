@@ -893,7 +893,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=equipment-preview-v1')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=7ed1869740c71649')).catch((error) => {
         viewerModule = null;
         throw error;
       });
