@@ -1,0 +1,41 @@
+/* Original client font files; see sources.json for provenance. */
+
+@font-face {
+  font-family: "EVE Sans Neue";
+  src: url("./evesansneue-regular.otf?v=fa681055bebb8429c680e254d4e1dd1f") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EVE Sans Neue";
+  src: url("./evesansneue-bold.otf?v=4bff95b968bbf6aec216b8a8d51553f7") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EVE Sans Neue";
+  src: url("./evesansneue-italic.otf?v=086a830bae7d885b9af5c62532759380") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EVE Sans Neue";
+  src: url("./evesansneue-bolditalic.otf?v=40fbb488a66b228d17a4433b1ce410ef") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EVE Unicode";
+  src: url("./arialuni.ttf?v=1ffad51b52f910b9b5ab3853946865a3") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

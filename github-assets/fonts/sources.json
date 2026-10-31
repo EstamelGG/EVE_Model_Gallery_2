@@ -1,0 +1,59 @@
+{
+  "family": "EVE Sans Neue",
+  "fallbackFamily": "EVE Unicode",
+  "fallbackOriginalFamily": "Arial Unicode MS",
+  "source": "EVE Online client SharedCache; original unmodified OTF/TTF files",
+  "rights": "EVE game assets belong to CCP Games. This manifest is not a font license.",
+  "fonts": [
+    {
+      "file": "evesansneue-regular.otf",
+      "source": "res:/ui/fonts/evesansneue-regular.otf",
+      "md5": "fa681055bebb8429c680e254d4e1dd1f",
+      "bytes": 39348,
+      "family": "EVE Sans Neue",
+      "format": "opentype",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "file": "evesansneue-bold.otf",
+      "source": "res:/ui/fonts/evesansneue-bold.otf",
+      "md5": "4bff95b968bbf6aec216b8a8d51553f7",
+      "bytes": 40884,
+      "family": "EVE Sans Neue",
+      "format": "opentype",
+      "weight": 700,
+      "style": "normal"
+    },
+    {
+      "file": "evesansneue-italic.otf",
+      "source": "res:/ui/fonts/evesansneue-italic.otf",
+      "md5": "086a830bae7d885b9af5c62532759380",
+      "bytes": 44220,
+      "family": "EVE Sans Neue",
+      "format": "opentype",
+      "weight": 400,
+      "style": "italic"
+    },
+    {
+      "file": "evesansneue-bolditalic.otf",
+      "source": "res:/ui/fonts/evesansneue-bolditalic.otf",
+      "md5": "40fbb488a66b228d17a4433b1ce410ef",
+      "bytes": 43956,
+      "family": "EVE Sans Neue",
+      "format": "opentype",
+      "weight": 700,
+      "style": "italic"
+    },
+    {
+      "file": "arialuni.ttf",
+      "source": "res:/ui/fonts/arialuni.ttf",
+      "md5": "1ffad51b52f910b9b5ab3853946865a3",
+      "bytes": 23539024,
+      "family": "EVE Unicode",
+      "format": "truetype",
+      "weight": 400,
+      "style": "normal"
+    }
+  ]
+}

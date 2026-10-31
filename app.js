@@ -4,7 +4,7 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=resource-plan-sky-fade-v1';
+} from './i18n.mjs?v=viewer-heading-v1';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=lighting-quality-v1';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
@@ -179,8 +179,10 @@ resourceActivity.subscribe(() => {
   if (!activityTimer) activityTimer = setTimeout(() => { activityTimer = null; renderActivity(); }, 80);
 });
 function renderPreview(item, badge = '') {
+  const useIcon = item.renderKind === 'equipment' || item.categoryID === 7;
+  const imageURL = `https://images.evetech.net/types/${item.id}/icon?size=64`;
   return `<div class="render-preview" data-image-state="loading" aria-busy="true">${badge}
-    <img data-render src="${renderURL(item)}" ${renderFallbacks[item.id] ? `data-fallback="${esc(resourceURL(renderFallbacks[item.id]))}"` : ''} data-icon="https://images.evetech.net/types/${item.id}/icon?size=64" alt="${esc(t('poster', { name: localizedName(item.name) }))}" loading="lazy" decoding="async" width="512" height="512">
+    <img data-render src="${useIcon ? imageURL : renderURL(item)}" ${useIcon ? 'class="official-icon"' : `${renderFallbacks[item.id] ? `data-fallback="${esc(resourceURL(renderFallbacks[item.id]))}"` : ''} data-icon="${imageURL}"`} alt="${esc(t('poster', { name: localizedName(item.name) }))}" loading="lazy" decoding="async" width="512" height="512">
     <span class="loading-ring render-spinner" aria-hidden="true"></span>
     <span class="render-image-error" role="img" aria-label="${esc(t('renderUnavailable'))}">${icon('ship', 'placeholder-cube')}</span>
   </div>`;
@@ -329,6 +331,14 @@ function raceName(id) {
   return localizedName(racesByID.get(id)) || t('other');
 }
 function playHullAnimation(viewer) {
+  if (viewer.equipmentPreview) {
+    const name = viewer.animationName;
+    viewer.pause();
+    void viewer.updateComplete.then(() => {
+      if (viewer.isConnected && viewer.animationName === name) viewer.currentTime = Math.max(0, viewer.duration - .001);
+    });
+    return;
+  }
   const transition = /2|^Start|^End/.test((viewer.animationName || '').split('.').pop());
   viewer.play({ repetitions: transition ? 1 : Infinity });
 }
@@ -751,6 +761,7 @@ function disposeViewer() {
     activeViewer.disposeOcclusion?.();
     activeViewer.shipEffects?.dispose();
     activeViewer.disposeNative?.();
+    activeViewer.disposeEquipment?.();
     activeViewer.pendingNativeSurfaces?.dispose();
     activeViewer.remove();
     activeViewer = null;
@@ -828,13 +839,13 @@ async function loadModel(item, profile = null) {
   // Capture the old frame before changing light/material defaults. Use the
   // selected model's DNA, not the session's fixed background/reflection race.
   selectRenderDefaults(item.dna);
-  const savedView = viewerTransition.view;
+  const savedView = (activeViewer?.readyItem?.renderKind === item.renderKind) ? viewerTransition.view : null;
   const isCurrent = () => viewerTransition.isCurrent(request) && currentItem === item && $('model-dialog').open;
   $('viewer-error').hidden = true;
   $('viewer-loading').hidden = false;
   if (activeViewer) activeViewer.exportReady = false;
   syncExportButtons();
-  if (activeViewer?.readyItem && viewerAPI && !profile) {
+  if (activeViewer?.readyItem && viewerAPI && !profile && item.renderKind !== 'equipment' && activeViewer.readyItem.renderKind !== 'equipment') {
     const viewer = activeViewer, module = viewerAPI;
     if (data.nativePreview) {
       const operation = (viewer.appearanceSwitch || Promise.resolve()).catch(() => {}).then(() => switchAppearance(viewer, item, module, isCurrent));
@@ -866,7 +877,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=ambient-animation-v2')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=equipment-preview-v1')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -886,7 +897,9 @@ async function loadModel(item, profile = null) {
     await viewerAPI.planViewerResources(viewer, {...item, model:source}, data.nativePreview, backgroundID, modelLoadBatch);
     if (activeViewer !== viewer || !isCurrent()) return;
     renderModelLoading();
-    void viewerAPI.prefetchViewerAssets(viewer, item.effects, !!data.nativePreview).catch(() => {});
+    if (item.renderKind === 'equipment') viewer.equipmentPreview = await viewerAPI.loadEquipmentPreview(viewer, item.effects);
+    else void viewerAPI.prefetchViewerAssets(viewer, item.effects, !!data.nativePreview).catch(() => {});
+    if (activeViewer !== viewer || !isCurrent()) return;
     if (data.nativePreview && !nativeSettings) {
       nativeSettings = viewer.assetSession.json(data.nativePreview)
         .catch(error => { nativeSettings = null; throw error; });
@@ -935,7 +948,7 @@ async function loadModel(item, profile = null) {
         );
         viewer.dataset.homeDistance = String(homeDistance);
         viewer.setAttribute('min-camera-orbit', `auto auto ${homeDistance}m`);
-        viewer.setAttribute('max-camera-orbit', `auto auto ${homeDistance}m`);
+        viewer.setAttribute('max-camera-orbit', `auto ${viewer.equipmentPreview ? '86deg' : 'auto'} ${homeDistance}m`);
         viewer.cameraOrbit = `35deg 70deg ${homeDistance}m`;
         await viewer.updateComplete;
         if (activeViewer !== viewer) return;
@@ -980,7 +993,9 @@ async function loadModel(item, profile = null) {
         viewer.disposeDimensionFrame = module.watchDimensionFrame(viewer, $('dimension-frame'));
         if (data.nativePreview) viewer.pendingNativeSurfaces = module.prepareNativeSurfaces(viewer);
         // Backgrounds are optional: they can arrive after the hull is usable.
-        void installSkybox(viewer, item, module);
+        if (viewer.equipmentPreview) viewer.disposeEquipment = await module.installEquipmentPreview(viewer);
+        else void installSkybox(viewer, item, module);
+        if (activeViewer !== viewer || !isCurrent()) return;
         if (!savedView) {
           composer.queueRender();
           await module.waitForFrame(viewer);
@@ -1011,7 +1026,7 @@ async function loadModel(item, profile = null) {
           applyDisplaySettings();
         }
         if (isCurrent()) setModelLoadStage(4);
-        if (item.effects) {
+        if (item.effects && !viewer.equipmentPreview) {
           const effects = await (
             await viewerModule
           ).installShipEffects(viewer, item.effects, $('flight-mode').value);
@@ -1039,7 +1054,7 @@ async function loadModel(item, profile = null) {
           }),
         );
         if (clips.length) {
-          const normal = clips.find((name) => name.endsWith('.NormalLoop')) || clips[0];
+          const normal = clips.find((name) => viewer.equipmentPreview ? /inactive|deactive|idle/i.test(name) : name.endsWith('.NormalLoop')) || clips[0];
           $('hull-animation').value = normal;
           viewer.animationName = normal;
           if ($('flight-mode').value !== 'paused') playHullAnimation(viewer);
@@ -1189,6 +1204,11 @@ function renderDetail() {
   renderVariants();
   const item = currentItem;
   $('detail-title').textContent = localizedName(item.name) || `ID ${item.id}`;
+  $('skybox-select').closest('label').hidden = item.renderKind === 'equipment';
+  if (item.renderKind === 'equipment') $('skybox-status').hidden = true;
+  $('stage-title').textContent = $('detail-title').textContent;
+  $('stage-subtitle').textContent = item.name?.en || '';
+  $('stage-subtitle').hidden = !item.name?.en || item.name.en === $('stage-title').textContent;
   $('detail-dna').textContent = item.dna ? `DNA: ${item.dna}` : '';
   $('detail-dna').title = item.dna || '';
   $('detail-dna').hidden = !item.dna;

@@ -13,8 +13,9 @@
     <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png?v=2" />
     <link rel="icon" type="image/svg+xml" sizes="any" href="./mark.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png?v=2" />
-    <link rel="stylesheet" href="./styles.css?v=kill-mark-labels-v3" />
-    <script type="module" src="./app.js?v=ambient-animation-v2"></script>
+    <link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=2" />
+    <link rel="stylesheet" href="./styles.css?v=eve-sidebar-fixed-v2" />
+    <script type="module" src="./app.js?v=equipment-sidebar-fixed-v2"></script>
   </head>
   <body>
     <svg class="icon-defs" aria-hidden="true">
@@ -150,7 +151,7 @@
         </footer>
       </main>
     </div>
-    <dialog id="model-dialog" aria-labelledby="detail-title">
+    <dialog id="model-dialog" aria-labelledby="stage-title">
       <div class="dialog-top">
         <span
           ><svg><use href="#i-cube" /></svg><span data-i18n="model">三维模型</span><span id="detail-dna" hidden></span></span
@@ -168,8 +169,12 @@
           <div class="stage-grid" aria-hidden="true"></div>
           <div id="viewer-mount"></div>
           <canvas id="viewer-snapshot" aria-hidden="true" hidden></canvas>
+          <div class="viewer-heading">
+            <h2 id="stage-title"></h2>
+            <p id="stage-subtitle" lang="en" hidden></p>
+          </div>
           <div class="viewer-dimensions">
-            <canvas id="dimension-frame" width="104" height="96" aria-hidden="true"></canvas>
+            <canvas id="dimension-frame" width="76" height="66" aria-hidden="true"></canvas>
             <div class="dimension-values">
               <span class="dimension-x"><span data-i18n="dimensionWidth">宽 X</span><strong id="dimension-x">—</strong></span>
               <span class="dimension-y"><span data-i18n="dimensionHeight">高 Y</span><strong id="dimension-y">—</strong></span>
@@ -222,7 +227,7 @@
             </div>
           </div>
         </div>
-        <aside class="detail-info">
+        <aside id="detail-info" class="detail-info">
           <div id="detail-race" class="detail-race"></div>
           <h2 id="detail-title"></h2>
           <div class="detail-tags">
