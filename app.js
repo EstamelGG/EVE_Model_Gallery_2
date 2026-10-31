@@ -368,7 +368,7 @@ function cardHTML(item, style = '') {
   const tag = item.available ? 'button' : 'article';
   return `<${tag} class="ship-card ${item.available ? '' : 'unavailable'}"${style ? ` style="${style}"` : ''}${item.available ? ` data-item="${item.id}" aria-label="${esc(t('viewModel', { name: localizedName(item.name) }))}"` : ''}>
       <div class="card-visual">${renderPreview(item, badge)}</div>
-      <div class="card-info"><div class="card-title-row"><span class="card-title">${esc(localizedName(item.name))}</span>${item.available ? '<span class="card-arrow" aria-hidden="true">↗</span>' : `<span class="unavailable-label">${t('unavailable')}</span>`}</div><div class="card-bottom"><span class="card-race">${raceMark(item.affiliationID)}${esc(raceName(item.affiliationID))}</span><span class="card-id">ID ${item.id}</span></div></div>
+      <div class="card-info"><div class="card-title-row"><span class="card-title">${esc(localizedName(item.name))}</span>${item.available ? '<span class="card-arrow" aria-hidden="true">↗</span>' : `<span class="unavailable-label">${t('unavailable')}</span>`}</div><div class="card-bottom"><span class="card-race">${raceMark(item.affiliationID)}<span class="card-race-name" title="${esc(raceName(item.affiliationID))}">${esc(raceName(item.affiliationID))}</span></span><span class="card-id">ID ${item.id}</span></div></div>
     </${tag}>`;
 }
 

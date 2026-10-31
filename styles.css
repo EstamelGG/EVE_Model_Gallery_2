@@ -702,15 +702,28 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   font-size: 12px;
   color: #8e99a2;
 }
 .card-race {
   display: flex;
+  flex: 1 1 0;
+  min-width: 0;
   gap: 6px;
   align-items: center;
 }
+.card-race .race-icon {
+  flex-shrink: 0;
+}
+.card-race-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 .card-id {
+  flex-shrink: 0;
+  white-space: nowrap;
   font: 11px/1.5 var(--font-ui);
   color: var(--muted);
 }
