@@ -675,6 +675,7 @@ function disposeViewer() {
   clearTimeout(modelTimer);
   if (activeViewer) {
     activeViewer.disposeFPS?.();
+    activeViewer.disposeBloom?.();
     activeViewer.releasePreload?.();
     activeViewer.disposeOcclusion?.();
     activeViewer.shipEffects?.dispose();
@@ -788,7 +789,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=lighting-quality-v1')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=emission-bloom-v1')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -1010,15 +1011,16 @@ async function loadModel(item, profile = null) {
     const bloom = document.createElement('bloom-effect');
     bloom.setAttribute('strength', String(viewer.renderSettings.bloom));
     bloom.setAttribute('blend-mode', viewer.renderSettings.bloom > 0 ? 'default' : 'skip');
-    bloom.setAttribute('threshold', '1');
-    bloom.setAttribute('smoothing', '0.15');
-    bloom.setAttribute('radius', '0.35');
-    // Extract HDR highlights before exposure/tone mapping. A separate color
-    // pass ensures the bloom is composed in linear space exactly once.
+    bloom.setAttribute('threshold', '0.05');
+    bloom.setAttribute('smoothing', '0.1');
+    bloom.setAttribute('radius', '0.65');
+    // Blur only the separate HDR emission source; paint, reflections and the
+    // starfield never feed the bloom. Compose before exposure/tone mapping.
     colorGrade.effects[0].requireSeparatePass = true;
     composer.append(occlusion, bloom, colorGrade, antialias);
     viewer.append(composer);
     $('viewer-mount').append(viewer);
+    viewer.disposeBloom = viewerAPI.installViewerBloom(viewer, bloom);
     viewer.disposeFPS = viewerAPI.watchViewerFPS(viewer, fps => {
       if (activeViewer === viewer) $('viewer-fps').textContent = `${fps ?? '—'} FPS`;
     });
