@@ -1463,7 +1463,7 @@ async function init() {
     const config = await loadJSON('./site-config.json', { cache: 'no-cache' }, { optional: true });
     frontendPublishedAt = config.frontendPublishedAt;
     renderPublicationDate();
-    configureResourceBase(config.resourceBaseURL);
+    configureResourceBase(config.resourceBaseURL, config.backgroundBaseURL, config.backgroundFiles);
     data = await loadJSON(resourceURL('./data/catalog-index.json'), { cache: 'no-cache' });
     const identities = await loadJSON('./icons/identities.json?v=meta-groups-v1');
     const resolveAffiliation = createAffiliationResolver(identities);
