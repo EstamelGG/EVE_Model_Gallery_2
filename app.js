@@ -13,7 +13,7 @@ import { createAffiliationResolver } from './affiliation.mjs';
 import { createViewerTransition } from './viewer-transition.mjs?v=progressive-v1';
 import { configureResourceBase, resourceURL } from './resource-location.mjs';
 import { resourceActivity, createResourceBatch, loadJSON, trackResource } from './resource-activity.mjs?v=download-progress-v1';
-import { prepareRenderImages } from './render-images.mjs';
+import { prepareRenderImages } from './render-images.mjs?v=stable-card-window-v1';
 import { createLoadingRows } from './loading-rows.mjs?v=loading-panel-progress-v1';
 import { normalizeDisplaySettings, textureRoles } from './display-settings.mjs?v=3';
 const $ = (id) => document.getElementById(id);
@@ -388,6 +388,8 @@ document.body.appendChild(cardProbe);
 let cardLayout = null;
 let cardRange = { start: -1, end: -1 };
 let cardScrollRAF = 0;
+const cardNodes = new Map();
+const cardTemplate = document.createElement('template');
 
 function getCardLayout() {
   const cards = $('cards');
@@ -415,8 +417,10 @@ function getCardLayout() {
 }
 
 function renderCardWindow() {
+  if ($('cards').getAttribute('aria-busy') === 'true') return;
   const count = filtered.length;
   if (!count) {
+    cardNodes.clear();
     cardRange = { start: -1, end: -1 };
     $('cards').innerHTML = '';
     $('cards').style.height = '0px';
@@ -439,17 +443,33 @@ function renderCardWindow() {
   const end = Math.min(count, (lastRow + 1) * layout.columns);
   if (start === cardRange.start && end === cardRange.end) return;
   cardRange = { start, end };
-  const parts = new Array(end - start);
+  const cards = $('cards');
+  if (!cardNodes.size) cards.replaceChildren();
+  // Keep intersecting cards (and their decoded images) mounted while scrolling.
+  // Full innerHTML replacement restarts every preview on each row boundary.
+  for (const [index, node] of cardNodes) {
+    if (index < start || index >= end) {
+      node.remove();
+      cardNodes.delete(index);
+    }
+  }
+  let next = cards.firstElementChild;
   for (let i = start; i < end; i++) {
     const row = Math.floor(i / layout.columns);
     const col = i % layout.columns;
-    parts[i - start] = cardHTML(
-      filtered[i],
-      `position:absolute;left:${(col * (layout.columnWidth + layout.gap)).toFixed(1)}px;top:${(row * rowStep).toFixed(1)}px;width:${layout.columnWidth}px;height:${layout.rowHeight}px`,
-    );
+    const style = `position:absolute;left:${(col * (layout.columnWidth + layout.gap)).toFixed(1)}px;top:${(row * rowStep).toFixed(1)}px;width:${layout.columnWidth}px;height:${layout.rowHeight}px`;
+    let node = cardNodes.get(i);
+    if (!node) {
+      cardTemplate.innerHTML = cardHTML(filtered[i], style);
+      node = cardTemplate.content.firstElementChild;
+      cardNodes.set(i, node);
+    } else if (node.getAttribute('style') !== style) {
+      node.setAttribute('style', style);
+    }
+    if (node !== next) cards.insertBefore(node, next);
+    next = node.nextElementSibling;
   }
-  $('cards').innerHTML = parts.join('');
-  prepareRenderImages($('cards'));
+  prepareRenderImages(cards);
 }
 
 function scheduleCardWindow() {
@@ -462,6 +482,8 @@ function scheduleCardWindow() {
 
 async function render() {
   const revision = ++renderRevision;
+  cardNodes.clear();
+  cardRange = { start: -1, end: -1 };
   const group = state.group === -1 ? null : groupsByID.get(state.group),
     cat = group?.category;
   for (const button of document.querySelectorAll('.group-link')) {

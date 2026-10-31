@@ -1,5 +1,9 @@
+const preparedImages = new WeakSet();
+
 export function prepareRenderImages(root) {
   for (const image of root.querySelectorAll('img[data-render]')) {
+    if (preparedImages.has(image)) continue;
+    preparedImages.add(image);
     const preview = image.closest('.render-preview');
     const settle = (state) => {
       preview.dataset.imageState = state;
