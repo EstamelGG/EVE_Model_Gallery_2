@@ -957,7 +957,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=5b64f096694bb981')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=01dfa2098013b5a2')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -1144,6 +1144,18 @@ async function loadModel(item, profile = null) {
           viewer.animationName = normal;
           playHullAnimation(viewer);
         }
+        if (sceneAnimations) viewer.addEventListener('finished', () => {
+          if (activeViewer !== viewer) return;
+          const destination = (viewer.animationName || '').split('.').pop().split('2')[1];
+          const settled = destination && clips.find(name => name.split('.').pop() === destination);
+          if (!settled) return;
+          // Native state transitions hand off to the destination loop. Holding
+          // the transition's final frame would leave its one-shot FX frozen.
+          $('hull-animation').value = settled;
+          viewer.animationName = settled;
+          viewer.currentTime = 0;
+          playHullAnimation(viewer);
+        });
         if (isCurrent()) setModelLoadStage(5);
         if (savedView) await (await viewerModule).restoreView(viewer, savedView);
         composer.queueRender();
