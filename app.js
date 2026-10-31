@@ -4,7 +4,7 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=loading-panel-progress-v1';
+} from './i18n.mjs?v=mobile-scroll-v2';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=dna-lighting-v6';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
@@ -127,7 +127,7 @@ function renderModelLoading() {
   $('model-progress').value = modelLoadStage - 1;
   $('model-progress').setAttribute('aria-label', step);
   $('model-progress').setAttribute('aria-valuetext', step);
-  $('loading-count').textContent = t('loadingResourceCount', { completed, total: completed + pending.length, pending: pending.length });
+  $('loading-count').textContent = t('loadingResourceCount', { completed: modelLoadStage - 1, total: modelLoadSteps.length, resources: completed, pending: pending.length });
   loadingRows.update(pending, t);
 }
 function renderActivity() {
@@ -161,7 +161,7 @@ const defaultSort = (group) => group === -1 ? 'id' : 'race';
 let revealedGroup = null;
 // Proven visual aliases share one official render URL and the browser cache.
 const renderURL = (item) =>
-  `https://images.evetech.net/types/${item.nativeTypeID || item.id}/render?size=512`;
+  `https://images.evetech.net/types/${item.nativeTypeID || item.id}/render?size=${matchMedia("(max-width: 680px), (pointer: coarse)").matches ? 256 : 512}`;
 // Keep the displayed exposure literal; the old 2x offset clipped pale hulls.
 const exposureForLevel = (level) => Number(level);
 const renderSettings = () => normalizeRenderSettings(Object.fromEntries(
@@ -388,6 +388,8 @@ document.body.appendChild(cardProbe);
 let cardLayout = null;
 let cardRange = { start: -1, end: -1 };
 let cardScrollRAF = 0;
+let cardScrollIdle = 0;
+let cardsScrolling = false;
 const cardNodes = new Map();
 const cardTemplate = document.createElement('template');
 
@@ -448,12 +450,12 @@ function renderCardWindow() {
   // Keep intersecting cards (and their decoded images) mounted while scrolling.
   // Full innerHTML replacement restarts every preview on each row boundary.
   for (const [index, node] of cardNodes) {
-    if (index < start || index >= end) {
+    if (!cardsScrolling && (index < start || index >= end)) {
       node.remove();
       cardNodes.delete(index);
     }
   }
-  let next = cards.firstElementChild;
+  // Absolute positioning needs no DOM reordering; retain touched nodes during momentum.
   for (let i = start; i < end; i++) {
     const row = Math.floor(i / layout.columns);
     const col = i % layout.columns;
@@ -466,8 +468,7 @@ function renderCardWindow() {
     } else if (node.getAttribute('style') !== style) {
       node.setAttribute('style', style);
     }
-    if (node !== next) cards.insertBefore(node, next);
-    next = node.nextElementSibling;
+    if (!node.parentNode) cards.appendChild(node);
   }
   prepareRenderImages(cards);
 }
@@ -1141,7 +1142,16 @@ function setupEvents() {
     const card = event.target.closest('[data-item]');
     if (card) openItem(Number(card.dataset.item));
   });
-  $('card-scroll').addEventListener('scroll', scheduleCardWindow, { passive: true });
+  $('card-scroll').addEventListener('scroll', () => {
+    cardsScrolling = true;
+    clearTimeout(cardScrollIdle);
+    cardScrollIdle = setTimeout(() => {
+      cardsScrolling = false;
+      cardRange = { start: -1, end: -1 };
+      scheduleCardWindow();
+    }, 180);
+    scheduleCardWindow();
+  }, { passive: true });
   new ResizeObserver(() => {
     if (cardLayout && cardLayout.width !== $('cards').clientWidth) {
       cardLayout = null;

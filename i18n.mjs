@@ -91,7 +91,7 @@ const messages = {
   loadingMaterials: ['加载材质与贴图…', 'Loading materials and textures…'],
   loadingEnvironment: ['准备模型特效…', 'Preparing model effects…'],
   loadingStep: ['步骤 {step}/{total} · {name}', 'Step {step}/{total} · {name}'],
-  loadingResourceCount: ['已处理 {completed} / {total}', 'Processed {completed} / {total}'],
+  loadingResourceCount: ['已完成阶段 {completed} / {total} · 已处理资源 {resources} · 请求中 {pending}', 'Stages complete {completed} / {total} · Resources processed {resources} · Requests active {pending}'],
   showHDR: ['反射环境（HDR）', 'HDR environment'],
   showEffects: ['特效', 'Effects'],
   hullTextures: ['船体贴图', 'Hull textures'],
