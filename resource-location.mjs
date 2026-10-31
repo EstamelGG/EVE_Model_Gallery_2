@@ -22,9 +22,7 @@ export function resourceURL(value) {
   if (!value || /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(value)) return value;
   const path = value.replace(/^\.?\//, '');
   const files = globalThis.__eveBackgroundFiles;
-  const background = files === undefined
-    ? /^(?:assets\/backgrounds\/|data\/backgrounds\.json(?:[?#]|$))/.test(path)
-    : files.has(path.split(/[?#]/)[0]);
+  const background = path.startsWith('github-assets/') || !!files?.has(path.split(/[?#]/)[0]);
   const base = (background && globalThis.__eveBackgroundBase) || globalThis.__eveResourceBase;
   return base ? new URL(path, base).href : value;
 }
