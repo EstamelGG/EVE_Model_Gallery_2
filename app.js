@@ -468,7 +468,7 @@ function renderCardWindow() {
     } else if (node.getAttribute('style') !== style) {
       node.setAttribute('style', style);
     }
-    if (!node.parentNode) cards.appendChild(node);
+    if (node.parentNode !== cards) cards.appendChild(node);
   }
   prepareRenderImages(cards);
 }
