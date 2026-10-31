@@ -10,8 +10,8 @@
     />
     <title>EVE Model Viewer 2.0</title>
     <link rel="icon" type="image/svg+xml" href="./mark.svg" />
-    <link rel="stylesheet" href="./styles.css?v=github-mark-v1" />
-    <script type="module" src="./app.js?v=about-v1"></script>
+    <link rel="stylesheet" href="./styles.css?v=progressive-v2" />
+    <script type="module" src="./app.js?v=progressive-v1"></script>
   </head>
   <body>
     <svg class="icon-defs" aria-hidden="true">
@@ -169,8 +169,8 @@
             <span class="loading-ring"></span><strong data-i18n="loadingModel">正在加载模型</strong
             ><span id="loading-detail">读取本地几何与材质…</span
             ><progress id="model-progress" max="5" value="0"></progress>
-            <ul id="loading-resources" class="loading-resources" hidden></ul>
             <span id="loading-count"></span>
+            <ul id="loading-resources" class="loading-resources"></ul>
           </div>
           <div id="viewer-error" class="viewer-error" hidden>
             <strong data-i18n="modelFailed">模型暂时无法显示</strong>

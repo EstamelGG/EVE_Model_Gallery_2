@@ -5,13 +5,15 @@ export function createViewerTransition(stage, canvas) {
   function clear() {
     delete stage.dataset.preparing;
     delete stage.dataset.switching;
+    delete stage.dataset.progressive;
     canvas.hidden = true;
     canvas.width = canvas.height = 0;
     view = null;
   }
   return {
     begin(viewer, module) {
-      if (!stage.dataset.preparing && viewer?.readyItem && module) {
+      delete stage.dataset.progressive;
+      if (!stage.dataset.preparing && (viewer?.readyItem || viewer?.geometryReady) && module) {
         view = module.captureView(viewer);
         module.captureFrame(viewer, canvas);
         canvas.hidden = false;
@@ -22,6 +24,12 @@ export function createViewerTransition(stage, canvas) {
     },
     get view() { return view; },
     isCurrent(token) { return revision === token; },
+    revealGeometry(token) {
+      if (revision !== token || stage.dataset.switching) return false;
+      delete stage.dataset.preparing;
+      stage.dataset.progressive = 'true';
+      return true;
+    },
     finish(token) {
       if (revision !== token) return false;
       clear();

@@ -4,16 +4,17 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=about-v1';
+} from './i18n.mjs?v=progressive-v1';
 import { viewerProfile } from './viewer-profile.mjs?v=samples32';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=dna-lighting-v6';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
 import { hullKey, hullVariantGroups } from './hull-variants.mjs?v=affiliation-groups-v5';
 import { createAffiliationResolver } from './affiliation.mjs';
-import { createViewerTransition } from './viewer-transition.mjs';
+import { createViewerTransition } from './viewer-transition.mjs?v=progressive-v1';
 import { configureResourceBase, resourceURL } from './resource-location.mjs';
 import { resourceActivity, createResourceBatch, loadJSON, trackResource } from './resource-activity.mjs?v=model-loading-v2';
 import { prepareRenderImages } from './render-images.mjs';
+import { createLoadingRows } from './loading-rows.mjs';
 import { normalizeDisplaySettings, textureRoles } from './display-settings.mjs?v=3';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
@@ -53,14 +54,17 @@ $('about-dialog').addEventListener('click', event => {
 });
 let activityTimer;
 let modelLoadBatch, modelLoadStage = 1;
+const loadingRows = createLoadingRows($('loading-resources'));
 const modelLoadSteps = ['loadingCatalog', 'loadingAssets', 'loadingMaterials', 'loadingEnvironment', 'preparing'];
 function beginModelLoading() {
+  loadingRows.reset();
   modelLoadBatch?.stop();
   modelLoadBatch = createResourceBatch();
   $('viewer-loading').hidden = false;
   setModelLoadStage(1);
 }
 function finishModelLoading() {
+  loadingRows.reset();
   modelLoadBatch?.stop();
   modelLoadBatch = null;
   $('viewer-loading').hidden = true;
@@ -80,9 +84,7 @@ function renderModelLoading() {
   $('model-progress').setAttribute('aria-label', step);
   $('model-progress').setAttribute('aria-valuetext', step);
   $('loading-count').textContent = t('loadingResourceCount', { completed, pending: pending.length });
-  $('loading-resources').innerHTML = pending.slice(-3).map(item =>
-    `<li title="${esc(item.url)}"><span>${esc(t(item.kind))}</span><code>${esc(item.name)}</code></li>`).join('');
-  $('loading-resources').hidden = !pending.length;
+  loadingRows.update(pending, t);
 }
 function renderActivity() {
   const pending = resourceActivity.snapshot(), current = pending.at(-1);
@@ -705,7 +707,7 @@ async function loadModel(item, profile = null) {
   $('viewer-loading').hidden = false;
   try {
     if (!viewerModule)
-      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=resource-status-v1')).catch((error) => {
+      viewerModule = trackResource('model-viewer-ao.min.js', () => import('./vendor/model-viewer-ao.min.js?v=progressive-v1')).catch((error) => {
         viewerModule = null;
         throw error;
       });
@@ -799,6 +801,16 @@ async function loadModel(item, profile = null) {
           }
         });
         viewer.dataset.renderProfile = JSON.stringify(profile);
+        const module = await viewerModule;
+        if (!isCurrent()) return;
+        // Backgrounds are optional: they can arrive after the hull is usable.
+        void installSkybox(viewer, item, module);
+        if (!savedView) {
+          composer.queueRender();
+          await module.waitForFrame(viewer);
+          if (activeViewer !== viewer || !isCurrent()) return;
+          viewer.geometryReady = viewerTransition.revealGeometry(request);
+        }
         if (data.nativePreview) {
           if (!nativeSettings)
             nativeSettings = loadJSON(resourceURL(data.nativePreview), { cache: 'no-cache' })
@@ -813,6 +825,7 @@ async function loadModel(item, profile = null) {
             item.model,
             item.nativeTypeID || item.id,
             item.dna,
+            { progressive: !savedView },
           );
           if (activeViewer !== viewer) {
             dispose();
@@ -822,7 +835,6 @@ async function loadModel(item, profile = null) {
           applyDisplaySettings();
         }
         if (isCurrent()) setModelLoadStage(4);
-        await installSkybox(viewer, item, await viewerModule);
         if (item.effects) {
           const effects = await (
             await viewerModule

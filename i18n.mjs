@@ -85,7 +85,7 @@ const messages = {
   loadingModel: ['正在加载模型', 'Loading model'],
   loadingCatalog: ['读取目录…', 'Loading catalog…'],
   loadingMaterials: ['加载材质与贴图…', 'Loading materials and textures…'],
-  loadingEnvironment: ['加载背景与特效…', 'Loading environment and effects…'],
+  loadingEnvironment: ['准备模型特效…', 'Preparing model effects…'],
   loadingStep: ['步骤 {step}/{total} · {name}', 'Step {step}/{total} · {name}'],
   loadingResourceCount: ['已处理 {completed} 个资源 · {pending} 个加载中', '{completed} resources processed · {pending} loading'],
   showHDR: ['反射环境（HDR）', 'HDR environment'],
