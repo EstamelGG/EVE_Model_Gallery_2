@@ -5,7 +5,7 @@ import {
   setLocale,
   applyTranslations,
 } from './i18n.mjs?v=loading-panel-progress-v1';
-import { viewerProfile } from './viewer-profile.mjs?v=samples32';
+import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=dna-lighting-v6';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
 import { hullKey, hullVariantGroups } from './hull-variants.mjs?v=affiliation-groups-v5';
@@ -839,7 +839,7 @@ async function loadModel(item, profile = null) {
           const zoom =
             ((homeDistance / viewer.getCameraOrbit().radius) * Math.tan(homeFov)) /
             Math.tan((viewer.getFieldOfView() * Math.PI) / 360);
-          const radius = Math.min(0.3, Math.max(0.025, profile.radius * zoom));
+          const radius = occlusionRadius(profile.radius, zoom);
           clearTimeout(radiusUpdate);
           if (Math.abs(ao.ssaoMaterial.radius - radius) > 0.001) {
             // Radius is a shader define in postprocessing: changing it while
@@ -947,14 +947,18 @@ async function loadModel(item, profile = null) {
     viewer.setAttribute('src', source);
     // Preserve HDR precision and multisample the geometry before postprocessing.
     const composer = document.createElement('effect-composer');
+    const budget = postprocessingBudget(item.triangles);
     composer.setAttribute('render-mode', 'quality');
-    composer.setAttribute('msaa', '4');
+    composer.setAttribute('msaa', String(budget.msaa));
     const occlusion = document.createElement('ssao-effect');
     occlusion.setAttribute('strength', '3');
     // The addon's small default radius only darkens hairline contacts.
     // Sample across adjacent hull panels and supports, with enough samples
     // to keep the wider occlusion smooth rather than grainy.
     const ao = occlusion.effects[0];
+    // Keep hull shading/textures at full resolution; only the occlusion
+    // buffer uses fewer pixels on large meshes.
+    ao.resolution.scale = budget.aoScale;
     ao.luminanceInfluence = 0.15;
     occlusion.setAttribute('blend-mode', $('ambient-occlusion').checked ? 'default' : 'skip');
     // Offscreen HDR buffers need an explicit final tone-map pass; renderer
@@ -964,9 +968,8 @@ async function loadModel(item, profile = null) {
     // Neutral's black-offset would add an unrelated shadow-crushing curve.
     colorGrade.setAttribute('tonemapping', data.nativePreview ? 'linear' : 'neutral');
     const antialias = document.createElement('smaa-effect');
-    // Ultra detects lower-contrast edges and searches farther along diagonals,
-    // improving thin rails without increasing the scene render resolution.
-    antialias.setAttribute('quality', 'ultra');
+    // Keep SMAA for thin edges, with a shorter search on large meshes.
+    antialias.setAttribute('quality', budget.smaa);
     antialias.effects[0].requireSeparatePass = true;
     composer.append(occlusion, colorGrade, antialias);
     viewer.append(composer);
