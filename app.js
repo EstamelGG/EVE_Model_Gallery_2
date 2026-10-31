@@ -4,7 +4,7 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=mobile-scroll-v2';
+} from './i18n.mjs?v=viewer-fullscreen-v4';
 import { viewerProfile, postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=large-model-v1';
 import { renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults } from './render-settings.mjs?v=dna-lighting-v6';
 import { createCatalogLoader } from './catalog-loader.mjs?v=affiliation-groups-v5';
@@ -1098,7 +1098,34 @@ function renderDetail() {
     option.textContent = t(option.value.split('.').pop());
 }
 
+function setViewerExpanded(expanded) {
+  $('model-dialog').classList.toggle('viewer-expanded', expanded);
+  $('fullscreen').setAttribute('aria-pressed', String(expanded));
+  const label = t(expanded ? 'exitFullscreen' : 'fullscreen');
+  $('fullscreen').setAttribute('aria-label', label);
+  $('fullscreen').title = label;
+}
+async function toggleViewerExpanded() {
+  const dialog = $('model-dialog');
+  if (dialog.classList.contains('viewer-expanded')) {
+    setViewerExpanded(false);
+    if (document.fullscreenElement === dialog) {
+      try { await document.exitFullscreen(); } catch {}
+    }
+    return;
+  }
+  // CSS expansion works inside the modal's top layer even without Fullscreen API.
+  setViewerExpanded(true);
+  if (document.fullscreenEnabled && typeof dialog.requestFullscreen === 'function') {
+    try { await dialog.requestFullscreen(); } catch {
+      // Keep the usable in-page fullscreen fallback.
+    }
+  }
+}
+
 function closeDetail(route = true) {
+  setViewerExpanded(false);
+  if (document.fullscreenElement === $('model-dialog')) document.exitFullscreen().catch(() => {});
   ++detailRevision;
   finishModelLoading();
   if (!$('model-dialog').open) return;
@@ -1208,7 +1235,8 @@ function setupEvents() {
   $('close-dialog').addEventListener('click', () => closeDetail());
   $('model-dialog').addEventListener('cancel', (event) => {
     event.preventDefault();
-    closeDetail();
+    if ($('model-dialog').classList.contains('viewer-expanded')) toggleViewerExpanded();
+    else closeDetail();
   });
   $('model-dialog').addEventListener('close', () => {
     if (suppressedClose) {
@@ -1298,13 +1326,9 @@ function setupEvents() {
   $('export-glb').addEventListener('click', () => exportCurrentModel('glb'));
   $('export-obj').addEventListener('click', () => exportCurrentModel('obj'));
   $('stage-reset-view').addEventListener('click', resetView);
-  $('fullscreen').addEventListener('click', async () => {
-    try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await $('viewer-stage').requestFullscreen();
-    } catch {
-      $('fullscreen').title = t('fullscreenFailed');
-    }
+  $('fullscreen').addEventListener('click', toggleViewerExpanded);
+  document.addEventListener('fullscreenchange', () => {
+    setViewerExpanded(document.fullscreenElement === $('model-dialog'));
   });
   $('menu-toggle').addEventListener('click', () => {
     const open = $('sidebar').classList.toggle('open');

@@ -117,6 +117,7 @@ const messages = {
     'Drag to orbit · Scroll to zoom · Right-drag to pan',
   ],
   fullscreen: ['全屏', 'Fullscreen'],
+  exitFullscreen: ['退出全屏', 'Exit fullscreen'],
   fullscreenFailed: ['当前浏览器不支持全屏', 'Fullscreen is unavailable'],
   frigate: ['护卫舰', 'Frigate'],
   skin: ['默认涂装', 'Default skin'],
