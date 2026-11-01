@@ -1,43 +1,25 @@
-import { subsystemConnectors } from './subsystem-connectors.mjs?v=assembly-v1';
+import { subsystemConnectors } from './subsystem-connectors.mjs?v=af12e26060b5f9ff';
 
 export const subsystemSlots = ['core', 'defensive', 'offensive', 'propulsion'];
 export const subsystemGroups = [958, 954, 956, 957];
-const hulls = new Set(['asc1_t3', 'csc1_t3', 'gsc1_t3', 'msc1_t3']);
 export function isStrategicCruiser(item) {
-  return item?.groupID === 963 && hulls.has(item.dna?.split(':')[0]);
+  return item?.groupID === 963;
 }
 
-// Resolve against published part items, so existing catalogs need no rebuild.
-// Ignore legacy whole-ship variants: availability now depends on four parts.
+// Published option IDs and hulls are authoritative; only availability is local.
 export function withSubsystems(item, parts) {
   if (!isStrategicCruiser(item)) return item;
-  const base = item.dna.split(':')[0];
-  const slots = subsystemSlots.map((key, index) => ({
-    key,
-    options: [1, 2, 3].map((variant) => {
-      const hull = `${base}_s${index + 1}v${variant}`;
-      const declared = item.subsystems?.slots?.[index]?.options?.find((o) => o.variant === variant);
-      const part = parts.find(
-        (p) =>
-          p.groupID === subsystemGroups[index] &&
-          p.dna?.split(':')[0] === hull &&
-          (!declared || declared.id === p.id),
-      );
+  const byID = new Map(parts.map(part => [part.id,part]));
+  const slots = item.subsystems.slots.map(({key,options}) => ({
+    key, options: options.map(option => {
+      const part = byID.get(option.id);
       return {
-        variant,
-        hull,
-        name: part?.name || { zh: `选项 ${variant}`, en: `Option ${variant}` },
-        part,
-        available: !!(
-          part?.available &&
-          part.model &&
-          part.effects &&
-          Object.hasOwn(subsystemConnectors, hull)
-        ),
+        ...option, part, name:part?.name || option.name,
+        available: !!part?.available && Object.hasOwn(subsystemConnectors, option.hull),
       };
     }),
   }));
-  return { ...item, subsystems: { mode: 'assembly', default: '1111', slots } };
+  return { ...item, subsystems: { mode: 'assembly', default:item.subsystems.default, slots } };
 }
 
 export function subsystemConfiguration(item, requested) {
@@ -83,7 +65,7 @@ export function subsystemItem(item, code, baseURL) {
     model: new URL(path + '.gltf', baseURL).href,
     effects: new URL(path + '.json', baseURL).href,
     modelRevision:
-      'assembly-v1-' + parts.map((p) => p.modelRevision || p.renderKey || p.id).join('-'),
+      'assembly-v1-' + parts.map((p) => p.modelRevision).join('-'),
     triangles: parts.reduce((n, p) => n + (p.triangles || 0), 0),
     vertices: parts.reduce((n, p) => n + (p.vertices || 0), 0),
     modelBytes: undefined,

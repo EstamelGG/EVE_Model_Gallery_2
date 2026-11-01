@@ -109,6 +109,7 @@ const messages = {
   subsystemReady: ['切换后更新外形 · 可用搭配 {ready} / {total}', 'Changes update the hull · {ready} / {total} configurations ready'],
   subsystemUnavailable: ['子系统部件暂不可用，当前显示默认外形。', 'Subsystem parts are unavailable. Showing the default appearance.'],
   subsystemUpdateFailed: ['组件更新失败，已保留原搭配，请重试。', 'Component update failed. The previous configuration is preserved; please retry.'],
+  appearanceUpdateFailed: ['外观更新失败，已保留原外观，请重试。', 'Appearance update failed. The previous appearance is preserved; please retry.'],
   subsystemReset: ['恢复默认搭配', 'Reset configuration'],
   hullAppearance: ['船体外观', 'Hull appearance'],
   advancedMaterialSettings: ['高级调节', 'Advanced adjustments'],
@@ -232,12 +233,6 @@ export function setLocale(value) {
     localStorage.setItem(storageKey, locale);
   } catch {
     /* Optional persistence. */
-  }
-  // Language is a browser preference. Old links must not override it on reload.
-  const url = new URL(location.href);
-  if (url.searchParams.has('lang')) {
-    url.searchParams.delete('lang');
-    history.replaceState(null, '', url);
   }
   applyTranslations();
 }

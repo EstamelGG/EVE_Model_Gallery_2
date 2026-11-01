@@ -1,9 +1,11 @@
-import { hullVariants } from './hull-variants.mjs?v=subsystems-v1';
+import { hullKey, createHullVariantIndex } from './hull-variants.mjs?v=af12e26060b5f9ff';
 // Cache pending requests too, so route changes and item dialogs share one load.
-export function createCatalogLoader(index, fetchJSON, decorate = (item) => item, { requireSearchDNA = false } = {}) {
+export function createCatalogLoader(index, fetchJSON, decorate = (item) => item) {
+  if (index.variantIndexVersion !== 1) throw Error('Unsupported catalog index: regenerate metadata with variantIndexVersion 1');
   const groups = new Map(index.categories.flatMap((c) => c.groups.map((g) => [g.id, g])));
   const pending = new Map();
   const itemsByID = new Map();
+  let variantIndex;
   function load(url, complete) {
     if (!pending.has(url)) {
       pending.set(
@@ -25,34 +27,21 @@ export function createCatalogLoader(index, fetchJSON, decorate = (item) => item,
     return pending.get(url);
   }
   const group = (id) => groups.has(id) ? load(groups.get(id).itemsURL, true) : Promise.resolve([]);
-  let completeItems;
-  function allGroups() {
-    if (!completeItems) {
-      completeItems = (async () => {
-        const ids = [...groups.keys()], results = [];
-        let cursor = 0;
-        await Promise.all(Array.from({ length: Math.min(4, ids.length) }, async () => {
-          while (cursor < ids.length) results.push(...await group(ids[cursor++]));
-        }));
-        return results;
-      })().catch(error => { completeItems = null; throw error; });
-    }
-    return completeItems;
-  }
-  // Legacy search chunks omit DNA. Use cached metadata shards so filters,
-  // counts, cards and details all resolve the same affiliation, in any order.
-  const search = () => requireSearchDNA && index.variantIndexVersion !== 1
-    ? allGroups() : load(index.searchURL, false);
+  const search = () => load(index.searchURL, false);
   async function variants(dna) {
-    return hullVariants(await (index.variantIndexVersion === 1 ? search() : allGroups()), dna);
+    const hull = hullKey(dna);
+    if (!hull) return [];
+    const items = await search();
+    variantIndex ??= createHullVariantIndex(items);
+    return variantIndex.get(hull) || [];
   }
   async function item(id, preferredGroup) {
-    await group(preferredGroup);
+    if (!itemsByID.has(id)) await group(preferredGroup);
     let found = itemsByID.get(id);
-    if (!found) found = (await search()).find((i) => i.id === id);
+    if (!found) { await search(); found = itemsByID.get(id); }
     if (!found) return null;
     await group(found.groupID);
     return itemsByID.get(id);
   }
-  return { group, search, item, variants, itemsByID };
+  return { group, search, item, variants, peek:id => itemsByID.get(id) };
 }
