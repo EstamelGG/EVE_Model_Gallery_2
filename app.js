@@ -1220,7 +1220,9 @@ async function loadModel(item, profile = null) {
           }),
         );
         if (clips.length) {
-          const normal = sceneAnimations?.initial || clips.find((name) => viewer.equipmentPreview ? /inactive|deactive|idle/i.test(name) : name.endsWith('.NormalLoop')) || clips[0];
+          const normal = (viewer.equipmentPreview && clips.find((name) => name.split('.').pop().toLowerCase() === 'active'))
+            || sceneAnimations?.initial
+            || clips.find((name) => viewer.equipmentPreview ? /inactive|deactive|idle/i.test(name) : name.endsWith('.NormalLoop')) || clips[0];
           if (sceneAnimations?.initial) viewer.animationCrossfadeDuration = 0;
           $('hull-animation').value = normal;
           viewer.animationName = normal;
