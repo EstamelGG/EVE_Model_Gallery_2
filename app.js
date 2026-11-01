@@ -1,25 +1,25 @@
-import {configureHullAnimations} from './viewer-presentation.mjs?v=af12e26060b5f9ff';
-import {createViewerRuntime} from './viewer-runtime.mjs?v=af12e26060b5f9ff';
+import {configureHullAnimations} from './viewer-presentation.mjs?v=b68e8ca1247fd1fe';
+import {createViewerRuntime} from './viewer-runtime.mjs?v=b68e8ca1247fd1fe';
 import {
   locale,
   t,
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=af12e26060b5f9ff';
-import {createViewerSettings} from './viewer-settings.mjs?v=af12e26060b5f9ff';
-import {createCardGrid} from './card-grid.mjs?v=af12e26060b5f9ff';
-import {createCatalogState} from './catalog-state.mjs?v=af12e26060b5f9ff';
-import { createCatalogLoader } from './catalog-loader.mjs?v=af12e26060b5f9ff';
-import { hullKey } from './hull-variants.mjs?v=af12e26060b5f9ff';
-import { createAffiliationResolver } from './affiliation.mjs?v=af12e26060b5f9ff';
-import { createViewerTransition } from './viewer-transition.mjs?v=af12e26060b5f9ff';
-import { configureResourceBase, resourceURL } from './resource-location.mjs?v=af12e26060b5f9ff';
-import { loadJSON } from './resource-activity.mjs?v=af12e26060b5f9ff';
-import { prepareRenderImages } from './render-images.mjs?v=af12e26060b5f9ff';
-import {createLoadingPanel} from './loading-panel.mjs?v=af12e26060b5f9ff';
-import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName, subsystemGroups, subsystemSlots, isStrategicCruiser, withSubsystems } from './subsystems.mjs?v=af12e26060b5f9ff';
-import { resetView } from './view-reset.mjs?v=af12e26060b5f9ff';
+} from './i18n.mjs?v=b68e8ca1247fd1fe';
+import {createViewerSettings} from './viewer-settings.mjs?v=b68e8ca1247fd1fe';
+import {createCardGrid} from './card-grid.mjs?v=b68e8ca1247fd1fe';
+import {createCatalogState} from './catalog-state.mjs?v=b68e8ca1247fd1fe';
+import { createCatalogLoader } from './catalog-loader.mjs?v=b68e8ca1247fd1fe';
+import { hullKey } from './hull-variants.mjs?v=b68e8ca1247fd1fe';
+import { createAffiliationResolver } from './affiliation.mjs?v=b68e8ca1247fd1fe';
+import { createViewerTransition } from './viewer-transition.mjs?v=b68e8ca1247fd1fe';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=b68e8ca1247fd1fe';
+import { loadJSON } from './resource-activity.mjs?v=b68e8ca1247fd1fe';
+import { prepareRenderImages } from './render-images.mjs?v=b68e8ca1247fd1fe';
+import {createLoadingPanel} from './loading-panel.mjs?v=b68e8ca1247fd1fe';
+import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName, subsystemGroups, subsystemSlots, isStrategicCruiser, withSubsystems } from './subsystems.mjs?v=b68e8ca1247fd1fe';
+import { resetView } from './view-reset.mjs?v=b68e8ca1247fd1fe';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -194,7 +194,7 @@ function changeSubsystems(code) {
 const viewerTransition = createViewerTransition($('viewer-stage'), $('viewer-snapshot'));
 const viewing = createViewerRuntime({
   mount: $('viewer-mount'), transition: viewerTransition,
-  loadRenderer: () => import('./vendor/model-viewer-ao.min.js?v=af12e26060b5f9ff'),
+  loadRenderer: () => import('./vendor/model-viewer-ao.min.js?v=b68e8ca1247fd1fe'),
   view: {
     dimensionFrame: $('dimension-frame'),
     label: item => t('modelAlt', {name:localizedName(item.name)}),
@@ -957,8 +957,8 @@ async function init() {
     configureResourceBase(config.resourceBaseURL, config.backgroundBaseURL, config.backgroundFiles);
     const [index, identities, fallbackIndex] = await Promise.all([
       loadJSON(resourceURL('./data/catalog-index.json'), {cache:'no-cache'}),
-      loadJSON('./icons/identities.json?v=af12e26060b5f9ff'),
-      loadJSON('./github-assets/renders/index.json?v=af12e26060b5f9ff', {cache:'no-cache'}, {optional:true}).catch(() => ({})),
+      loadJSON('./icons/identities.json?v=b68e8ca1247fd1fe'),
+      loadJSON('./github-assets/renders/index.json?v=b68e8ca1247fd1fe', {cache:'no-cache'}, {optional:true}).catch(() => ({})),
     ]);
     data = index;
     renderFallbacks = fallbackIndex.items || {};
