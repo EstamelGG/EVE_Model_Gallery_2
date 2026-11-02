@@ -1,4 +1,4 @@
-import { cancelViewReset } from './view-reset.mjs?v=9a732b16c541f4e8';
+import { cancelViewReset } from './view-reset.mjs?v=be2e9d4ce746abf3';
 
 // Effects must detach before native materials are restored. The asset session
 // belongs to the dialog and deliberately survives individual viewer instances.
@@ -26,7 +26,7 @@ export function createViewerLifecycle(viewer) {
   const resources = new Map(),
     listeners = new Set();
   let disposed = false,
-    timer;
+    timer, suspended = false, callback, remaining = 0, started = 0;
   const destroy = (value) => {
     if (typeof value === 'function') value.call(viewer);
     else value?.dispose();
@@ -41,6 +41,16 @@ export function createViewerLifecycle(viewer) {
   const clearTimer = () => {
     clearTimeout(timer);
     timer = undefined;
+    callback = undefined;
+  };
+  const armTimer = () => {
+    if (!callback || suspended || disposed) return;
+    started = performance.now();
+    timer = setTimeout(() => {
+      const run = callback;
+      clearTimer();
+      run();
+    }, remaining);
   };
   return {
     get disposed() {
@@ -64,13 +74,17 @@ export function createViewerLifecycle(viewer) {
       target.addEventListener(type, handler, options);
       listeners.add(() => target.removeEventListener(type, handler, options));
     },
-    setTimer(callback, delay) {
+    setTimer(run, delay) {
       clearTimer();
-      if (!disposed)
-        timer = setTimeout(() => {
-          timer = undefined;
-          callback();
-        }, delay);
+      if (!disposed) { callback = run; remaining = delay; armTimer(); }
+    },
+    setSuspended(value) {
+      if (value === suspended) return;
+      suspended = value;
+      if (suspended && timer !== undefined) {
+        remaining = Math.max(0, remaining - (performance.now() - started));
+        clearTimeout(timer); timer = undefined;
+      } else if (!suspended) armTimer();
     },
     clearTimer,
     dispose() {

@@ -1,5 +1,5 @@
-import { loadJSON } from './resource-activity.mjs?v=9a732b16c541f4e8';
-import { resourceURL } from './resource-location.mjs?v=9a732b16c541f4e8';
+import { loadJSON } from './resource-activity.mjs?v=be2e9d4ce746abf3';
+import { resourceURL } from './resource-location.mjs?v=be2e9d4ce746abf3';
 
 export const supportsHangar = (item) => !!item?.available && [3, 6, 65].includes(item.categoryID);
 export function createHangarPanel({
@@ -31,7 +31,7 @@ export function createHangarPanel({
     c === context && c.viewer === currentViewer() && c.item.id === currentItem()?.id;
   const status = (key) => ($('hangar-status').textContent = key ? t(key) : '');
   function loadingTask(viewer) {
-    const task = loading?.beginTask('hangarLoading');
+    const task = loading?.beginTask('hangarLoading', {fixedPlan: true});
     const progress = (event) =>
       task?.progress(
         { document: 2, geometry: 2, materials: 3, lighting: 4, effects: 4, ready: 5 }[

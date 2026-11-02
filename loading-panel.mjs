@@ -1,4 +1,4 @@
-import {resourceActivity, createResourceBatch} from './resource-activity.mjs?v=9a732b16c541f4e8';
+import {resourceActivity, createResourceBatch} from './resource-activity.mjs?v=be2e9d4ce746abf3';
 
 const steps = ['loadingCatalog', 'loadingAssets', 'loadingMaterials', 'loadingEnvironment', 'preparing'];
 
@@ -11,7 +11,7 @@ export function createLoadingPanel({root, translate:t, backgroundPending, automa
   const statuses = [...root.querySelectorAll('[data-resource-status]')].map(element => ({
     element, ring:element.querySelector('.loading-ring'), text:element.querySelector('.resource-status-text'),
   }));
-  let batch, stage = 1, complete = false, timer, generation=0, taskTitle=null, automatic=false;
+  let batch, stage = 1, complete = false, timer, generation=0, taskTitle=null, automatic=false, fixedPlan=false;
   function render() {
     if (!batch) return;
     const {pending, completed, total, planned, failed} = batch.snapshot();
@@ -23,9 +23,10 @@ export function createLoadingPanel({root, translate:t, backgroundPending, automa
     detail.textContent = step;
     // Until a dependency plan exists this measures stages, never guessed bytes.
     progress.max = planned ? Math.max(1,total) : steps.length;
-    progress.value = planned ? completed : stage-1;
+    if (fixedPlan && !planned) progress.removeAttribute('value');
+    else progress.value = planned ? completed : stage-1;
     progress.setAttribute('aria-label', step);
-    count.textContent = planned
+    count.textContent = fixedPlan && !planned ? t('loadingResourcePlanning') : planned
       ? t('loadingResourceTotal', {completed, total, pending:pending.length}) + (failed ? t('loadingResourceFailed', {count:failed}) : '')
       : t('loadingResourceCount', {completed:stage-1, total:steps.length, resources:completed, pending:pending.length});
     progress.setAttribute('aria-valuetext', count.textContent);
@@ -70,7 +71,7 @@ export function createLoadingPanel({root, translate:t, backgroundPending, automa
   return {
     get batch() { return batch; },
     begin() {
-      generation++;taskTitle=null;automatic=false;
+      generation++;taskTitle=null;automatic=false;fixedPlan=false;
       updateStatus.hidden = true;
       complete = false; stage = 1;
       rows.reset();
@@ -78,10 +79,10 @@ export function createLoadingPanel({root, translate:t, backgroundPending, automa
       batch = createResourceBatch();
       render();
     },
-    beginTask(titleKey) {
-      this.begin();taskTitle=titleKey;const token=generation;render();
+    beginTask(titleKey, {fixedPlan: fixed = false} = {}) {
+      this.begin();taskTitle=titleKey;fixedPlan=fixed;const token=generation;render();
       return {
-        plan(urls){if(token===generation){batch?.plan(urls);render();}},
+        plan(urls){if(token===generation){batch?.plan(urls,{fixed});render();}},
         progress(value){if(token===generation){stage=value;render();}},
         finish(){if(token===generation){finish();taskTitle=null;}},
       };

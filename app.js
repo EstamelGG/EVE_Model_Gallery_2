@@ -1,19 +1,19 @@
-import './eve-model-viewer.js?v=9a732b16c541f4e8';
+import './eve-model-viewer.js?v=be2e9d4ce746abf3';
 import {
   locale,
   t,
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=9a732b16c541f4e8';
-import { createCardGrid } from './card-grid.mjs?v=9a732b16c541f4e8';
-import { createCatalogState } from './catalog-state.mjs?v=9a732b16c541f4e8';
-import { createCatalogLoader } from './catalog-loader.mjs?v=9a732b16c541f4e8';
-import { hullKey } from './hull-variants.mjs?v=9a732b16c541f4e8';
-import { createAffiliationResolver } from './affiliation.mjs?v=9a732b16c541f4e8';
-import { configureResourceBase, resourceURL } from './resource-location.mjs?v=9a732b16c541f4e8';
-import { loadJSON } from './resource-activity.mjs?v=9a732b16c541f4e8';
-import { prepareRenderImages } from './render-images.mjs?v=9a732b16c541f4e8';
+} from './i18n.mjs?v=be2e9d4ce746abf3';
+import { createCardGrid } from './card-grid.mjs?v=be2e9d4ce746abf3';
+import { createCatalogState } from './catalog-state.mjs?v=be2e9d4ce746abf3';
+import { createCatalogLoader } from './catalog-loader.mjs?v=be2e9d4ce746abf3';
+import { hullKey } from './hull-variants.mjs?v=be2e9d4ce746abf3';
+import { createAffiliationResolver } from './affiliation.mjs?v=be2e9d4ce746abf3';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=be2e9d4ce746abf3';
+import { loadJSON } from './resource-activity.mjs?v=be2e9d4ce746abf3';
+import { prepareRenderImages } from './render-images.mjs?v=be2e9d4ce746abf3';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -196,6 +196,11 @@ viewer.addEventListener('settings-change', (event) => {
   } catch {}
 });
 viewer.addEventListener('fullscreen-request', () => toggleViewerExpanded());
+viewer.addEventListener('orbit-turns-change', ({ detail }) => {
+  const counter = $('orbit-turns');
+  if (detail.visible) counter.textContent = String(detail.count);
+  counter.classList.toggle('visible', detail.visible);
+});
 function showModel(item) {
   return viewer
     .configure({
@@ -231,7 +236,7 @@ function renderVariants() {
     .map((group) => {
       const cards = group.items
         .map((item) => {
-          const selected = item.id === currentItem?.id;
+          const selected = item.dna === currentItem?.dna;
           return `<button type="button" class="hull-variant-card" data-variant="${item.id}"${!item.available ? ' disabled' : ''} aria-pressed="${selected}" title="${esc(localizedName(item.name))}">
       ${renderPreview(item)}
       <span class="hull-variant-name">${esc(localizedName(item.name))}</span>
@@ -240,7 +245,7 @@ function renderVariants() {
     </button>`;
         })
         .join('');
-      return `<div class="hull-variant-group${group.items.length > 1 ? ' shared' : ''}" role="group" aria-label="${esc(t('hullVariantShared'))}">${cards}</div>`;
+      return cards;
     })
     .join('');
   prepareRenderImages(list);
@@ -809,7 +814,7 @@ async function init() {
     } catch {}
     const [index, identities, fallbackIndex] = await Promise.all([
       loadJSON(resourceURL('./data/catalog-index.json'), { cache: 'no-cache' }),
-      loadJSON('./icons/identities.json?v=9a732b16c541f4e8'),
+      loadJSON('./icons/identities.json?v=be2e9d4ce746abf3'),
       loadJSON(
         resourceURL('./assets/renders/index.json'),
         { cache: 'no-cache' },

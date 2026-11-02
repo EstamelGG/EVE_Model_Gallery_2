@@ -1176,18 +1176,18 @@ dialog::backdrop {
   font: inherit;
   cursor: pointer;
 }
-.hull-variant-group {
-  display: flex;
-  flex: 0 0 auto;
-  gap: 8px;
-  padding: 8px;
-  border: 1px solid transparent;
-  border-radius: 8px;
+#orbit-turns {
+  position: absolute;
+  top: 100%;
+  font-size: 11px;
+  line-height: 12px;
+  font-variant-numeric: tabular-nums;
+  color: #d6c4a5;
+  opacity: 0;
+  transition: opacity 600ms ease;
+  pointer-events: none;
 }
-.hull-variant-group.shared {
-  border-color: #697784;
-  background: #ffffff04;
-}
+#orbit-turns.visible { opacity: 1; }
 .hull-variant-card img {
   width: 100%;
   height: auto;

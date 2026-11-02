@@ -153,6 +153,7 @@ export const messages = {
   loadingModel: ['正在加载模型', 'Loading model'],
   loadingResources: ['正在加载资源', 'Loading resources'],
   loadingResourceTotal: ['已处理 {completed}/{total}', 'Processed {completed}/{total}'],
+  loadingResourcePlanning: ['正在统计所需资源…', 'Counting required resources…'],
   loadingResourceFailed: [' · 失败 {count}', ' · Failed {count}'],
   loadingCatalog: ['读取目录…', 'Loading catalog…'],
   loadingMaterials: ['加载材质与贴图…', 'Loading materials and textures…'],

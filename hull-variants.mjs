@@ -8,7 +8,7 @@ export function hullKey(dna) {
 }
 
 // Build once from the static search index. Each hull is ready for presentation:
-// exact-DNA groups and their items are ordered by the lowest Type ID.
+// Each exact DNA keeps only its lowest Type ID, ordered by that representative.
 export function createHullVariantIndex(items) {
   const hulls = new Map();
   for (const item of items) {
@@ -19,9 +19,8 @@ export function createHullVariantIndex(items) {
   }
   for (const [hull, variants] of hulls) {
     const groups = new Map();
-    for (const item of variants.sort((a,b) => a.id-b.id)) {
-      if (!groups.has(item.dna)) groups.set(item.dna, {dna:item.dna, items:[]});
-      groups.get(item.dna).items.push(item);
+    for (const item of variants.sort((a, b) => a.id - b.id)) {
+      if (!groups.has(item.dna)) groups.set(item.dna, { dna: item.dna, items: [item] });
     }
     hulls.set(hull, [...groups.values()]);
   }

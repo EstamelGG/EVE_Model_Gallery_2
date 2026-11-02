@@ -47,9 +47,9 @@ export function resourceName(url) {
 // trackers and equivalent URL spellings represent one resource, not two.
 export function createResourceBatch(activity = resourceActivity) {
   const seen = new Set(), skipped = new Set();
-  let pending = [], result, planned = false;
+  let pending = [], result, planned = false, fixed = false;
   const update = items => {
-    pending = [...new Map(items.map(item => [resourceKey(item.url), item])).values()];
+    pending = [...new Map(items.filter(item => !fixed || seen.has(resourceKey(item.url))).map(item => [resourceKey(item.url), item])).values()];
     for (const item of pending) {
       seen.add(resourceKey(item.url)); skipped.delete(resourceKey(item.url));
     }
@@ -65,7 +65,14 @@ export function createResourceBatch(activity = resourceActivity) {
   const stop = activity.subscribe(update);
   return {
     snapshot: () => result,
-    plan(urls) { for (const url of urls) seen.add(resourceKey(url)); planned = true; update(activity.snapshot()); },
+    plan(urls, {fixed: seal = false} = {}) {
+      if (fixed) return;
+      // A sealed task contains only its declared resources, excluding unrelated
+      // activity (such as another viewer or thumbnails) observed in preflight.
+      if (seal) seen.clear();
+      for (const url of urls) seen.add(resourceKey(url));
+      fixed = seal; planned = true; update(activity.snapshot());
+    },
     // The renderer can omit unused fallback material inputs. They have been
     // processed by the load plan but require no download; never mark failures
     // or still-loading resources successful.
