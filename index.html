@@ -13,9 +13,9 @@
     <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png?v=2" />
     <link rel="icon" type="image/svg+xml" sizes="any" href="./mark.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png?v=2" />
-    <link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=6358e62ee331f458" />
-    <link rel="stylesheet" href="./styles.css?v=6358e62ee331f458" />
-    <script type="module" src="./app.js?v=6358e62ee331f458"></script>
+    <link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=d0ea833b9a6e274c" />
+    <link rel="stylesheet" href="./styles.css?v=d0ea833b9a6e274c" />
+    <script type="module" src="./app.js?v=d0ea833b9a6e274c"></script>
   </head>
   <body>
     <svg class="icon-defs" aria-hidden="true">
@@ -379,20 +379,21 @@
             <div id="fitting-controls" hidden>
               <div class="fitting-toolbar">
                 <label class="toggle-row" for="fitting-deployed"><span data-i18n="fittingDeployed">Deploy equipment</span><input id="fitting-deployed" type="checkbox" checked><span class="toggle-visual" aria-hidden="true"></span></label>
-                <button id="fitting-clear" type="button" class="reset-button" data-i18n="fittingRemoveSelected">Remove selected</button>
+                <button id="fitting-undo" type="button" class="reset-button" data-i18n="fittingUndo" disabled>Undo</button>
               </div>
-              <div class="fitting-selection-tools"><span id="fitting-selection"></span><button id="fitting-all" type="button" data-i18n="fittingAll">All</button><button id="fitting-none" type="button" data-i18n="fittingNone">Clear</button></div>
-              <div id="fitting-slots" class="fitting-slot-buttons" role="group" data-i18n-aria-label="fittingMounts" aria-label="Select mount groups"></div>
-              <button id="fitting-choose" type="button" class="fitting-slot-choose" aria-controls="fitting-picker" aria-expanded="false" data-i18n-aria-label="fittingBatchChoose" aria-label="Choose equipment for selected mounts"></button>
-              <div id="fitting-picker" class="fitting-picker" role="region" aria-labelledby="fitting-picker-title" hidden>
-                <div class="fitting-picker-heading"><strong id="fitting-picker-title"></strong><button id="fitting-picker-close" type="button" data-i18n-aria-label="fittingClose" aria-label="Close equipment picker">×</button></div>
-                <input id="fitting-search" type="search" autocomplete="off" data-i18n-placeholder="fittingSearch" data-i18n-aria-label="fittingSearch" placeholder="Search equipment name or ID" aria-label="Search equipment name or ID">
-                <select id="fitting-category" data-i18n-aria-label="fittingCategory" aria-label="Equipment type"></select>
-                <div id="fitting-results" class="fitting-results"></div>
-                <p id="fitting-results-empty" class="fitting-note" data-i18n="fittingNoResults" hidden>No matching equipment</p>
-                <button id="fitting-more" class="reset-button" type="button" data-i18n="fittingMore" hidden>Show more</button>
+              <p class="fitting-note fitting-selection-help" data-i18n="fittingSelectionHelp">Choose equipment for each slot; mounts are assigned automatically.</p>
+              <div id="fitting-slots" class="fitting-rows" role="group" data-i18n-aria-label="fittingMounts" aria-label="Equipment slots"></div>
+              <div id="fitting-picker-home">
+                <div id="fitting-picker" class="fitting-picker" role="region" aria-labelledby="fitting-picker-title" hidden>
+                  <div class="fitting-picker-heading"><strong id="fitting-picker-title"></strong><button id="fitting-picker-close" type="button" data-i18n-aria-label="fittingClose" aria-label="Close equipment picker">×</button></div>
+                  <div id="fitting-recent" class="fitting-results fitting-recent" hidden></div>
+                  <input id="fitting-search" type="search" autocomplete="off" data-i18n-placeholder="fittingSearch" data-i18n-aria-label="fittingSearch" placeholder="Search equipment name or ID" aria-label="Search equipment name or ID">
+                  <div id="fitting-category" class="fitting-groups" role="group" data-i18n-aria-label="fittingCategory" aria-label="Equipment type"></div>
+                  <div id="fitting-results" class="fitting-results"></div>
+                  <p id="fitting-results-empty" class="fitting-note" data-i18n="fittingNoResults" hidden>No matching equipment</p>
+                  <button id="fitting-more" class="reset-button" type="button" data-i18n="fittingMore" hidden>Show more</button>
+                </div>
               </div>
-              <p class="fitting-note" data-i18n="fittingNote">Visual hardpoints only; fitting restrictions are not enforced. Mounts do not yet follow hull animations.</p>
             </div>
           </div>
           <div id="panel-subsystems" class="viewer-settings" role="tabpanel" aria-labelledby="tab-subsystems" hidden>

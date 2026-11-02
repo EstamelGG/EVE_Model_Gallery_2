@@ -1,7 +1,7 @@
-import {renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults} from './render-settings.mjs?v=6358e62ee331f458';
-import {normalizeDisplaySettings, textureRoles, performanceControls} from './display-settings.mjs?v=6358e62ee331f458';
-import {normalizeKillCount} from './kill-count.mjs?v=6358e62ee331f458';
-import {cancelViewReset} from './view-reset.mjs?v=6358e62ee331f458';
+import {renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults} from './render-settings.mjs?v=d0ea833b9a6e274c';
+import {normalizeDisplaySettings, textureRoles, performanceControls} from './display-settings.mjs?v=d0ea833b9a6e274c';
+import {normalizeKillCount} from './kill-count.mjs?v=d0ea833b9a6e274c';
+import {cancelViewReset} from './view-reset.mjs?v=d0ea833b9a6e274c';
 
 // DOM controls own user choices; the runtime owns applying them to the scene.
 // Cache the fixed controls once, and synchronize capabilities after each install.
