@@ -1,11 +1,11 @@
-import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=813d1198b2058edf';
-import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=813d1198b2058edf';
-import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=813d1198b2058edf';
-import {viewerProfile} from './viewer-profile.mjs?v=813d1198b2058edf';
-import {resourceURL} from './resource-location.mjs?v=813d1198b2058edf';
-import {trackResource} from './resource-activity.mjs?v=813d1198b2058edf';
-import {applyPostprocessingSettings, effectsEnabled} from './display-settings.mjs?v=813d1198b2058edf';
-import {recenterView} from './view-reset.mjs?v=813d1198b2058edf';
+import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=9a732b16c541f4e8';
+import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=9a732b16c541f4e8';
+import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=9a732b16c541f4e8';
+import {viewerProfile} from './viewer-profile.mjs?v=9a732b16c541f4e8';
+import {resourceURL} from './resource-location.mjs?v=9a732b16c541f4e8';
+import {trackResource} from './resource-activity.mjs?v=9a732b16c541f4e8';
+import {applyPostprocessingSettings, effectsEnabled} from './display-settings.mjs?v=9a732b16c541f4e8';
+import {recenterView} from './view-reset.mjs?v=9a732b16c541f4e8';
 
 // Wait for the actual model event, and detach listeners on success, failure,
 // cancellation or a synchronous setup failure. Shared asset requests continue.
@@ -89,7 +89,7 @@ export function createViewerRuntime({mount, transition, loadRenderer, view, reso
   async function prepare(viewer, item, context) {
     const {settings, operation} = context, source = sourceURL(item);
     if (item.subsystemParts) {
-      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=813d1198b2058edf');
+      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=9a732b16c541f4e8');
       await trackResource(source, () => prepareSubsystemModel(viewer.assetSession, item, source, location.href), 'resourceModel');
       if (!operation.isCurrent()) return null;
     }
@@ -223,6 +223,7 @@ export function createViewerRuntime({mount, transition, loadRenderer, view, reso
     customElements.get('model-viewer').modelCacheSize = 1;
     const viewer = document.createElement('model-viewer');
     viewer.lifecycle = createViewerLifecycle(viewer);
+    viewer.lifecycle.set('disposeResize', api.installViewerResize(viewer));
     viewer.lifecycle.set('disposeAnnotationFocus', api.installAnnotationFocus(viewer));
     viewer.assetSession = controller.session(() => createSession ? createSession(api) : api.createViewerSession());
     viewer.assetSession.race ||= item.dna?.split(':')[2] || 'gallente';

@@ -1,5 +1,5 @@
-import { loadJSON } from './resource-activity.mjs?v=813d1198b2058edf';
-import { resourceURL } from './resource-location.mjs?v=813d1198b2058edf';
+import { loadJSON } from './resource-activity.mjs?v=9a732b16c541f4e8';
+import { resourceURL } from './resource-location.mjs?v=9a732b16c541f4e8';
 
 export const supportsHangar = (item) => !!item?.available && [3, 6, 65].includes(item.categoryID);
 export function createHangarPanel({
