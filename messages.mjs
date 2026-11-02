@@ -9,7 +9,7 @@ export const messages = {
   demoLoaded: ['物品 {item} · {count} 个装备槽', 'Item {item} · {count} equipment slots'],
   languageChinese: ['中文', 'Chinese'],
   faction: ['势力', 'Faction'],
-  equipmentCannotFit: ['第 {index} 项装备（ID {itemId}）无法安装：没有兼容的空闲挂点或装备不可用。', 'Equipment {index} (ID {itemId}) cannot be installed: no compatible free mount or equipment unavailable.'],
+  equipmentCannotFit: ['第 {index} 项装备（ID {itemId}）无法安装：没有兼容的空闲挂点或装备不可用。', 'Equipment {index} (ID {itemId}) cannot be installed: {reason}'],
   viewerGuide: ['组件使用指南', 'Component guide'],
   settingsTabs: ['查看器设置', 'Viewer settings'],
   tabVisual: ['视觉设置', 'Visual'],
