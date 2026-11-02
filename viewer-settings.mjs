@@ -1,7 +1,7 @@
-import {renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults} from './render-settings.mjs?v=b76447195da58cc4';
-import {normalizeDisplaySettings, textureRoles, performanceControls} from './display-settings.mjs?v=b76447195da58cc4';
-import {normalizeKillCount} from './kill-count.mjs?v=b76447195da58cc4';
-import {cancelViewReset} from './view-reset.mjs?v=b76447195da58cc4';
+import {renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults} from './render-settings.mjs?v=6358e62ee331f458';
+import {normalizeDisplaySettings, textureRoles, performanceControls} from './display-settings.mjs?v=6358e62ee331f458';
+import {normalizeKillCount} from './kill-count.mjs?v=6358e62ee331f458';
+import {cancelViewReset} from './view-reset.mjs?v=6358e62ee331f458';
 
 // DOM controls own user choices; the runtime owns applying them to the scene.
 // Cache the fixed controls once, and synchronize capabilities after each install.
@@ -15,7 +15,7 @@ export function createViewerSettings({root, runtime, currentDNA}) {
   let previousDNA;
   const checked = entries => Object.fromEntries(entries.map(([key, input]) => [key, input.checked]));
   const render = () => normalizeRenderSettings(Object.fromEntries(ranges.map(({key,input}) => [key,input.value])));
-  const display = () => normalizeDisplaySettings({...checked(performance), textures:checked(textures)});
+  const display = () => normalizeDisplaySettings({...checked(performance), antialiasMode:find('show-antialias').value, textures:checked(textures)});
   const save = (key, value) => { try { localStorage.setItem('viewer.'+key, value); } catch {} };
 
   function applyRender() {
@@ -40,7 +40,8 @@ export function createViewerSettings({root, runtime, currentDNA}) {
     killUnavailable.hidden = hasKills;
   }
   function applyDisplay() {
-    save('performance', JSON.stringify(checked(performance)));
+    const {noColor,textures,...preferences}=display();
+    save('performance', JSON.stringify(preferences));
     sync();
     runtime.applyDisplaySettings(display());
   }
@@ -72,9 +73,13 @@ export function createViewerSettings({root, runtime, currentDNA}) {
       }, {capture:true, passive:false});
     },
     bind() {
+      find('no-color').checked=false;
       try {
         const saved = normalizeDisplaySettings(JSON.parse(localStorage.getItem('viewer.performance') || '{}') || {});
-        for (const [key, input] of performance) input.checked = saved[key];
+        for (const [key, input] of performance) {
+          if(key==='antialias')input.value=saved.antialiasMode;
+          else input.checked=key==='noColor'?false:saved[key];
+        }
       } catch {}
       for (const [,input] of [...textures, ...performance]) input.addEventListener('change', applyDisplay);
       allTextures.addEventListener('change', () => {
@@ -86,7 +91,9 @@ export function createViewerSettings({root, runtime, currentDNA}) {
         setRender(renderDefaultsForDNA(currentDNA()));
         for (const [,input] of textures) input.checked = true;
         const defaults=normalizeDisplaySettings();
-        for(const [key,input] of performance)input.checked=defaults[key];
+        for(const [key,input] of performance) {
+          if(key==='antialias')input.value=defaults.antialiasMode;else input.checked=defaults[key];
+        }
         applyDisplay();
       });
       rotate.checked = false;

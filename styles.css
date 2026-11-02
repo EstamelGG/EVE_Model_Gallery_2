@@ -1692,7 +1692,7 @@ button.ship-annotation:focus-visible { outline: 2px solid var(--annotation-accen
 /* Compact viewer controls, with independent scrolling. */
 .viewer-settings .toggle-row { min-height: 28px; margin-bottom: 6px; font-size: 12px; }
 .viewer-settings select { min-width: 0; max-width: 154px; padding: 4px 6px; }
-#skybox-select { width: 154px; text-overflow: ellipsis; }
+#skybox-select, #show-antialias { width: 154px; text-overflow: ellipsis; }
 #skybox-status { display: block; margin: 0 0 6px; font-size: 11px; color: #a8b6c0; }
 #skybox-status[hidden] { display: none; }
 .material-settings { margin-top: 8px; padding-top: 8px; }

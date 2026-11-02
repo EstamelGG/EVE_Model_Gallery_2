@@ -1,27 +1,27 @@
-import {configureHullAnimations} from './viewer-presentation.mjs?v=b76447195da58cc4';
-import {createViewerRuntime} from './viewer-runtime.mjs?v=b76447195da58cc4';
+import {configureHullAnimations} from './viewer-presentation.mjs?v=6358e62ee331f458';
+import {createViewerRuntime} from './viewer-runtime.mjs?v=6358e62ee331f458';
 import {
   locale,
   t,
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=b76447195da58cc4';
-import {createViewerSettings} from './viewer-settings.mjs?v=b76447195da58cc4';
-import {createFittingPanel} from './fitting-panel.mjs?v=b76447195da58cc4';
-import {createHangarPanel,supportsHangar} from './hangar-panel.mjs?v=b76447195da58cc4';
-import {createCardGrid} from './card-grid.mjs?v=b76447195da58cc4';
-import {createCatalogState} from './catalog-state.mjs?v=b76447195da58cc4';
-import { createCatalogLoader } from './catalog-loader.mjs?v=b76447195da58cc4';
-import { hullKey } from './hull-variants.mjs?v=b76447195da58cc4';
-import { createAffiliationResolver } from './affiliation.mjs?v=b76447195da58cc4';
-import { createViewerTransition } from './viewer-transition.mjs?v=b76447195da58cc4';
-import { configureResourceBase, resourceURL } from './resource-location.mjs?v=b76447195da58cc4';
-import { loadJSON } from './resource-activity.mjs?v=b76447195da58cc4';
-import { prepareRenderImages } from './render-images.mjs?v=b76447195da58cc4';
-import {createLoadingPanel} from './loading-panel.mjs?v=b76447195da58cc4';
-import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName, subsystemGroups, subsystemSlots, isStrategicCruiser, withSubsystems } from './subsystems.mjs?v=b76447195da58cc4';
-import { resetView } from './view-reset.mjs?v=b76447195da58cc4';
+} from './i18n.mjs?v=6358e62ee331f458';
+import {createViewerSettings} from './viewer-settings.mjs?v=6358e62ee331f458';
+import {createFittingPanel} from './fitting-panel.mjs?v=6358e62ee331f458';
+import {createHangarPanel,supportsHangar} from './hangar-panel.mjs?v=6358e62ee331f458';
+import {createCardGrid} from './card-grid.mjs?v=6358e62ee331f458';
+import {createCatalogState} from './catalog-state.mjs?v=6358e62ee331f458';
+import { createCatalogLoader } from './catalog-loader.mjs?v=6358e62ee331f458';
+import { hullKey } from './hull-variants.mjs?v=6358e62ee331f458';
+import { createAffiliationResolver } from './affiliation.mjs?v=6358e62ee331f458';
+import { createViewerTransition } from './viewer-transition.mjs?v=6358e62ee331f458';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=6358e62ee331f458';
+import { loadJSON } from './resource-activity.mjs?v=6358e62ee331f458';
+import { prepareRenderImages } from './render-images.mjs?v=6358e62ee331f458';
+import {createLoadingPanel} from './loading-panel.mjs?v=6358e62ee331f458';
+import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName, subsystemGroups, subsystemSlots, isStrategicCruiser, withSubsystems } from './subsystems.mjs?v=6358e62ee331f458';
+import { resetView } from './view-reset.mjs?v=6358e62ee331f458';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -213,7 +213,7 @@ function changeSubsystems(code) {
 const viewerTransition = createViewerTransition($('viewer-stage'), $('viewer-snapshot'));
 const viewing = createViewerRuntime({
   mount: $('viewer-mount'), transition: viewerTransition,
-  loadRenderer: () => import('./vendor/model-viewer-ao.min.js?v=b76447195da58cc4'),
+  loadRenderer: () => import('./vendor/model-viewer-ao.min.js?v=6358e62ee331f458'),
   view: {
     dimensionFrame: $('dimension-frame'),
     label: item => t('modelAlt', {name:localizedName(item.name)}),
@@ -625,6 +625,7 @@ async function installSkybox(viewer, module) {
       const token = ++change;
       status.hidden = true;
       viewer.backgroundLoading = !viewer.skybox.isReady(select.value);
+      syncExportButtons();
       const entry = module.selectedBackground(catalog, viewer.previewRace, select.value);
       loading.background(entry ? [entry.url,entry.stars].filter(Boolean).map(resourceURL) : []);
       try {
@@ -638,6 +639,7 @@ async function installSkybox(viewer, module) {
         if (viewing.viewer === viewer && token === change) {
           viewer.backgroundLoading = false;
           loading.backgroundSettled();
+          syncExportButtons();
         }
       }
     };
@@ -655,6 +657,7 @@ async function installSkybox(viewer, module) {
 let exportBusy = false;
 function syncExportButtons() {
   for (const id of ['export-glb', 'export-obj']) $(id).disabled = exportBusy || !viewing.canExport;
+  $('export-skybox').disabled=exportBusy||!viewing.canExportSkybox;
 }
 async function exportCurrentModel(format) {
   const viewer = viewing.viewer, item = viewing.readyItem;
@@ -682,6 +685,21 @@ async function exportCurrentModel(format) {
     exportBusy = false;
     syncExportButtons();
   }
+}
+
+async function exportCurrentSkybox(){
+ if(exportBusy||!viewing.canExportSkybox)return;
+ const viewer=viewing.viewer,status=$('export-status');exportBusy=true;syncExportButtons();
+ status.hidden=false;status.textContent=t('exporting',{format:'HDR'});
+ try{
+  await new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0)));
+  if(viewer!==viewing.viewer)return;
+  const result=viewing.exportSkybox(),url=URL.createObjectURL(result.blob),link=document.createElement('a');
+  link.href=url;link.download=result.name;document.body.append(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+  status.textContent=t('exportSkyboxDone');
+ }catch(error){console.error('Skybox export failed',error);if(viewer===viewing.viewer)status.textContent=t('exportFailed');}
+ finally{exportBusy=false;syncExportButtons();}
 }
 
 function modelError(key) {
@@ -945,6 +963,7 @@ function setupEvents() {
   const resetCurrentView = () => { if (viewing.viewer?.hangar?.active) viewing.viewer.hangar.reset(); else if (viewing.viewer) resetView(viewing.viewer); };
   $('reset-view').addEventListener('click', resetCurrentView);
   $('export-glb').addEventListener('click', () => exportCurrentModel('glb'));
+  $('export-skybox').addEventListener('click',exportCurrentSkybox);
   $('export-obj').addEventListener('click', () => exportCurrentModel('obj'));
   $('stage-reset-view').addEventListener('click', resetCurrentView);
   $('fullscreen').addEventListener('click', toggleViewerExpanded);
@@ -1012,7 +1031,7 @@ async function init() {
     configureResourceBase(config.resourceBaseURL, config.backgroundBaseURL, config.backgroundFiles);
     const [index, identities, fallbackIndex] = await Promise.all([
       loadJSON(resourceURL('./data/catalog-index.json'), {cache:'no-cache'}),
-      loadJSON('./icons/identities.json?v=b76447195da58cc4'),
+      loadJSON('./icons/identities.json?v=6358e62ee331f458'),
       loadJSON(resourceURL('./assets/renders/index.json'), {cache:'no-cache'}, {optional:true}).catch(() => ({})),
     ]);
     data = index;

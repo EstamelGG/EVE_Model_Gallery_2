@@ -1,11 +1,11 @@
-import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=b76447195da58cc4';
-import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=b76447195da58cc4';
-import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=b76447195da58cc4';
-import {viewerProfile} from './viewer-profile.mjs?v=b76447195da58cc4';
-import {resourceURL} from './resource-location.mjs?v=b76447195da58cc4';
-import {trackResource} from './resource-activity.mjs?v=b76447195da58cc4';
-import {applyPostprocessingSettings} from './display-settings.mjs?v=b76447195da58cc4';
-import {recenterView} from './view-reset.mjs?v=b76447195da58cc4';
+import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=6358e62ee331f458';
+import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=6358e62ee331f458';
+import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=6358e62ee331f458';
+import {viewerProfile} from './viewer-profile.mjs?v=6358e62ee331f458';
+import {resourceURL} from './resource-location.mjs?v=6358e62ee331f458';
+import {trackResource} from './resource-activity.mjs?v=6358e62ee331f458';
+import {applyPostprocessingSettings, effectsEnabled} from './display-settings.mjs?v=6358e62ee331f458';
+import {recenterView} from './view-reset.mjs?v=6358e62ee331f458';
 
 // Wait for the actual model event, and detach listeners on success, failure,
 // cancellation or a synchronous setup failure. Shared asset requests continue.
@@ -71,8 +71,8 @@ export function createViewerRuntime({mount, transition, loadRenderer, view}) {
     viewer.displaySettings = values;
     viewer.dataset.displaySettings = JSON.stringify(values);
     viewer.setDisplaySettings?.(values);
-    viewer.shipEffects?.setVisible(values.effects);
-    viewer.hangar?.setEffectsVisible(values.effects);
+    viewer.shipEffects?.setVisible(effectsEnabled(values));
+    viewer.hangar?.setEffectsVisible(effectsEnabled(values));
     applyPostprocessingSettings(viewer);
   }
   function fail(key, error, operation) {
@@ -89,7 +89,7 @@ export function createViewerRuntime({mount, transition, loadRenderer, view}) {
   async function prepare(viewer, item, context) {
     const {settings, operation} = context, source = sourceURL(item);
     if (item.subsystemParts) {
-      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=b76447195da58cc4');
+      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=6358e62ee331f458');
       await trackResource(source, () => prepareSubsystemModel(viewer.assetSession, item, source, location.href), 'resourceModel');
       if (!operation.isCurrent()) return null;
     }
@@ -287,6 +287,12 @@ export function createViewerRuntime({mount, transition, loadRenderer, view}) {
     get viewer() { return controller.viewer; },
     get readyItem() { return controller.viewer?.readyItem; },
     get canExport() { return !!controller.viewer?.exportReady; },
+    get canExportSkybox(){return !!controller.viewer?.skybox?.exportSource && !controller.viewer.backgroundLoading && !controller.viewer.hangarActive;},
+    exportSkybox(){
+      const source=controller.viewer?.skybox?.exportSource;
+      if(!source||controller.viewer.backgroundLoading||controller.viewer.hangarActive)throw Error('Skybox is not ready');
+      return api.exportSkybox(source);
+    },
     show, cancel, applyRenderSettings, applyDisplaySettings,
     close() { transition.reset(); reportCleanup(controller.close()); view.reset(); mount.replaceChildren(); },
     exportModel(format) {
