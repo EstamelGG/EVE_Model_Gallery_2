@@ -79,6 +79,7 @@ export const guideCopy = {
     'Use <code>effects="false"</code> to disable effects.',
   ],
   rotateHelp: ['自动旋转。', 'Rotate automatically.'],
+  powerPreferenceHelp: ['default / low-power / high-performance。显卡由浏览器决定；切换后重新加载本页所有查看器。', 'default / low-power / high-performance. A browser hint; changing it reloads all viewers on this page.'],
   exposureHelp: ['亮度，范围 0.1–3。', 'Exposure, from 0.1 to 3.'],
   reflectionHelp: ['反射强度，范围 0–3。', 'Reflection strength, from 0 to 3.'],
   killsHelp: ['击杀标记数量，0–999；需模型支持。', 'Kill marks, 0–999; requires model support.'],

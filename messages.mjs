@@ -1,4 +1,9 @@
 export const messages = {
+  gpuPreference: ['显卡偏好', 'GPU preference'],
+  gpuAutomatic: ['自动', 'Automatic'],
+  gpuLowPower: ['节能优先', 'Prefer power saving'],
+  gpuHighPerformance: ['高性能优先', 'Prefer high performance'],
+  gpuPreferenceHint: ['实际显卡由浏览器决定。切换后会重新加载本页所有模型查看器。', 'The browser chooses the GPU. Changing this reloads all model viewers on this page.'],
   demoTitle: ['EVE 模型标签 · 最小示例', 'EVE model component · Minimal example'],
   demoConfigTitle: ['EVE 标签 · 参数与装备示例', 'EVE component · Settings and equipment'],
   demoMinimal: ['最小示例', 'Minimal example'],

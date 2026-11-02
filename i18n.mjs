@@ -1,5 +1,5 @@
-import {siteLocale,browserLocale,languagePreference,saveLanguagePreference,languageStorageKey} from './locale.mjs?v=f7513a145da60deb';
-import {messages} from './messages.mjs?v=f7513a145da60deb';
+import {siteLocale,browserLocale,languagePreference,saveLanguagePreference,languageStorageKey} from './locale.mjs?v=240addf4aa86d02c';
+import {messages} from './messages.mjs?v=240addf4aa86d02c';
 
 const storageKey = languageStorageKey;
 let preference=languagePreference();

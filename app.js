@@ -1,19 +1,19 @@
-import './eve-model-viewer.js?v=f7513a145da60deb';
+import './eve-model-viewer.js?v=240addf4aa86d02c';
 import {
   locale,
   t,
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=f7513a145da60deb';
-import { createCardGrid } from './card-grid.mjs?v=f7513a145da60deb';
-import { createCatalogState } from './catalog-state.mjs?v=f7513a145da60deb';
-import { createCatalogLoader } from './catalog-loader.mjs?v=f7513a145da60deb';
-import { hullKey } from './hull-variants.mjs?v=f7513a145da60deb';
-import { createAffiliationResolver } from './affiliation.mjs?v=f7513a145da60deb';
-import { configureResourceBase, resourceURL } from './resource-location.mjs?v=f7513a145da60deb';
-import { loadJSON } from './resource-activity.mjs?v=f7513a145da60deb';
-import { prepareRenderImages } from './render-images.mjs?v=f7513a145da60deb';
+} from './i18n.mjs?v=240addf4aa86d02c';
+import { createCardGrid } from './card-grid.mjs?v=240addf4aa86d02c';
+import { createCatalogState } from './catalog-state.mjs?v=240addf4aa86d02c';
+import { createCatalogLoader } from './catalog-loader.mjs?v=240addf4aa86d02c';
+import { hullKey } from './hull-variants.mjs?v=240addf4aa86d02c';
+import { createAffiliationResolver } from './affiliation.mjs?v=240addf4aa86d02c';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=240addf4aa86d02c';
+import { loadJSON } from './resource-activity.mjs?v=240addf4aa86d02c';
+import { prepareRenderImages } from './render-images.mjs?v=240addf4aa86d02c';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -181,6 +181,7 @@ viewer.addEventListener('settings-change', (event) => {
     if (patch.recentEquipment !== undefined)
       localStorage.setItem('eve-fitting-last-equipment', String(patch.recentEquipment));
     if (patch.background !== undefined) localStorage.setItem('viewer.skybox', patch.background);
+    if (patch.powerPreference !== undefined) localStorage.setItem('viewer.powerPreference', patch.powerPreference);
     if (patch.display || patch.effects !== undefined)
       localStorage.setItem(
         'viewer.performance',
@@ -808,6 +809,8 @@ async function init() {
       viewerConfig.recentEquipment =
         Number(localStorage.getItem('eve-fitting-last-equipment')) || undefined;
       viewerConfig.background = localStorage.getItem('viewer.skybox') || 'auto';
+      const powerPreference=localStorage.getItem('viewer.powerPreference');
+      viewerConfig.powerPreference=['default','low-power','high-performance'].includes(powerPreference)?powerPreference:'high-performance';
       viewerConfig.display = JSON.parse(localStorage.getItem('viewer.performance') || '{}');
       viewerConfig.effects = viewerConfig.display.effects !== false;
       viewerConfig.invertWheel = localStorage.getItem('viewer.invertWheel') === 'true';
@@ -815,7 +818,7 @@ async function init() {
     } catch {}
     const [index, identities, fallbackIndex] = await Promise.all([
       loadJSON(resourceURL('./data/catalog-index.json'), { cache: 'no-cache' }),
-      loadJSON('./icons/identities.json?v=f7513a145da60deb'),
+      loadJSON('./icons/identities.json?v=240addf4aa86d02c'),
       loadJSON(
         resourceURL('./assets/renders/index.json'),
         { cache: 'no-cache' },
