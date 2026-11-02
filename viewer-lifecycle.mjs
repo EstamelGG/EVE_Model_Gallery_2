@@ -1,8 +1,9 @@
-import { cancelViewReset } from './view-reset.mjs?v=b68e8ca1247fd1fe';
+import { cancelViewReset } from './view-reset.mjs?v=e78fb1e434030b41';
 
 // Effects must detach before native materials are restored. The asset session
 // belongs to the dialog and deliberately survives individual viewer instances.
 const disposalOrder = [
+  'hangar',
   'skybox',
   'disposeFPS',
   'disposeAutoRotate',
@@ -13,6 +14,7 @@ const disposalOrder = [
   'releasePreload',
   'disposeOcclusion',
   'shipEffects',
+  'fitting',
   'disposeNative',
   'disposeSubsystemLabels',
   'disposeEquipment',

@@ -1,6 +1,7 @@
 // Multipliers preserve the authored material and light rig at 1.
 export const renderDefaults = Object.freeze({
   exposure: 0.7, reflection: 0.7, bloom: 0.2, sun: 1, fill: 1, f0: 1, roughness: 1,
+  dirt: 1, depthOfField: 1,
 });
 
 const raceDefaults = {
@@ -30,7 +31,8 @@ export function normalizeRenderSettings(values = {}) {
   return Object.fromEntries(Object.entries(renderDefaults).map(([key, fallback]) => {
     const value = Number(values[key] ?? fallback);
     const min = key === 'exposure' || key === 'roughness' ? 0.1 : 0;
-    return [key, Number.isFinite(value) ? Math.min(3, Math.max(min, value)) : fallback];
+    const max = key === 'dirt' ? 5 : 3;
+    return [key, Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback];
   }));
 }
 

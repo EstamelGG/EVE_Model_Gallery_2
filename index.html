@@ -1,21 +1,21 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#101214" />
     <meta
       name="description"
-      content="EVE Model Viewer 2.0：浏览物品目录、舰船渲染图与交互式三维模型。"
+      content="EVE Model Viewer 2.0: Browse the item catalog, ship renders and interactive 3D models."
     />
     <title>EVE Model Viewer 2.0</title>
     <link rel="icon" href="./favicon.ico?v=2" sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png?v=2" />
     <link rel="icon" type="image/svg+xml" sizes="any" href="./mark.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png?v=2" />
-    <link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=b68e8ca1247fd1fe" />
-    <link rel="stylesheet" href="./styles.css?v=b68e8ca1247fd1fe" />
-    <script type="module" src="./app.js?v=b68e8ca1247fd1fe"></script>
+    <link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=e78fb1e434030b41" />
+    <link rel="stylesheet" href="./styles.css?v=e78fb1e434030b41" />
+    <script type="module" src="./app.js?v=e78fb1e434030b41"></script>
   </head>
   <body>
     <svg class="icon-defs" aria-hidden="true">
@@ -50,51 +50,51 @@
       <button
         class="icon-button mobile-menu"
         id="menu-toggle"
-        aria-label="打开物品目录"
+        aria-label="Open catalog"
         data-i18n-aria-label="openCatalog"
         aria-expanded="false"
       >
         <svg><use href="#i-menu" /></svg>
       </button>
       <div class="brand-lockup">
-      <a href="#group=-1" class="brand" aria-label="EVE Model Viewer 2.0 首页" data-i18n-aria-label="home"
+      <a href="#group=-1" class="brand" aria-label="EVE Model Viewer 2.0 home" data-i18n-aria-label="home"
         ><img src="./mark.svg" alt="" width="30" height="30" /><span
           >EVE Model Viewer <span class="app-version">2.0</span></span
         ></a
       >
-      <span class="developer-credit"><span data-i18n="developer">开发者</span> <strong>EstamelGG</strong></span>
+      <span class="developer-credit"><span data-i18n="developer">Developed by</span> <strong>EstamelGG</strong></span>
       </div>
-      <nav class="header-actions" aria-label="关于与链接" data-i18n-aria-label="aboutLinks">
-        <button id="open-about" class="header-button" aria-haspopup="dialog"><svg aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="about">关于</span></button>
-        <a class="header-button" href="https://github.com/EstamelGG/EVE_Model_Gallery_2" target="_blank" rel="noopener noreferrer" aria-label="GitHub 网页仓库（新窗口）" data-i18n-aria-label="webRepository"><img class="github-mark" src="./icons/github-invertocat-white.svg" alt="" width="98" height="96"/><span>GitHub</span></a>
+      <nav class="header-actions" aria-label="About and links" data-i18n-aria-label="aboutLinks">
+        <button id="open-about" class="header-button" aria-haspopup="dialog"><svg aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="about">About</span></button>
+        <a class="header-button" href="https://github.com/EstamelGG/EVE_Model_Gallery_2" target="_blank" rel="noopener noreferrer" aria-label="GitHub website repository (new tab)" data-i18n-aria-label="webRepository"><img class="github-mark" src="./icons/github-invertocat-white.svg" alt="" width="98" height="96"/><span>GitHub</span></a>
       <select
         class="language-select"
         data-language
         data-i18n-aria-label="language"
-        aria-label="语言"
+        aria-label="Language"
       >
-        <option value="zh-CN" lang="zh-CN">中文</option>
-        <option value="en" lang="en">English</option>
+        <option value="zh-CN" lang="en">Chinese</option>
+        <option value="en" lang="en" selected>English</option>
       </select>
       </nav>
     </header>
     <dialog id="about-dialog" aria-labelledby="about-title">
-      <div class="dialog-top"><span id="about-title" data-i18n="about">关于</span><button id="close-about" class="icon-button" aria-label="关闭关于" data-i18n-aria-label="closeAbout"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
+      <div class="dialog-top"><span id="about-title" data-i18n="about">About</span><button id="close-about" class="icon-button" aria-label="Close about" data-i18n-aria-label="closeAbout"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
       <div class="about-content">
-        <div class="about-brand"><img src="./mark.svg" alt="" width="48" height="48"/><div><h2>EVE Model Viewer <span class="app-version">2.0</span></h2><p><span data-i18n="developer">开发者</span> · <strong>EstamelGG</strong></p></div></div>
-        <dl class="about-release"><dt data-i18n="frontendPublished">前端发布时间</dt><dd><time id="frontend-published" data-i18n="localPreview">本地预览 · 尚未发布</time></dd></dl>
-        <section class="about-section"><h3 data-i18n="copyrightTitle">版权与素材</h3><p data-i18n="copyrightBody">EVE Online 及相关游戏模型、纹理、渲染图、物品与势力图标的版权归 CCP Games 所有。本网站由玩家开发，与 CCP Games 无隶属关系，也未经其背书。</p><p class="about-muted" data-i18n="iconCredits">物品渲染图与图标来自 EVE 官方图像服务，势力图标来自游戏资源；界面操作图标采用内嵌 SVG。</p></section>
-        <section class="about-sponsor"><h3 data-i18n="sponsorTitle">支持这个项目</h3><p data-i18n="sponsorBody">如果这个网站对你有帮助，欢迎通过游戏内转账赞助开发。</p><div class="sponsor-recipient"><img id="sponsor-portrait" alt="" width="48" height="48" hidden/><div class="sponsor-identity"><span data-i18n="gameID">游戏 ID</span><strong id="sponsor-name" aria-live="polite" data-i18n="loading">加载中…</strong></div><button id="copy-sponsor-name" aria-live="polite" class="header-button" type="button" disabled data-i18n="copyName">复制名称</button></div><p id="sponsor-status" class="about-muted" role="status" hidden></p><p class="about-muted" data-i18n="sponsorThanks">感谢每一份支持。</p></section>
-        <a class="about-repository" href="https://github.com/EstamelGG/EVE_Model_Gallery_2" target="_blank" rel="noopener noreferrer" data-i18n="viewWebRepository">在 GitHub 查看网页仓库 ↗</a>
+        <div class="about-brand"><img src="./mark.svg" alt="" width="48" height="48"/><div><h2>EVE Model Viewer <span class="app-version">2.0</span></h2><p><span data-i18n="developer">Developed by</span> · <strong>EstamelGG</strong></p></div></div>
+        <dl class="about-release"><dt data-i18n="frontendPublished">Frontend published</dt><dd><time id="frontend-published" data-i18n="localPreview">Local preview · Not published</time></dd></dl>
+        <section class="about-section"><h3 data-i18n="copyrightTitle">Copyright and assets</h3><p data-i18n="copyrightBody">EVE Online and its game models, textures, renders, item icons and faction icons belong to CCP Games. This is a fan-made website, not affiliated with or endorsed by CCP Games.</p><p class="about-muted" data-i18n="iconCredits">Item renders and icons come from the official EVE image service; faction icons come from game assets. Interface controls use inline SVG icons.</p></section>
+        <section class="about-sponsor"><h3 data-i18n="sponsorTitle">Support this project</h3><p data-i18n="sponsorBody">If you find this website useful, you can support development with an in-game transfer.</p><div class="sponsor-recipient"><img id="sponsor-portrait" alt="" width="48" height="48" hidden/><div class="sponsor-identity"><span data-i18n="gameID">Character name</span><strong id="sponsor-name" aria-live="polite" data-i18n="loading">Loading…</strong></div><button id="copy-sponsor-name" aria-live="polite" class="header-button" type="button" disabled data-i18n="copyName">Copy name</button></div><p id="sponsor-status" class="about-muted" role="status" hidden></p><p class="about-muted" data-i18n="sponsorThanks">Thank you for your support.</p></section>
+        <a class="about-repository" href="https://github.com/EstamelGG/EVE_Model_Gallery_2" target="_blank" rel="noopener noreferrer" data-i18n="viewWebRepository">View website repository on GitHub ↗</a>
       </div>
     </dialog>
     <div class="app-shell">
-      <aside class="sidebar" id="sidebar" aria-label="物品目录" data-i18n-aria-label="catalog">
+      <aside class="sidebar" id="sidebar" aria-label="Catalog" data-i18n-aria-label="catalog">
         <div class="sidebar-caption">
-          <span data-i18n="catalog">目录</span><span id="catalog-count"></span>
+          <span data-i18n="catalog">Catalog</span><span id="catalog-count"></span>
         </div>
-        <nav id="catalog-tree" aria-label="目录与组" data-i18n-aria-label="catalog">
-          <div class="tree-loading" data-i18n="loading">正在读取本地目录…</div>
+        <nav id="catalog-tree" aria-label="Catalog" data-i18n-aria-label="catalog">
+          <div class="tree-loading" data-i18n="loading">Loading…</div>
         </nav>
       </aside>
       <main id="main" tabindex="-1">
@@ -102,63 +102,63 @@
         <section class="page-heading">
           <h1 id="page-title"></h1>
         </section>
-        <section class="toolbar" aria-label="筛选与搜索" data-i18n-aria-label="filters">
-          <div class="scope-tabs" role="group" aria-label="资源范围" data-i18n-aria-label="scope">
+        <section class="toolbar" aria-label="Filters and search" data-i18n-aria-label="filters">
+          <div class="scope-tabs" role="group" aria-label="Availability" data-i18n-aria-label="scope">
             <button id="scope-ready" class="active" aria-pressed="true">
-              <span data-i18n="ready">已采集</span
+              <span data-i18n="ready">Available</span
               ><span id="ready-badge" class="count-badge"></span></button
-            ><button id="scope-all" aria-pressed="false" data-i18n="all">全部目录</button>
+            ><button id="scope-all" aria-pressed="false" data-i18n="all">All items</button>
           </div>
           <label class="search-field"
             ><svg><use href="#i-search" /></svg
             ><input
               id="search"
               type="search"
-              placeholder="搜索名称或编号"
+              placeholder="Search name or ID"
               data-i18n-placeholder="searchHint"
-              aria-label="搜索所有物品的名称或 Type ID"
+              aria-label="Search name or ID"
               data-i18n-aria-label="searchHint"
             /><kbd>/</kbd></label
           >
         </section>
-        <section class="filter-row" aria-label="种族与排序" data-i18n-aria-label="filters">
+        <section class="filter-row" aria-label="Filters and search" data-i18n-aria-label="filters">
           <div id="race-filters" class="race-filters"></div>
           <label class="sort-field"
-            ><span data-i18n="sort">排序</span
-            ><select id="sort" aria-label="物品排序" data-i18n-aria-label="sort">
-              <option value="race" data-i18n="raceSort">种族 · 名称</option>
-              <option value="name" data-i18n="nameSort">英文名称 A–Z</option>
+            ><span data-i18n="sort">Sort</span
+            ><select id="sort" aria-label="Sort" data-i18n-aria-label="sort">
+              <option value="race" data-i18n="raceSort">Affiliation · Name</option>
+              <option value="name" data-i18n="nameSort">Name</option>
               <option value="id" data-i18n="id">Type ID</option>
             </select></label
           >
         </section>
         <div class="results-heading">
-          <span id="results-count" aria-live="polite" data-i18n="loading">正在读取物品…</span>
+          <span id="results-count" aria-live="polite" data-i18n="loading">Loading…</span>
         </div>
         <div id="card-scroll" class="card-scroll" tabindex="0" role="region" aria-labelledby="results-count">
-          <div id="cards" class="cards" aria-live="polite" aria-busy="true"><div class="catalog-loading"><span class="loading-ring" aria-hidden="true"></span><span data-i18n="loadingCatalog">读取目录…</span></div></div>
+          <div id="cards" class="cards" aria-live="polite" aria-busy="true"><div class="catalog-loading"><span class="loading-ring" aria-hidden="true"></span><span data-i18n="loadingCatalog">Loading catalog…</span></div></div>
           <div id="empty-state" class="empty-state" hidden>
             <svg><use href="#i-cube" /></svg>
-            <h2 id="empty-title">此组尚未采集模型</h2>
+            <h2 id="empty-title">No models available in this group</h2>
             <p id="empty-description"></p>
-            <button id="empty-action" class="primary-button">查看目录物品</button>
+            <button id="empty-action" class="primary-button">Browse items</button>
           </div>
         </div>
         <footer class="page-footer">
           <span>EVE Model Viewer <span class="app-version">2.0</span></span>
           <span class="resource-status" data-resource-status role="status" aria-live="polite" hidden><span class="loading-ring" aria-hidden="true"></span><span class="resource-status-text"></span></span>
-          <span data-i18n="credit">素材 © CCP Games · 非官方项目</span>
+          <span data-i18n="credit">Assets © CCP Games · Unofficial project</span>
         </footer>
       </main>
     </div>
     <dialog id="model-dialog" aria-labelledby="stage-title">
       <div class="dialog-top">
         <span
-          ><svg><use href="#i-cube" /></svg><span data-i18n="model">三维模型</span><span id="detail-dna" hidden></span></span
+          ><svg><use href="#i-cube" /></svg><span data-i18n="model">3D model</span><span id="detail-dna" hidden></span></span
         ><button
           id="close-dialog"
           class="icon-button"
-          aria-label="关闭模型查看器"
+          aria-label="Close viewer"
           data-i18n-aria-label="close"
         >
           <svg><use href="#i-close" /></svg>
@@ -178,30 +178,23 @@
           <div class="viewer-dimensions">
             <canvas id="dimension-frame" width="76" height="66" aria-hidden="true"></canvas>
             <div class="dimension-values">
-              <span class="dimension-x"><span data-i18n="dimensionWidth">宽 X</span><strong id="dimension-x">—</strong></span>
-              <span class="dimension-y"><span data-i18n="dimensionHeight">高 Y</span><strong id="dimension-y">—</strong></span>
-              <span class="dimension-z"><span data-i18n="dimensionLength">长 Z</span><strong id="dimension-z">—</strong></span>
+              <span class="dimension-x"><span data-i18n="dimensionWidth">W X</span><strong id="dimension-x">—</strong></span>
+              <span class="dimension-y"><span data-i18n="dimensionHeight">H Y</span><strong id="dimension-y">—</strong></span>
+              <span class="dimension-z"><span data-i18n="dimensionLength">L Z</span><strong id="dimension-z">—</strong></span>
             </div>
           </div>
-          <fieldset id="subsystem-settings" class="settings-group subsystem-settings" hidden>
-            <legend data-i18n="subsystemTitle">子系统搭配</legend>
-            <div id="subsystem-options"></div>
-            <p id="subsystem-status" class="subsystem-status" role="status" aria-live="polite"></p>
-            <button id="show-subsystem-labels" class="reset-button" type="button" data-i18n="subsystemLabels">显示组件位置</button>
-            <button id="reset-subsystems" class="reset-button" type="button" data-i18n="subsystemReset">恢复默认搭配</button>
-          </fieldset>
           <div id="viewer-loading" class="viewer-loading" role="status">
-            <span class="loading-ring"></span><strong data-i18n="loadingModel">正在加载模型</strong
-            ><span id="loading-detail">读取本地几何与材质…</span
+            <span class="loading-ring"></span><strong data-i18n="loadingModel">Loading model</strong
+            ><span id="loading-detail">Loading geometry and materials…</span
             ><progress id="model-progress" max="5" value="0"></progress>
             <span id="loading-count"></span>
             <ul id="loading-resources" class="loading-resources"></ul>
           </div>
           </div>
           <div id="viewer-error" class="viewer-error" hidden>
-            <strong data-i18n="modelFailed">模型暂时无法显示</strong>
+            <strong data-i18n="modelFailed">Unable to display model</strong>
             <p id="viewer-error-text"></p>
-            <button id="retry-model" class="primary-button" data-i18n="retry">重新加载</button>
+            <button id="retry-model" class="primary-button" data-i18n="retry">Retry</button>
           </div>
           <div id="hull-variants" class="hull-variants" hidden>
             <section id="hull-variants-panel" class="hull-variants-panel" aria-labelledby="hull-variants-toggle" hidden>
@@ -213,13 +206,13 @@
             </button>
           </div>
           <div class="stage-bottom">
-            <span data-i18n="gestures">拖动旋转 · 滚轮缩放 · 右键平移</span>
+            <span data-i18n="gestures">Drag to orbit · Scroll to zoom · Right-drag to pan</span>
             <div class="stage-actions">
               <button
                 id="stage-reset-view"
                 class="icon-button"
-                aria-label="重置视角"
-                title="重置视角"
+                aria-label="Reset view"
+                title="Reset view"
                 data-i18n-aria-label="reset"
                 data-i18n-title="reset"
               >
@@ -228,7 +221,7 @@
               <button
                 id="fullscreen"
                 class="icon-button"
-                aria-label="全屏查看模型"
+                aria-label="Fullscreen"
                 data-i18n-aria-label="fullscreen"
               >
                 <svg><use href="#i-expand" /></svg>
@@ -242,49 +235,63 @@
           <h2 id="detail-title"></h2>
           <div class="detail-tags">
             <span id="detail-group"></span><span id="detail-tech"></span
-            ><span data-i18n="skin">默认涂装</span>
+            ><span data-i18n="skin">Default skin</span>
           </div>
           <dl class="detail-stats">
             <div>
-              <dt data-i18n="id">物品编号</dt>
+              <dt data-i18n="id">Type ID</dt>
               <dd id="detail-id"></dd>
             </div>
             <div>
-              <dt data-i18n="triangles">三角面</dt>
+              <dt data-i18n="triangles">Triangles</dt>
               <dd id="detail-triangles"></dd>
             </div>
             <div>
-              <dt data-i18n="size">模型资源</dt>
+              <dt data-i18n="size">Asset size</dt>
               <dd id="detail-size"></dd>
             </div>
           </dl>
+          <div class="model-export model-export-compact">
+            <span data-i18n="exportModel">Export model</span>
+            <div class="model-export-buttons">
+              <button id="export-glb" class="reset-button" disabled aria-label="Export GLB" data-i18n-aria-label="exportGlb">GLB</button>
+              <button id="export-obj" class="reset-button" disabled aria-label="Export OBJ" data-i18n-aria-label="exportObj">OBJ</button>
+            </div>
+            <p id="export-status" role="status" aria-live="polite" hidden></p>
+          </div>
           <p id="detail-warnings" role="note" hidden></p>
+          <div class="settings-tabs" role="tablist" aria-label="Viewer settings" data-i18n-aria-label="settingsTabs">
+            <button id="tab-visual" role="tab" aria-controls="panel-visual" aria-selected="true" data-settings-tab="visual" data-i18n="tabVisual">Visual</button>
+            <button id="tab-fitting" role="tab" aria-controls="panel-fitting" aria-selected="false" tabindex="-1" data-settings-tab="fitting" data-i18n="tabFitting">Fitting</button>
+            <button id="tab-subsystems" role="tab" aria-controls="panel-subsystems" aria-selected="false" tabindex="-1" data-settings-tab="subsystems" data-i18n="tabSubsystems">Subsystems</button>
+            <button id="tab-hangar" role="tab" aria-controls="panel-hangar" aria-selected="false" tabindex="-1" data-settings-tab="hangar" data-i18n="tabHangar" hidden>Hangar</button>
+          </div>
           <div class="detail-scroll">
-          <div class="viewer-settings">
+          <div id="panel-visual" class="viewer-settings" role="tabpanel" aria-labelledby="tab-visual">
             <fieldset class="settings-group">
-              <legend data-i18n="sceneSettings">场景与操作</legend>
-            <label class="toggle-row" for="skybox-select"><span data-i18n="skybox">背景</span><select id="skybox-select"><option value="none">无背景</option></select></label>
+              <legend data-i18n="sceneSettings">Scene &amp; controls</legend>
+            <label class="toggle-row" for="skybox-select"><span data-i18n="skybox">Skybox</span><select id="skybox-select"><option value="none">None</option></select></label>
             <small id="skybox-status" role="status" hidden></small>
             <label class="toggle-row" id="hull-animation-row" for="hull-animation" hidden
-              ><span data-i18n="animation">船体动作</span
+              ><span data-i18n="animation">Hull animation</span
               ><select id="hull-animation"></select></label
             ><label class="toggle-row" id="gate-state-row" for="gate-state" hidden>
-              <span data-i18n="gateState">星门状态</span><select id="gate-state">
-                <option value="Inactive" data-i18n="gateInactive">未激活</option>
-                <option value="Active_Unlinked" data-i18n="gateUnlinked">已激活</option>
-                <option value="Active_Linked" data-i18n="gateLinked" selected>已连接</option>
+              <span data-i18n="gateState">Gate state</span><select id="gate-state">
+                <option value="Inactive" data-i18n="gateInactive">Inactive</option>
+                <option value="Active_Unlinked" data-i18n="gateUnlinked">Active</option>
+                <option value="Active_Linked" data-i18n="gateLinked" selected>Linked</option>
               </select></label>
-            <div class="toggle-row" id="gate-events" hidden><span data-i18n="gateTransit">跃迁预览</span>
-              <button id="gate-arrival" type="button" data-i18n="gateArrival">到达</button>
-              <button id="gate-departure" type="button" data-i18n="gateDeparture">离开</button></div>
+            <div class="toggle-row" id="gate-events" hidden><span data-i18n="gateTransit">Transit preview</span>
+              <button id="gate-arrival" type="button" data-i18n="gateArrival">Arrival</button>
+              <button id="gate-departure" type="button" data-i18n="gateDeparture">Departure</button></div>
             <label class="toggle-row" for="auto-rotate"
-              ><span data-i18n="rotate">自动旋转</span
+              ><span data-i18n="rotate">Auto-rotate</span
               ><input type="checkbox" id="auto-rotate" /><span
                 class="toggle-visual"
                 aria-hidden="true"
               ></span></label
             ><label class="toggle-row" for="invert-wheel"
-              ><span data-i18n="invertWheel">滚轮反转</span
+              ><span data-i18n="invertWheel">Invert mouse wheel</span
               ><input type="checkbox" id="invert-wheel" /><span
                 class="toggle-visual"
                 aria-hidden="true"
@@ -292,95 +299,134 @@
             >
             </fieldset>
             <fieldset class="settings-group performance-settings">
-              <legend data-i18n="performanceSettings">画质与性能</legend>
-              <label class="toggle-row" for="show-antialias"><span data-i18n="showAntialias">抗锯齿</span><input type="checkbox" id="show-antialias" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="show-effects"><span data-i18n="showEffects">特效</span><input type="checkbox" id="show-effects" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="show-occlusion"><span data-i18n="showOcclusion">环境遮蔽</span><input type="checkbox" id="show-occlusion" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="show-bloom"><span data-i18n="showBloom">泛光</span><input type="checkbox" id="show-bloom" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <legend data-i18n="performanceSettings">Quality &amp; performance</legend>
+              <label class="toggle-row" for="show-antialias"><span data-i18n="showAntialias">Anti-aliasing</span><input type="checkbox" id="show-antialias" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="show-effects"><span data-i18n="showEffects">Effects</span><input type="checkbox" id="show-effects" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="show-occlusion"><span data-i18n="showOcclusion">Ambient occlusion</span><input type="checkbox" id="show-occlusion" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="show-bloom"><span data-i18n="showBloom">Bloom</span><input type="checkbox" id="show-bloom" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="show-dof"><span data-i18n="showDepthOfField">Depth of field</span><input type="checkbox" id="show-dof" /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="exposure-label" for="depthOfField"><span data-i18n="depthOfField">Focus blur</span><output id="depthOfField-value">1.0</output></label>
+              <input type="range" id="depthOfField" min="0" max="3" step="0.1" value="1" disabled />
             </fieldset>
             <fieldset class="settings-group">
-              <legend data-i18n="hullAppearance">船体外观</legend>
-            <label class="exposure-label" for="kill-count" data-i18n="killCount">击杀标记数量</label>
+              <legend data-i18n="hullAppearance">Hull appearance</legend>
+            <label class="exposure-label" for="dirt"><span data-i18n="dirtStrength">Hull dirt</span><output id="dirt-value">1.0</output></label>
+            <input type="range" id="dirt" min="0" max="5" step="0.1" value="1" />
+            <label class="exposure-label" for="kill-count" data-i18n="killCount">Kill mark count</label>
             <div class="kill-count-controls">
               <input type="range" id="kill-count" min="0" max="999" step="1" value="0" disabled aria-describedby="kill-count-unavailable" />
-              <input type="number" id="kill-count-input" min="0" max="999" step="1" value="0" disabled aria-label="击杀标记数量" data-i18n-aria-label="killCount" />
+              <input type="number" id="kill-count-input" min="0" max="999" step="1" value="0" disabled aria-label="Kill mark count" data-i18n-aria-label="killCount" />
             </div>
-            <p id="kill-count-unavailable" class="kill-count-status" data-i18n="killCountUnavailable">此模型暂无可用的击杀标记</p>
+            <p id="kill-count-unavailable" class="kill-count-status" data-i18n="killCountUnavailable">Kill marks are not available for this model</p>
             <details class="material-settings texture-settings">
-              <summary data-i18n="hullTextures">船体贴图</summary>
-              <label class="toggle-row" for="show-textures"><span data-i18n="allTextures">全部贴图</span><input type="checkbox" id="show-textures" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="texture-AlbedoMap"><span data-i18n="textureAlbedo">颜色纹理</span><input type="checkbox" id="texture-AlbedoMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="texture-NormalMap"><span data-i18n="textureNormal">法线细节</span><input type="checkbox" id="texture-NormalMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="texture-RoughnessMap"><span data-i18n="textureRoughness">粗糙度</span><input type="checkbox" id="texture-RoughnessMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="texture-MaterialMap"><span data-i18n="textureMaterial">材质分区</span><input type="checkbox" id="texture-MaterialMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="texture-PaintMaskMap"><span data-i18n="texturePaint">涂装／透明遮罩</span><input type="checkbox" id="texture-PaintMaskMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="texture-GlowMap"><span data-i18n="textureGlow">发光</span><input type="checkbox" id="texture-GlowMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="texture-DirtMap"><span data-i18n="textureDirt">污垢</span><input type="checkbox" id="texture-DirtMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="texture-DustNoiseMap"><span data-i18n="textureDust">尘埃噪声</span><input type="checkbox" id="texture-DustNoiseMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="texture-SailsDetailMap"><span data-i18n="textureSails">帆面细节</span><input type="checkbox" id="texture-SailsDetailMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="texture-PatternMask1Map"><span data-i18n="texturePattern1">投影涂装 1</span><input type="checkbox" id="texture-PatternMask1Map" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
-              <label class="toggle-row" for="texture-PatternMask2Map"><span data-i18n="texturePattern2">投影涂装 2</span><input type="checkbox" id="texture-PatternMask2Map" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <summary data-i18n="hullTextures">Hull textures</summary>
+              <label class="toggle-row" for="show-textures"><span data-i18n="allTextures">All textures</span><input type="checkbox" id="show-textures" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-AlbedoMap"><span data-i18n="textureAlbedo">Color texture</span><input type="checkbox" id="texture-AlbedoMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-NormalMap"><span data-i18n="textureNormal">Normal detail</span><input type="checkbox" id="texture-NormalMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-RoughnessMap"><span data-i18n="textureRoughness">Roughness</span><input type="checkbox" id="texture-RoughnessMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-MaterialMap"><span data-i18n="textureMaterial">Material regions</span><input type="checkbox" id="texture-MaterialMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-PaintMaskMap"><span data-i18n="texturePaint">Paint / transparency mask</span><input type="checkbox" id="texture-PaintMaskMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-GlowMap"><span data-i18n="textureGlow">Emission</span><input type="checkbox" id="texture-GlowMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-DirtMap"><span data-i18n="textureDirt">Dirt</span><input type="checkbox" id="texture-DirtMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-DustNoiseMap"><span data-i18n="textureDust">Dust noise</span><input type="checkbox" id="texture-DustNoiseMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-SailsDetailMap"><span data-i18n="textureSails">Sail detail</span><input type="checkbox" id="texture-SailsDetailMap" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-PatternMask1Map"><span data-i18n="texturePattern1">Projected pattern 1</span><input type="checkbox" id="texture-PatternMask1Map" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              <label class="toggle-row" for="texture-PatternMask2Map"><span data-i18n="texturePattern2">Projected pattern 2</span><input type="checkbox" id="texture-PatternMask2Map" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
             </details>
             </fieldset>
             <fieldset class="settings-group">
-              <legend data-i18n="materialSettings">光照与材质</legend>
+              <legend data-i18n="materialSettings">Lighting &amp; materials</legend>
             <label class="exposure-label" for="exposure"
-              ><span data-i18n="brightness">灯光亮度</span
+              ><span data-i18n="brightness">Brightness</span
               ><output id="exposure-value">0.7</output></label
             ><input type="range" id="exposure" min="0.1" max="3" step="0.1" value="0.7" />
-            <label class="exposure-label" for="reflection"><span data-i18n="reflection">反射强度</span><output id="reflection-value">0.7</output></label>
+            <label class="exposure-label" for="reflection"><span data-i18n="reflection">Reflection strength</span><output id="reflection-value">0.7</output></label>
             <input type="range" id="reflection" min="0" max="3" step="0.1" value="0.7" />
-            <label class="exposure-label" for="bloom"><span data-i18n="bloom">灯光辉光</span><output id="bloom-value">0.2</output></label>
+            <label class="exposure-label" for="bloom"><span data-i18n="bloom">Light bloom</span><output id="bloom-value">0.2</output></label>
             <input type="range" id="bloom" min="0" max="3" step="0.1" value="0.2" />
             <details class="material-settings" open>
-              <summary data-i18n="advancedMaterialSettings">高级调节</summary>
-              <label class="exposure-label" for="sun"><span data-i18n="sun">主光</span><output id="sun-value">1.0</output></label>
+              <summary data-i18n="advancedMaterialSettings">Advanced adjustments</summary>
+              <label class="exposure-label" for="sun"><span data-i18n="sun">Key light</span><output id="sun-value">1.0</output></label>
               <input type="range" id="sun" min="0" max="3" step="0.1" value="1" />
-              <label class="exposure-label" for="fill"><span data-i18n="fill">补光</span><output id="fill-value">1.0</output></label>
+              <label class="exposure-label" for="fill"><span data-i18n="fill">Fill lights</span><output id="fill-value">1.0</output></label>
               <input type="range" id="fill" min="0" max="3" step="0.1" value="1" />
-              <label class="exposure-label" for="f0"><span data-i18n="f0">金属反射（F0）</span><output id="f0-value">1.0</output></label>
+              <label class="exposure-label" for="f0"><span data-i18n="f0">Material reflectance (F0)</span><output id="f0-value">1.0</output></label>
               <input type="range" id="f0" min="0" max="3" step="0.1" value="1" />
-              <label class="exposure-label" for="roughness"><span data-i18n="roughness">粗糙度</span><output id="roughness-value">1.0</output></label>
+              <label class="exposure-label" for="roughness"><span data-i18n="roughness">Roughness</span><output id="roughness-value">1.0</output></label>
               <input type="range" id="roughness" min="0.1" max="3" step="0.1" value="1" />
             </details>
             </fieldset>
-            <button id="reset-render" class="reset-button" data-i18n="resetRender">恢复默认</button>
+            <button id="reset-render" class="reset-button" data-i18n="resetRender">Restore defaults</button>
             <button
               id="reset-view"
               class="reset-button"
             >
-              <svg><use href="#i-reset" /></svg><span data-i18n="reset">重置视角</span>
+              <svg><use href="#i-reset" /></svg><span data-i18n="reset">Reset view</span>
             </button>
           </div>
-          <div class="model-export">
-            <div class="model-export-buttons">
-              <button id="export-glb" class="reset-button" disabled data-i18n="exportGlb">导出 GLB</button>
-              <button id="export-obj" class="reset-button" disabled data-i18n="exportObj">导出 OBJ</button>
+          <div id="panel-fitting" class="viewer-settings" role="tabpanel" aria-labelledby="tab-fitting" hidden>
+            <p id="fitting-status" class="fitting-status" role="status" aria-live="polite" data-i18n="fittingHint">Open Fitting to load available hardpoints.</p>
+            <div id="fitting-controls" hidden>
+              <div class="fitting-toolbar">
+                <label class="toggle-row" for="fitting-deployed"><span data-i18n="fittingDeployed">Deploy equipment</span><input id="fitting-deployed" type="checkbox" checked><span class="toggle-visual" aria-hidden="true"></span></label>
+                <button id="fitting-clear" type="button" class="reset-button" data-i18n="fittingRemoveSelected">Remove selected</button>
+              </div>
+              <div class="fitting-selection-tools"><span id="fitting-selection"></span><button id="fitting-all" type="button" data-i18n="fittingAll">All</button><button id="fitting-none" type="button" data-i18n="fittingNone">Clear</button></div>
+              <div id="fitting-slots" class="fitting-slot-buttons" role="group" data-i18n-aria-label="fittingMounts" aria-label="Select mount groups"></div>
+              <button id="fitting-choose" type="button" class="fitting-slot-choose" aria-controls="fitting-picker" aria-expanded="false" data-i18n-aria-label="fittingBatchChoose" aria-label="Choose equipment for selected mounts"></button>
+              <div id="fitting-picker" class="fitting-picker" role="region" aria-labelledby="fitting-picker-title" hidden>
+                <div class="fitting-picker-heading"><strong id="fitting-picker-title"></strong><button id="fitting-picker-close" type="button" data-i18n-aria-label="fittingClose" aria-label="Close equipment picker">×</button></div>
+                <input id="fitting-search" type="search" autocomplete="off" data-i18n-placeholder="fittingSearch" data-i18n-aria-label="fittingSearch" placeholder="Search equipment name or ID" aria-label="Search equipment name or ID">
+                <select id="fitting-category" data-i18n-aria-label="fittingCategory" aria-label="Equipment type"></select>
+                <div id="fitting-results" class="fitting-results"></div>
+                <p id="fitting-results-empty" class="fitting-note" data-i18n="fittingNoResults" hidden>No matching equipment</p>
+                <button id="fitting-more" class="reset-button" type="button" data-i18n="fittingMore" hidden>Show more</button>
+              </div>
+              <p class="fitting-note" data-i18n="fittingNote">Visual hardpoints only; fitting restrictions are not enforced. Mounts do not yet follow hull animations.</p>
             </div>
-            <p id="export-status" role="status" aria-live="polite" hidden></p>
+          </div>
+          <div id="panel-subsystems" class="viewer-settings" role="tabpanel" aria-labelledby="tab-subsystems" hidden>
+            <p id="subsystem-not-applicable" class="fitting-status" data-i18n="subsystemNotApplicable">This model has no configurable subsystems.</p>
+          <fieldset id="subsystem-settings" class="settings-group subsystem-settings" hidden>
+            <legend data-i18n="subsystemTitle">Subsystem configuration</legend>
+            <div id="subsystem-options"></div>
+            <p id="subsystem-status" class="subsystem-status" role="status" aria-live="polite"></p>
+            <button id="show-subsystem-labels" class="reset-button" type="button" data-i18n="subsystemLabels">Show component locations</button>
+            <button id="reset-subsystems" class="reset-button" type="button" data-i18n="subsystemReset">Reset configuration</button>
+          </fieldset>
+          </div>
+          <div id="panel-hangar" class="viewer-settings" role="tabpanel" aria-labelledby="tab-hangar" hidden>
+            <label class="hangar-field"><span data-i18n="hangarRoom">Hangar background</span><select id="hangar-room" disabled></select></label>
+            <label id="hangar-mode-row" class="hangar-field" hidden><span data-i18n="hangarMode">Interior view</span><select id="hangar-mode"><option value="dock" data-i18n="hangarDock">Docked ship</option><option value="interior" data-i18n="hangarInterior">Interior only</option></select></label>
+            <div id="hangar-ship-controls" hidden>
+              <label class="hangar-field"><span data-i18n="hangarShip">Docked ship</span><input id="hangar-ship-search" type="search" data-i18n-placeholder="searchHint" data-i18n-aria-label="hangarShipSearch" placeholder="Search name or ID" aria-label="Search docked ships"><select id="hangar-ship" data-i18n-aria-label="hangarShip" aria-label="Docked ship"></select></label>
+            </div>
+            <p id="hangar-status" class="fitting-note" role="status" aria-live="polite"></p>
+            <button id="hangar-reset" type="button" class="reset-button" data-i18n="hangarReset">Reset hangar view</button>
+            <p class="fitting-note" data-i18n="hangarNote">Original scale; hangar capacity and docking permissions are not enforced.</p>
           </div>
           <div class="detail-navigation">
             <button
               id="previous-ship"
-              aria-label="上一艘舰船"
+              aria-label="← Previous"
               data-i18n-aria-label="previous"
               data-i18n="previous"
             >
-              ← 上一艘</button
+              ← Previous</button
             ><span id="detail-position"></span
             ><button
               id="next-ship"
-              aria-label="下一艘舰船"
+              aria-label="Next →"
               data-i18n-aria-label="next"
               data-i18n="next"
             >
-              下一艘 →
+              Next →
             </button>
           </div>
           </div>
         </aside>
       </div>
-      <div class="dialog-resource-footer"><span class="resource-status" data-resource-status role="status" aria-live="polite" hidden><span class="loading-ring" aria-hidden="true"></span><span class="resource-status-text"></span></span></div>
+      <div class="dialog-resource-footer"><span class="resource-status" data-resource-status role="status" aria-live="polite" hidden><span class="loading-ring" aria-hidden="true"></span><span class="resource-status-text"></span></span><span id="viewer-gpu" class="viewer-gpu"></span></div>
     </dialog>
   </body>
 </html>

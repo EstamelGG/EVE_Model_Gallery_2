@@ -1,11 +1,11 @@
-import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=b68e8ca1247fd1fe';
-import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=b68e8ca1247fd1fe';
-import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=b68e8ca1247fd1fe';
-import {viewerProfile} from './viewer-profile.mjs?v=b68e8ca1247fd1fe';
-import {resourceURL} from './resource-location.mjs?v=b68e8ca1247fd1fe';
-import {trackResource} from './resource-activity.mjs?v=b68e8ca1247fd1fe';
-import {applyPostprocessingSettings} from './display-settings.mjs?v=b68e8ca1247fd1fe';
-import {recenterView} from './view-reset.mjs?v=b68e8ca1247fd1fe';
+import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=e78fb1e434030b41';
+import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=e78fb1e434030b41';
+import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=e78fb1e434030b41';
+import {viewerProfile} from './viewer-profile.mjs?v=e78fb1e434030b41';
+import {resourceURL} from './resource-location.mjs?v=e78fb1e434030b41';
+import {trackResource} from './resource-activity.mjs?v=e78fb1e434030b41';
+import {applyPostprocessingSettings} from './display-settings.mjs?v=e78fb1e434030b41';
+import {recenterView} from './view-reset.mjs?v=e78fb1e434030b41';
 
 // Wait for the actual model event, and detach listeners on success, failure,
 // cancellation or a synchronous setup failure. Shared asset requests continue.
@@ -72,6 +72,7 @@ export function createViewerRuntime({mount, transition, loadRenderer, view}) {
     viewer.dataset.displaySettings = JSON.stringify(values);
     viewer.setDisplaySettings?.(values);
     viewer.shipEffects?.setVisible(values.effects);
+    viewer.hangar?.setEffectsVisible(values.effects);
     applyPostprocessingSettings(viewer);
   }
   function fail(key, error, operation) {
@@ -88,7 +89,7 @@ export function createViewerRuntime({mount, transition, loadRenderer, view}) {
   async function prepare(viewer, item, context) {
     const {settings, operation} = context, source = sourceURL(item);
     if (item.subsystemParts) {
-      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=b68e8ca1247fd1fe');
+      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=e78fb1e434030b41');
       await trackResource(source, () => prepareSubsystemModel(viewer.assetSession, item, source, location.href), 'resourceModel');
       if (!operation.isCurrent()) return null;
     }
@@ -222,6 +223,7 @@ export function createViewerRuntime({mount, transition, loadRenderer, view}) {
     customElements.get('model-viewer').modelCacheSize = 1;
     const viewer = document.createElement('model-viewer');
     viewer.lifecycle = createViewerLifecycle(viewer);
+    viewer.lifecycle.set('disposeAnnotationFocus', api.installAnnotationFocus(viewer));
     viewer.assetSession = controller.session(() => api.createViewerSession());
     viewer.assetSession.race ||= item.dna?.split(':')[2] || 'gallente';
     viewer.previewRace = viewer.assetSession.race;

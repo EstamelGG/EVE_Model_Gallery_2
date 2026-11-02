@@ -1,25 +1,27 @@
-import {configureHullAnimations} from './viewer-presentation.mjs?v=b68e8ca1247fd1fe';
-import {createViewerRuntime} from './viewer-runtime.mjs?v=b68e8ca1247fd1fe';
+import {configureHullAnimations} from './viewer-presentation.mjs?v=e78fb1e434030b41';
+import {createViewerRuntime} from './viewer-runtime.mjs?v=e78fb1e434030b41';
 import {
   locale,
   t,
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=b68e8ca1247fd1fe';
-import {createViewerSettings} from './viewer-settings.mjs?v=b68e8ca1247fd1fe';
-import {createCardGrid} from './card-grid.mjs?v=b68e8ca1247fd1fe';
-import {createCatalogState} from './catalog-state.mjs?v=b68e8ca1247fd1fe';
-import { createCatalogLoader } from './catalog-loader.mjs?v=b68e8ca1247fd1fe';
-import { hullKey } from './hull-variants.mjs?v=b68e8ca1247fd1fe';
-import { createAffiliationResolver } from './affiliation.mjs?v=b68e8ca1247fd1fe';
-import { createViewerTransition } from './viewer-transition.mjs?v=b68e8ca1247fd1fe';
-import { configureResourceBase, resourceURL } from './resource-location.mjs?v=b68e8ca1247fd1fe';
-import { loadJSON } from './resource-activity.mjs?v=b68e8ca1247fd1fe';
-import { prepareRenderImages } from './render-images.mjs?v=b68e8ca1247fd1fe';
-import {createLoadingPanel} from './loading-panel.mjs?v=b68e8ca1247fd1fe';
-import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName, subsystemGroups, subsystemSlots, isStrategicCruiser, withSubsystems } from './subsystems.mjs?v=b68e8ca1247fd1fe';
-import { resetView } from './view-reset.mjs?v=b68e8ca1247fd1fe';
+} from './i18n.mjs?v=e78fb1e434030b41';
+import {createViewerSettings} from './viewer-settings.mjs?v=e78fb1e434030b41';
+import {createFittingPanel} from './fitting-panel.mjs?v=e78fb1e434030b41';
+import {createHangarPanel,supportsHangar} from './hangar-panel.mjs?v=e78fb1e434030b41';
+import {createCardGrid} from './card-grid.mjs?v=e78fb1e434030b41';
+import {createCatalogState} from './catalog-state.mjs?v=e78fb1e434030b41';
+import { createCatalogLoader } from './catalog-loader.mjs?v=e78fb1e434030b41';
+import { hullKey } from './hull-variants.mjs?v=e78fb1e434030b41';
+import { createAffiliationResolver } from './affiliation.mjs?v=e78fb1e434030b41';
+import { createViewerTransition } from './viewer-transition.mjs?v=e78fb1e434030b41';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=e78fb1e434030b41';
+import { loadJSON } from './resource-activity.mjs?v=e78fb1e434030b41';
+import { prepareRenderImages } from './render-images.mjs?v=e78fb1e434030b41';
+import {createLoadingPanel} from './loading-panel.mjs?v=e78fb1e434030b41';
+import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName, subsystemGroups, subsystemSlots, isStrategicCruiser, withSubsystems } from './subsystems.mjs?v=e78fb1e434030b41';
+import { resetView } from './view-reset.mjs?v=e78fb1e434030b41';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -160,12 +162,29 @@ let renderRevision = 0, detailRevision = 0;
 let variantState = { hull: '', open: false, groups: null, status: '' };
 let subsystemBaseItem = null;
 const subsystemSelections = new Map();
+let settingsTab = 'visual';
+
+function selectSettingsTab(tab) {
+  if ($('tab-'+tab)?.hidden) tab='visual';
+  settingsTab = tab;
+  for (const button of document.querySelectorAll('[data-settings-tab]')) {
+    const active = button.dataset.settingsTab === tab;
+    button.setAttribute('aria-selected', String(active));
+    button.tabIndex = active ? 0 : -1;
+    $('panel-' + button.dataset.settingsTab).hidden = !active;
+  }
+  fittingPanel.setActive(tab === 'fitting');
+  if (tab === 'hangar') void hangarPanel.open();
+  viewing.viewer?.disposeSubsystemLabels?.setEnabled?.(tab === 'subsystems');
+  if (tab === 'subsystems') viewing.viewer?.disposeSubsystemLabels?.show?.();
+}
 
 function renderSubsystems() {
   const config = subsystemBaseItem?.id === currentItem?.id
     ? subsystemConfiguration(subsystemBaseItem, currentItem?.subsystemSelection) : null;
   const panel = $('subsystem-settings');
   panel.hidden = currentItem?.groupID !== 963;
+  $('subsystem-not-applicable').hidden = !panel.hidden;
   if (panel.hidden) return;
   const focused = document.activeElement?.dataset.subsystemSlot;
   $('subsystem-options').innerHTML = (config?.spec.slots || []).map((slot, index) =>
@@ -194,7 +213,7 @@ function changeSubsystems(code) {
 const viewerTransition = createViewerTransition($('viewer-stage'), $('viewer-snapshot'));
 const viewing = createViewerRuntime({
   mount: $('viewer-mount'), transition: viewerTransition,
-  loadRenderer: () => import('./vendor/model-viewer-ao.min.js?v=b68e8ca1247fd1fe'),
+  loadRenderer: () => import('./vendor/model-viewer-ao.min.js?v=e78fb1e434030b41'),
   view: {
     dimensionFrame: $('dimension-frame'),
     label: item => t('modelAlt', {name:localizedName(item.name)}),
@@ -208,6 +227,8 @@ const viewing = createViewerRuntime({
     environment: installSkybox,
     progress: stage => loading.progress(stage),
     begin(item, kind) {
+      fittingPanel.reset();
+      hangarPanel.reset();
       if (!loading.batch) loading.begin();
       if (kind !== 'subsystems') viewerSettings.selectDefaults(item.dna);
       $('viewer-error').hidden = true;
@@ -215,6 +236,8 @@ const viewing = createViewerRuntime({
       syncExportButtons();
     },
     reset() {
+      fittingPanel.reset();
+      hangarPanel.reset();
       $('export-status').hidden = true;
       $('export-status').textContent = '';
       $('gate-state-row').hidden = true;
@@ -222,9 +245,13 @@ const viewing = createViewerRuntime({
       $('skybox-select').onchange = null;
       $('skybox-select').disabled = true;
       $('viewer-fps').textContent = '— FPS';
+      $('viewer-gpu').textContent = '';
       viewerSettings.sync();syncExportButtons();
     },
     connected(viewer, module) {
+      const gpu=module.viewerGPU(viewer);
+      $('viewer-gpu').textContent='GPU · '+gpu;
+      $('viewer-gpu').title=gpu;
       viewer.lifecycle.set('disposeFPS', module.watchViewerFPS(viewer, fps => {
         if (viewing.viewer === viewer) $('viewer-fps').textContent = `${fps ?? '—'} FPS`;
       }));
@@ -245,7 +272,10 @@ const viewing = createViewerRuntime({
         viewer.dataset.subsystemSelection = item.subsystemSelection;
         viewer.lifecycle.set('disposeSubsystemLabels', module.installSubsystemLabels(viewer, () =>
           item.subsystemParts.map((part,i) => ({title:t('subsystem'+subsystemSlots[i]), name:subsystemOptionName(localizedName(part.name))}))));
+        viewer.disposeSubsystemLabels?.setEnabled?.(settingsTab === 'subsystems');
       }
+      fittingPanel.connect(viewer, item, module);
+      hangarPanel.connect(viewer, item, module);
     },
     ready(viewer, item, kind) {
       loading.finish();
@@ -253,7 +283,7 @@ const viewing = createViewerRuntime({
       viewerSettings.sync();
       viewer.setAttribute('alt', t('modelAlt', {name:localizedName(item.name)}));
       if (item.subsystemParts) {
-        if (kind === 'model') viewer.disposeSubsystemLabels.show?.();
+        if (kind === 'model' && settingsTab === 'subsystems') viewer.disposeSubsystemLabels.show?.();
         renderSubsystems();
       }
       syncExportButtons();
@@ -276,6 +306,26 @@ const viewing = createViewerRuntime({
 
 const loading = createLoadingPanel({root:document, translate:t, backgroundPending:() => viewing.viewer?.backgroundLoading});
 const viewerSettings = createViewerSettings({root:$('model-dialog'), runtime:viewing, currentDNA:() => currentItem?.dna});
+const fittingPanel = createFittingPanel({root:$('model-dialog'), currentViewer:() => viewing.viewer,
+  currentItem:() => currentItem, translate:t, name:localizedName,
+  groupName:id=>localizedName(groupsByID.get(id)?.name)||String(id),
+  nativeSettings:viewer => data?.nativePreview ? viewer.assetSession.json(data.nativePreview) : null});
+const hangarPanel = createHangarPanel({root:$('model-dialog'),currentViewer:()=>viewing.viewer,currentItem:()=>currentItem,
+  translate:t,name:localizedName,catalog:()=>catalogLoader,loading,
+  nativeSettings:viewer=>viewer.assetSession.json(data.nativePreview),
+  async background(viewer,active){
+    $('skybox-select').disabled=active;
+    await viewer.skybox?.select(active?'none':$('skybox-select').value);
+  }});
+for (const button of document.querySelectorAll('[data-settings-tab]')) {
+  button.addEventListener('click', () => selectSettingsTab(button.dataset.settingsTab));
+  button.addEventListener('keydown', event => {
+    const tabs = [...document.querySelectorAll('[data-settings-tab]')].filter(b=>!b.hidden), index = tabs.indexOf(button);
+    const next = event.key === 'ArrowRight' ? (index + 1) % tabs.length : event.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : null;
+    if (next == null) return;
+    event.preventDefault();selectSettingsTab(tabs[next].dataset.settingsTab);tabs[next].focus();
+  });
+}
 
 function renderVariants() {
   const hull = hullKey(currentItem?.dna);
@@ -578,7 +628,7 @@ async function installSkybox(viewer, module) {
       const entry = module.selectedBackground(catalog, viewer.previewRace, select.value);
       loading.background(entry ? [entry.url,entry.stars].filter(Boolean).map(resourceURL) : []);
       try {
-        await viewer.skybox.select(select.value);
+        await viewer.skybox.select(viewer.hangarActive?'none':select.value);
         if (viewing.viewer !== viewer || token !== change) return;
         try { localStorage.setItem('viewer.skybox', select.value); } catch {}
         status.hidden = true;
@@ -699,6 +749,9 @@ async function openItem(id, route = true) {
 
 function renderDetail() {
   if (!currentItem) return;
+  $('tab-subsystems').hidden=currentItem.groupID!==963;
+  $('tab-hangar').hidden=!supportsHangar(currentItem);
+  if ($('tab-'+settingsTab).hidden) selectSettingsTab('visual');
   renderVariants();
   renderSubsystems();
   const item = currentItem;
@@ -889,7 +942,7 @@ function setupEvents() {
       playHullAnimation(viewing.viewer);
     }
   });
-  const resetCurrentView = () => { if (viewing.viewer) resetView(viewing.viewer); };
+  const resetCurrentView = () => { if (viewing.viewer?.hangar?.active) viewing.viewer.hangar.reset(); else if (viewing.viewer) resetView(viewing.viewer); };
   $('reset-view').addEventListener('click', resetCurrentView);
   $('export-glb').addEventListener('click', () => exportCurrentModel('glb'));
   $('export-obj').addEventListener('click', () => exportCurrentModel('obj'));
@@ -937,6 +990,8 @@ for (const select of document.querySelectorAll('[data-language]')) {
       buildTree();
       render();
       renderDetail();
+      fittingPanel.render();
+      hangarPanel.render();
     } else renderCatalogError();
   });
 }
@@ -957,8 +1012,8 @@ async function init() {
     configureResourceBase(config.resourceBaseURL, config.backgroundBaseURL, config.backgroundFiles);
     const [index, identities, fallbackIndex] = await Promise.all([
       loadJSON(resourceURL('./data/catalog-index.json'), {cache:'no-cache'}),
-      loadJSON('./icons/identities.json?v=b68e8ca1247fd1fe'),
-      loadJSON('./github-assets/renders/index.json?v=b68e8ca1247fd1fe', {cache:'no-cache'}, {optional:true}).catch(() => ({})),
+      loadJSON('./icons/identities.json?v=e78fb1e434030b41'),
+      loadJSON(resourceURL('./assets/renders/index.json'), {cache:'no-cache'}, {optional:true}).catch(() => ({})),
     ]);
     data = index;
     renderFallbacks = fallbackIndex.items || {};

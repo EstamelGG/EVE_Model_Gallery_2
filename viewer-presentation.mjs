@@ -1,4 +1,4 @@
-import { postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=b68e8ca1247fd1fe';
+import { postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=e78fb1e434030b41';
 
 export function createViewerPostprocessing(viewer, { triangles, nativePreview }) {
   // Preserve HDR precision and multisample the geometry before postprocessing.
@@ -37,7 +37,9 @@ export function createViewerPostprocessing(viewer, { triangles, nativePreview })
   // Blur only the separate HDR emission source; paint, reflections and the
   // starfield never feed the bloom. Compose before exposure/tone mapping.
   colorGrade.effects[0].requireSeparatePass = true;
-  composer.append(occlusion, bloom, colorGrade, antialias);
+  const depthOfField=document.createElement('eve-depth-of-field');
+  depthOfField.setAttribute('blend-mode','skip');
+  composer.append(occlusion, bloom, depthOfField, colorGrade, antialias);
   viewer.append(composer);
 
   return { composer, occlusion, ao, bloom };

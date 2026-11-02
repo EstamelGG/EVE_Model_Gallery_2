@@ -1,7 +1,7 @@
-import {renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults} from './render-settings.mjs?v=b68e8ca1247fd1fe';
-import {normalizeDisplaySettings, textureRoles, performanceControls} from './display-settings.mjs?v=b68e8ca1247fd1fe';
-import {normalizeKillCount} from './kill-count.mjs?v=b68e8ca1247fd1fe';
-import {cancelViewReset} from './view-reset.mjs?v=b68e8ca1247fd1fe';
+import {renderDefaults, normalizeRenderSettings, renderDefaultsForDNA, switchRenderDefaults} from './render-settings.mjs?v=e78fb1e434030b41';
+import {normalizeDisplaySettings, textureRoles, performanceControls} from './display-settings.mjs?v=e78fb1e434030b41';
+import {normalizeKillCount} from './kill-count.mjs?v=e78fb1e434030b41';
+import {cancelViewReset} from './view-reset.mjs?v=e78fb1e434030b41';
 
 // DOM controls own user choices; the runtime owns applying them to the scene.
 // Cache the fixed controls once, and synchronize capabilities after each install.
@@ -30,6 +30,8 @@ export function createViewerSettings({root, runtime, currentDNA}) {
   function sync() {
     const roles = runtime.viewer?.availableTextureRoles;
     for (const [role, input] of textures) input.disabled = !!roles && !roles.has(role);
+    find('dirt').disabled=!!roles&&!roles.has('DirtMap');
+    find('depthOfField').disabled=!find('show-dof').checked;
     const enabled = textures.map(([,input]) => input).filter(input => !input.disabled);
     allTextures.checked = enabled.every(input => input.checked);
     allTextures.indeterminate = enabled.some(input => input.checked) && !allTextures.checked;
@@ -82,7 +84,9 @@ export function createViewerSettings({root, runtime, currentDNA}) {
       for (const {input} of ranges) input.addEventListener('input', applyRender);
       find('reset-render').addEventListener('click', () => {
         setRender(renderDefaultsForDNA(currentDNA()));
-        for (const [,input] of [...textures, ...performance]) input.checked = true;
+        for (const [,input] of textures) input.checked = true;
+        const defaults=normalizeDisplaySettings();
+        for(const [key,input] of performance)input.checked=defaults[key];
         applyDisplay();
       });
       rotate.checked = false;

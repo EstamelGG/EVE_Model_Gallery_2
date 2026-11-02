@@ -1,4 +1,4 @@
-import {resourceActivity, createResourceBatch} from './resource-activity.mjs?v=b68e8ca1247fd1fe';
+import {resourceActivity, createResourceBatch} from './resource-activity.mjs?v=e78fb1e434030b41';
 
 const steps = ['loadingCatalog', 'loadingAssets', 'loadingMaterials', 'loadingEnvironment', 'preparing'];
 
@@ -11,12 +11,12 @@ export function createLoadingPanel({root, translate:t, backgroundPending}) {
   const statuses = [...root.querySelectorAll('[data-resource-status]')].map(element => ({
     element, ring:element.querySelector('.loading-ring'), text:element.querySelector('.resource-status-text'),
   }));
-  let batch, stage = 1, complete = false, timer;
+  let batch, stage = 1, complete = false, timer, generation=0, taskTitle=null;
   function render() {
     if (!batch) return;
     const {pending, completed, total, planned, failed} = batch.snapshot();
     panel.hidden = false;
-    title.dataset.i18n = complete ? 'loadingResources' : 'loadingModel';
+    title.dataset.i18n = taskTitle || (complete ? 'loadingResources' : 'loadingModel');
     title.textContent = t(title.dataset.i18n);
     const step = t('loadingStep', {step:stage, total:steps.length, name:t(steps[stage-1])});
     detail.hidden = complete;
@@ -62,12 +62,21 @@ export function createLoadingPanel({root, translate:t, backgroundPending}) {
   return {
     get batch() { return batch; },
     begin() {
+      generation++;taskTitle=null;
       updateStatus.hidden = true;
       complete = false; stage = 1;
       rows.reset();
       batch?.stop();
       batch = createResourceBatch();
       render();
+    },
+    beginTask(titleKey) {
+      this.begin();taskTitle=titleKey;const token=generation;render();
+      return {
+        plan(urls){if(token===generation){batch?.plan(urls);render();}},
+        progress(value){if(token===generation){stage=value;render();}},
+        finish(){if(token===generation){finish();taskTitle=null;}},
+      };
     },
     progress(value) { stage = value; render(); },
     finish,
