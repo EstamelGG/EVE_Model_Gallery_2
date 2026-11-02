@@ -1,237 +1,165 @@
-// Trusted, repository-owned translation content.
-export const guideCopy={
-  "developer": [
-    "组件文档",
-    "Component docs"
+// Trusted, repository-owned translation content. Entries are [zh-CN, en].
+export const guideCopy = {
+  hangarHelp: [
+    '机库标识，例如 amarr；空值返回太空。',
+    'Hangar key, e.g. amarr; empty returns to space.',
   ],
-  "back": [
-    "返回图鉴 ↗",
-    "Back to catalog ↗"
+  subsystemsHelp: [
+    '战略巡洋舰的四位子系统组合。',
+    'Four-digit strategic cruiser subsystem configuration.',
   ],
-  "contents": [
-    "使用指南",
-    "Guide"
+  developer: ['组件文档', 'Component docs'],
+  back: ['返回图鉴 ↗', 'Back to catalog ↗'],
+  contents: ['使用指南', 'Guide'],
+  overview: ['预览', 'Preview'],
+  quick: ['引入组件', 'Import'],
+  examples: ['案例', 'Examples'],
+  equipment: ['装备挂载', 'Equipment mounting'],
+  attributes: ['属性', 'Attributes'],
+  heading: ['EVE 模型组件', 'EVE model component'],
+  intro: [
+    '引入一个 JS，用物品 ID 展示模型。支持原版视觉设置和装备自动挂载。',
+    'Import one JS file and display a model by item ID. Includes the original visual settings and automatic equipment mounting.',
   ],
-  "overview": [
-    "预览",
-    "Preview"
+  start: ['查看用法 ↓', 'Usage ↓'],
+  browse: ['运行案例 →', 'Try examples →'],
+  preview: ['预览', 'Preview'],
+  markers: ['挂点标记', 'Hardpoint markers'],
+  reset: ['重置视角', 'Reset view'],
+  loading: ['加载中…', 'Loading…'],
+  choose: ['切换案例 ↓', 'Choose example ↓'],
+  assignments: ['挂载结果', 'Mount assignments'],
+  quickIntro: ['复制下面的 HTML 即可使用。', 'Copy this HTML to get started.'],
+  download: ['下载 HTML ↓', 'Download HTML ↓'],
+  copy: ['复制代码', 'Copy code'],
+  quickNote: [
+    '模型和贴图由我们的资源服务加载，无需另外安装依赖。记得给标签设置高度。',
+    'Models and textures load from our asset service. No extra dependencies are needed. Set a height on the element.',
   ],
-  "quick": [
-    "引入组件",
-    "Import"
+  examplesIntro: [
+    '点击运行，查看上方效果。每页只需 import 一次。',
+    'Run an example to update the preview. Import the component once per page.',
   ],
-  "examples": [
-    "案例",
-    "Examples"
+  equipmentIntro: [
+    '<code>equipment</code> 传入装备 ID 数组。组件按顺序检查类型、空闲位置和容量，自动选择挂点。',
+    'Pass an array of item IDs in <code>equipment</code>. The component checks each item in order and assigns compatible free mounts.',
   ],
-  "equipment": [
-    "装备挂载",
-    "Equipment mounting"
+  configuration: ['配置', 'Configuration'],
+  slot: ['[503,503]', '[503,503]'],
+  family: ['装备挂点类型', 'Equipment mount type'],
+  hull: ['飞船 12032', 'Ship 12032'],
+  available: ['空闲的发射器挂点', 'Free launcher mounts'],
+  equipmentNote: [
+    '587 + 484 演示炮塔，12032 + 503 演示发射器。空数组 <code>[]</code> 清空装备。某一项无法安装时会返回其位置和 ID，并保留原装配。',
+    '587 + 484 demonstrates turrets; 12032 + 503 demonstrates launchers. An empty array <code>[]</code> clears equipment. If an item cannot fit, its position and ID are reported and the previous fitting is retained.',
   ],
-  "attributes": [
-    "属性",
-    "Attributes"
+  attribute: ['属性', 'Attribute'],
+  default: ['默认值', 'Default'],
+  purpose: ['说明', 'Description'],
+  required: ['必填', 'Required'],
+  itemHelp: ['物品 ID，例如 587。', 'Item ID, for example 587.'],
+  inherit: ['跟随页面', 'Page language'],
+  langHelp: [
+    '<code>en</code> 或 <code>zh-CN</code>，设置组件语言。',
+    'Set the component language to <code>en</code> or <code>zh-CN</code>.',
   ],
-  "heading": [
-    "EVE 模型组件",
-    "EVE model component"
+  backgroundHelp: [
+    '<code>auto</code> 自动选择背景，<code>none</code> 不显示背景，也可传入场景 ID。',
+    '<code>auto</code> selects a background; <code>none</code> hides it. A scene ID is also accepted.',
   ],
-  "intro": [
-    "引入一个 JS，用物品 ID 展示模型。支持原版视觉设置和装备自动挂载。",
-    "Import one JS file and display a model by item ID. Includes the original visual settings and automatic equipment mounting."
+  off: ['关', 'Off'],
+  on: ['开', 'On'],
+  controlsHelp: [
+    '显示视觉、装配、子系统及机库控制区。',
+    'Show visual, fitting, subsystem and hangar controls.',
   ],
-  "start": [
-    "查看用法 ↓",
-    "Usage ↓"
+  whiteHelp: ['查看白模，可随时切回。', 'View the white model; switch back at any time.'],
+  effectsHelp: [
+    '<code>effects="false"</code> 关闭特效。',
+    'Use <code>effects="false"</code> to disable effects.',
   ],
-  "browse": [
-    "运行案例 →",
-    "Try examples →"
+  rotateHelp: ['自动旋转。', 'Rotate automatically.'],
+  exposureHelp: ['亮度，范围 0.1–3。', 'Exposure, from 0.1 to 3.'],
+  reflectionHelp: ['反射强度，范围 0–3。', 'Reflection strength, from 0 to 3.'],
+  killsHelp: ['击杀标记数量，0–999；需模型支持。', 'Kill marks, 0–999; requires model support.'],
+  markersHelp: ['显示装备挂点标记。', 'Show equipment hardpoint markers.'],
+  booleanNote: [
+    '布尔属性以是否存在表示开关。关闭时移除属性，别写 <code>white-model="false"</code>。<code>effects</code> 除外，按上表传值。',
+    'Boolean attributes are enabled by their presence. Remove them to turn them off; do not use <code>white-model="false"</code>. <code>effects</code> is the exception: use the value shown above.',
   ],
-  "preview": [
-    "预览",
-    "Preview"
+  copyright: [
+    'EVE Online 模型与游戏资源归 CCP Games 所有。',
+    'EVE Online models and game assets belong to CCP Games.',
   ],
-  "markers": [
-    "挂点标记",
-    "Hardpoint markers"
+  equipmentAttribute: [
+    '装备 ID 数组，例如 <code>[484,484]</code>，按顺序自动挂载。',
+    'Item ID array, for example <code>[484,484]</code>, mounted automatically in order.',
   ],
-  "reset": [
-    "重置视角",
-    "Reset view"
+  'case.hangar.title': ['机库中的飞船', 'Ship in a hangar'],
+  'case.hangar.description': [
+    '组件直接显示艾玛机库，可在机库页签切换场景。',
+    'The component renders the Amarr hangar. Switch scenes in its Hangar tab.',
   ],
-  "loading": [
-    "加载中…",
-    "Loading…"
+  'case.minimal.title': ['最简嵌入', 'Minimal embed'],
+  'case.minimal.description': ['飞船 587，关闭背景。', 'Ship 587, with no background.'],
+  'case.controls.title': ['原版视觉控制区', 'Original visual controls'],
+  'case.controls.description': [
+    '显示原版视觉设置，可调整画质、白模和光照。',
+    'Show the original controls for quality, white model mode and lighting.',
   ],
-  "choose": [
-    "切换案例 ↓",
-    "Choose example ↓"
+  'case.background.title': ['背景与自动旋转', 'Background and auto-rotation'],
+  'case.background.description': [
+    '自动选择背景，缓慢旋转模型。',
+    'Select a background automatically and rotate the model slowly.',
   ],
-  "assignments": [
-    "挂载结果",
-    "Mount assignments"
+  'case.white.title': ['查看白模', 'View white model'],
+  'case.white.description': [
+    '查看白模，在控制区可切回完整材质。',
+    'View the white model. Use the controls to switch back to full materials.',
   ],
-  "quickIntro": [
-    "复制下面的 HTML 即可使用。",
-    "Copy this HTML to get started."
+  'case.quality.title': ['调整反射与抗锯齿', 'Reflections and anti-aliasing'],
+  'case.quality.description': [
+    '使用 SMAA，将反射强度设为 0.3。',
+    'Use SMAA and set reflection strength to 0.3.',
   ],
-  "download": [
-    "下载 HTML ↓",
-    "Download HTML ↓"
+  'case.turrets.title': ['普通炮塔自动挂载 · 587 + 484', 'Automatic turrets · 587 + 484'],
+  'case.turrets.description': [
+    '裂谷级安装两组 125mm 加特林自动加农炮 I。',
+    'Fit two groups of 125mm Gatling AutoCannon I to a Rifter.',
   ],
-  "copy": [
-    "复制代码",
-    "Copy code"
+  'case.launchers.title': ['特殊装备自动挂载 · 12032 + 503', 'Special mounting · 12032 + 503'],
+  'case.launchers.description': [
+    '蝎尾怪级安装两组鱼雷发射器 I，自动匹配发射器挂点。',
+    'Fit two groups of Torpedo Launcher I to a Manticore, using launcher mounts automatically.',
   ],
-  "quickNote": [
-    "模型和贴图由我们的资源服务加载，无需另外安装依赖。记得给标签设置高度。",
-    "Models and textures load from our asset service. No extra dependencies are needed. Set a height on the element."
+  pageTitle: ['EVE 模型组件 · 使用指南', 'EVE model component · Guide'],
+  pageDescription: [
+    'EVE 模型标签使用指南：引入一个 JS，在自己的网页中展示飞船、背景、特效和自动挂载装备。',
+    'Embed EVE models with one JavaScript file. Working examples for ships, visual settings and automatic equipment mounting.',
   ],
-  "examplesIntro": [
-    "点击运行，查看上方效果。每页只需 import 一次。",
-    "Run an example to update the preview. Import the component once per page."
+  language: ['语言', 'Language'],
+  automatic: ['自动识别', 'Automatic'],
+  languageChinese: ['中文', 'Chinese'],
+  languageEnglish: ['English', 'English'],
+  pageNavigation: ['页面导航', 'Page navigation'],
+  guideContents: ['指南目录', 'Guide contents'],
+  runExample: ['运行案例 ↗', 'Run example ↗'],
+  statusProgress: ['加载中 · {phase}/{total}', 'Loading · {phase}/{total}'],
+  statusLoaded: [
+    '飞船 {itemId} · {count} 个逻辑装备槽 · 拖动旋转，滚轮缩放',
+    'Ship {itemId} · {count} logical slots · Drag to orbit, scroll to zoom',
   ],
-  "equipmentIntro": [
-    "<code>equipment</code> 传入装备 ID 数组。组件按顺序检查类型、空闲位置和容量，自动选择挂点。",
-    "Pass an array of item IDs in <code>equipment</code>. The component checks each item in order and assigns compatible free mounts."
+  statusError: ['加载失败：{error}', 'Loading failed: {error}'],
+  statusApplying: ['正在应用案例…', 'Applying example…'],
+  statusInitial: ['准备加载飞船 {itemId}', 'Preparing ship {itemId}'],
+  codeCopied: ['代码已复制', 'Code copied'],
+  clipboardUnavailable: [
+    '无法自动复制，请手动选中代码复制。',
+    'Clipboard unavailable. Select the code and copy it manually.',
   ],
-  "configuration": [
-    "配置",
-    "Configuration"
-  ],
-  "slot": [
-    "[503,503]",
-    "[503,503]"
-  ],
-  "family": [
-    "装备挂点类型",
-    "Equipment mount type"
-  ],
-  "hull": [
-    "飞船 12032",
-    "Ship 12032"
-  ],
-  "available": [
-    "空闲的发射器挂点",
-    "Free launcher mounts"
-  ],
-  "equipmentNote": [
-    "587 + 484 演示炮塔，12032 + 503 演示发射器。空数组 <code>[]</code> 清空装备。某一项无法安装时会返回其位置和 ID，并保留原装配。",
-    "587 + 484 demonstrates turrets; 12032 + 503 demonstrates launchers. An empty array <code>[]</code> clears equipment. If an item cannot fit, its position and ID are reported and the previous fitting is retained."
-  ],
-  "attribute": [
-    "属性",
-    "Attribute"
-  ],
-  "default": [
-    "默认值",
-    "Default"
-  ],
-  "purpose": [
-    "说明",
-    "Description"
-  ],
-  "required": [
-    "必填",
-    "Required"
-  ],
-  "itemHelp": [
-    "物品 ID，例如 587。",
-    "Item ID, for example 587."
-  ],
-  "inherit": [
-    "跟随页面",
-    "Page language"
-  ],
-  "langHelp": [
-    "<code>en</code> 或 <code>zh-CN</code>，设置组件语言。",
-    "Set the component language to <code>en</code> or <code>zh-CN</code>."
-  ],
-  "backgroundHelp": [
-    "<code>auto</code> 自动选择背景，<code>none</code> 不显示背景，也可传入场景 ID。",
-    "<code>auto</code> selects a background; <code>none</code> hides it. A scene ID is also accepted."
-  ],
-  "off": [
-    "关",
-    "Off"
-  ],
-  "on": [
-    "开",
-    "On"
-  ],
-  "controlsHelp": [
-    "显示原版视觉设置。",
-    "Show the original visual settings."
-  ],
-  "whiteHelp": [
-    "查看白模，可随时切回。",
-    "View the white model; switch back at any time."
-  ],
-  "effectsHelp": [
-    "<code>effects=\"false\"</code> 关闭特效。",
-    "Use <code>effects=\"false\"</code> to disable effects."
-  ],
-  "rotateHelp": [
-    "自动旋转。",
-    "Rotate automatically."
-  ],
-  "exposureHelp": [
-    "亮度，范围 0.1–3。",
-    "Exposure, from 0.1 to 3."
-  ],
-  "reflectionHelp": [
-    "反射强度，范围 0–3。",
-    "Reflection strength, from 0 to 3."
-  ],
-  "killsHelp": [
-    "击杀标记数量，0–999；需模型支持。",
-    "Kill marks, 0–999; requires model support."
-  ],
-  "markersHelp": [
-    "显示装备挂点标记。",
-    "Show equipment hardpoint markers."
-  ],
-  "booleanNote": [
-    "布尔属性以是否存在表示开关。关闭时移除属性，别写 <code>white-model=\"false\"</code>。<code>effects</code> 除外，按上表传值。",
-    "Boolean attributes are enabled by their presence. Remove them to turn them off; do not use <code>white-model=\"false\"</code>. <code>effects</code> is the exception: use the value shown above."
-  ],
-  "copyright": [
-    "EVE Online 模型与游戏资源归 CCP Games 所有。",
-    "EVE Online models and game assets belong to CCP Games."
-  ],
-  "equipmentAttribute": [
-    "装备 ID 数组，例如 <code>[484,484]</code>，按顺序自动挂载。",
-    "Item ID array, for example <code>[484,484]</code>, mounted automatically in order."
-  ]
 };
-export const caseCopy={
-  "minimal": [
-    "Minimal embed",
-    "Ship 587, with no background."
-  ],
-  "controls": [
-    "Original visual controls",
-    "Show the original controls for quality, white model mode and lighting."
-  ],
-  "background": [
-    "Background and auto-rotation",
-    "Select a background automatically and rotate the model slowly."
-  ],
-  "white": [
-    "View white model",
-    "View the white model. Use the controls to switch back to full materials."
-  ],
-  "quality": [
-    "Reflections and anti-aliasing",
-    "Use SMAA and set reflection strength to 0.3."
-  ],
-  "turrets": [
-    "Automatic turrets · 587 + 484",
-    "Fit two groups of 125mm Gatling AutoCannon I to a Rifter."
-  ],
-  "launchers": [
-    "Special mounting · 12032 + 503",
-    "Fit two groups of Torpedo Launcher I to a Manticore, using launcher mounts automatically."
-  ]
-};
+
+export function guideText(language, key, values = {}) {
+  const template = guideCopy[key]?.[language === 'zh-CN' ? 0 : 1] ?? key;
+  return template.replace(/\{(\w+)\}/g, (match, name) => values[name] ?? match);
+}

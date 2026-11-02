@@ -1,38 +1,133 @@
-<!DOCTYPE html>
+<!doctype html>
 
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><meta content="#101518" name="theme-color"/>
-<meta content="EVE 模型组件：引入一个 JS，用物品 ID 展示飞船和装备。" name="description"/>
-<title>EVE 模型组件 · 使用指南</title>
-<link href="./mark.svg" rel="icon" type="image/svg+xml"/>
-<link href="./github-assets/fonts/fonts.css?v=3d1da1d840c92b10" rel="stylesheet"/><link href="./viewer-guide.css" rel="stylesheet"/>
-<script src="./viewer-guide.js?v=3d1da1d840c92b10" type="module"></script>
-</head>
-<body>
-<header class="guide-header">
-<a class="brand" href="./index.html"><img alt="" height="28" src="./mark.svg" width="28"/><span>EVE Model Viewer <small data-guide-i18n="developer">组件文档</small></span></a>
-<nav aria-label="页面导航"><label class="guide-language-label"><span id="language-label">语言</span><select aria-labelledby="language-label" id="guide-language"><option value="auto">自动识别</option><option value="zh-CN">中文</option><option value="en">English</option></select></label><a data-guide-i18n="back" href="./index.html">返回图鉴 ↗</a></nav>
-</header>
-<div class="docs-layout">
-<aside aria-label="指南目录" class="docs-nav"><p data-guide-i18n="contents">使用指南</p><a data-guide-i18n="overview" href="#overview">预览</a><a data-guide-i18n="quick" href="#quick-start">引入组件</a><a data-guide-i18n="examples" href="#examples">案例</a><a data-guide-i18n="equipment" href="#equipment">装备挂载</a><a data-guide-i18n="attributes" href="#attributes">属性</a><div class="nav-note"><code>&lt;eve-model-viewer&gt;</code></div></aside>
-<main>
-<section class="intro" id="overview">
-<div class="eyebrow"><span></span> EVE MODEL VIEWER / WEB COMPONENT</div>
-<h1 data-guide-i18n="heading">EVE 模型组件</h1>
-<p class="lede" data-guide-i18n="intro">引入一个 JS，用物品 ID 展示模型。支持原版视觉设置和装备自动挂载。</p>
-<div class="intro-actions"><a class="button primary" data-guide-i18n="start" href="#quick-start">查看用法 ↓</a><a data-guide-i18n="browse" href="#examples">运行案例 →</a></div>
-</section>
-<section aria-labelledby="preview-heading" class="playground">
-<div class="preview-bar"><div><span class="live-dot"></span><strong data-guide-i18n="preview" id="preview-heading">预览</strong><span id="case-name"></span></div><div class="preview-actions"><button aria-pressed="false" class="text-button" data-guide-i18n="markers" hidden="" id="preview-mounts" type="button">挂点标记</button><button class="guide-reset-button" id="preview-reset" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M4 10a8 8 0 1 1 1 7M4 3v7h7"></path></svg><span data-guide-i18n="reset">重置视角</span></button></div></div>
-<div class="preview-mount" id="preview-mount"><p class="preview-placeholder" data-guide-i18n="loading">加载中…</p></div>
-<div class="preview-footer"><span aria-live="polite" id="preview-status" role="status"></span><a data-guide-i18n="choose" href="#examples">切换案例 ↓</a></div>
-<details hidden="" id="placement-details"><summary data-guide-i18n="assignments">挂载结果</summary><pre id="placement-output"></pre></details>
-</section>
-<section class="doc-section" id="quick-start">
-<div class="section-heading"><span class="section-number">01</span><div><h2 data-guide-i18n="quick">引入组件</h2><p data-guide-i18n="quickIntro">复制下面的 HTML 即可使用。</p></div></div>
-<div class="code-block"><div class="code-heading"><span>HTML</span><div><button class="text-button" data-download="starter-code" data-guide-i18n="download" type="button">下载 HTML ↓</button><button class="text-button" data-copy="starter-code" data-guide-i18n="copy" type="button">复制代码</button></div></div><pre><code id="starter-code">&lt;!doctype html&gt;
-&lt;html lang="zh-CN"&gt;
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width,initial-scale=1" name="viewport" />
+    <meta content="#101518" name="theme-color" />
+    <meta
+      content="Embed EVE models with one JavaScript file. Working examples for ships, visual settings and automatic equipment mounting."
+      name="description"
+      data-guide-i18n-content="pageDescription"
+    />
+    <title data-guide-i18n="pageTitle">EVE model component · Guide</title>
+    <link href="./mark.svg" rel="icon" type="image/svg+xml" />
+    <link href="./github-assets/fonts/fonts.css?v=39b269378ac17ed1" rel="stylesheet" />
+    <link href="./viewer-guide.css?v=39b269378ac17ed1" rel="stylesheet" />
+    <script src="./viewer-guide.js?v=39b269378ac17ed1" type="module"></script>
+  </head>
+  <body>
+    <header class="guide-header">
+      <a class="brand" href="./index.html"
+        ><img alt="" height="28" src="./mark.svg" width="28" /><span
+          >EVE Model Viewer <small data-guide-i18n="developer">Component docs</small></span
+        ></a
+      >
+      <nav aria-label="Page navigation" data-guide-i18n-aria-label="pageNavigation">
+        <label class="guide-language-label"
+          ><span id="language-label" data-guide-i18n="language">Language</span
+          ><select aria-labelledby="language-label" id="guide-language">
+            <option value="auto" data-guide-i18n="automatic">Automatic</option>
+            <option value="zh-CN" data-guide-i18n="languageChinese">Chinese</option>
+            <option value="en" data-guide-i18n="languageEnglish">English</option>
+          </select></label
+        ><a data-guide-i18n="back" href="./index.html">Back to catalog ↗</a>
+      </nav>
+    </header>
+    <div class="docs-layout">
+      <aside
+        aria-label="Guide contents"
+        data-guide-i18n-aria-label="guideContents"
+        class="docs-nav"
+      >
+        <p data-guide-i18n="contents">Guide</p>
+        <a data-guide-i18n="overview" href="#overview">Preview</a
+        ><a data-guide-i18n="quick" href="#quick-start">Import</a
+        ><a data-guide-i18n="examples" href="#examples">Examples</a
+        ><a data-guide-i18n="equipment" href="#equipment">Equipment mounting</a
+        ><a data-guide-i18n="attributes" href="#attributes">Attributes</a>
+        <div class="nav-note"><code>&lt;eve-model-viewer&gt;</code></div>
+      </aside>
+      <main>
+        <section class="intro" id="overview">
+          <div class="eyebrow"><span></span> EVE MODEL VIEWER / WEB COMPONENT</div>
+          <h1 data-guide-i18n="heading">EVE model component</h1>
+          <p class="lede" data-guide-i18n="intro">
+            Import one JS file and display a model by item ID. Includes the original visual settings
+            and automatic equipment mounting.
+          </p>
+          <div class="intro-actions">
+            <a class="button primary" data-guide-i18n="start" href="#quick-start">Usage ↓</a
+            ><a data-guide-i18n="browse" href="#examples">Try examples →</a>
+          </div>
+        </section>
+        <section aria-labelledby="preview-heading" class="playground">
+          <div class="preview-bar">
+            <div>
+              <span class="live-dot"></span
+              ><strong data-guide-i18n="preview" id="preview-heading">Preview</strong
+              ><span id="case-name"></span>
+            </div>
+            <div class="preview-actions">
+              <button
+                aria-pressed="false"
+                class="text-button"
+                data-guide-i18n="markers"
+                hidden=""
+                id="preview-mounts"
+                type="button"
+              >
+                Hardpoint markers</button
+              ><button class="guide-reset-button" id="preview-reset" type="button">
+                <svg aria-hidden="true" viewbox="0 0 24 24">
+                  <path d="M4 10a8 8 0 1 1 1 7M4 3v7h7"></path></svg
+                ><span data-guide-i18n="reset">Reset view</span>
+              </button>
+            </div>
+          </div>
+          <div class="preview-mount" id="preview-mount">
+            <p class="preview-placeholder" data-guide-i18n="loading">Loading…</p>
+          </div>
+          <div class="preview-footer">
+            <span aria-live="polite" id="preview-status" role="status"></span
+            ><a data-guide-i18n="choose" href="#examples">Choose example ↓</a>
+          </div>
+          <details hidden="" id="placement-details">
+            <summary data-guide-i18n="assignments">Mount assignments</summary>
+            <pre id="placement-output"></pre>
+          </details>
+        </section>
+        <section class="doc-section" id="quick-start">
+          <div class="section-heading">
+            <span class="section-number">01</span>
+            <div>
+              <h2 data-guide-i18n="quick">Import</h2>
+              <p data-guide-i18n="quickIntro">Copy this HTML to get started.</p>
+            </div>
+          </div>
+          <div class="code-block">
+            <div class="code-heading">
+              <span>HTML</span>
+              <div>
+                <button
+                  class="text-button"
+                  data-download="starter-code"
+                  data-guide-i18n="download"
+                  type="button"
+                >
+                  Download HTML ↓</button
+                ><button
+                  class="text-button"
+                  data-copy="starter-code"
+                  data-guide-i18n="copy"
+                  type="button"
+                >
+                  Copy code
+                </button>
+              </div>
+            </div>
+            <pre><code id="starter-code">&lt;!doctype html&gt;
+&lt;html lang="en"&gt;
 &lt;meta charset="utf-8"&gt;
 &lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;
 &lt;title&gt;EVE Model&lt;/title&gt;
@@ -44,36 +139,181 @@
   background="none"
   style="width:100%;height:520px"&gt;
 &lt;/eve-model-viewer&gt;
-&lt;/html&gt;</code></pre></div>
-<p class="note" data-guide-i18n="quickNote">模型和贴图由我们的资源服务加载，无需另外安装依赖。记得给标签设置高度。</p>
-</section>
-<section class="doc-section" id="examples">
-<div class="section-heading"><span class="section-number">02</span><div><h2 data-guide-i18n="examples">案例</h2><p data-guide-i18n="examplesIntro">点击运行，查看上方效果。每页只需 import 一次。</p></div></div><div class="example-list" id="example-list"></div>
-</section>
-<section class="doc-section" id="equipment">
-<div class="section-heading"><span class="section-number">03</span><div><h2 data-guide-i18n="equipment">装备挂载</h2></div></div>
-<p data-guide-i18n="equipmentIntro">equipment 传入装备 ID 数组。组件按顺序检查类型、空闲位置和容量，自动选择挂点。</p>
-<div class="mount-flow"><div><small data-guide-i18n="configuration">配置</small><strong data-guide-i18n="slot">[503,503]</strong></div><span aria-hidden="true">→</span><div><small data-guide-i18n="family">装备挂点类型</small><strong>locator_launcher_</strong></div><span aria-hidden="true">→</span><div><small data-guide-i18n="hull">飞船 12032</small><strong data-guide-i18n="available">空闲的发射器挂点</strong></div></div>
-<p data-guide-i18n="equipmentNote">587 + 484 演示炮塔，12032 + 503 演示发射器。空数组 [] 清空装备。某一项无法安装时会返回其位置和 ID，并保留原装配。</p>
-</section>
-<section class="doc-section" id="attributes">
-<div class="section-heading"><span class="section-number">04</span><div><h2 data-guide-i18n="attributes">属性</h2></div></div>
-<div class="table-wrap"><table><thead><tr><th data-guide-i18n="attribute">属性</th><th data-guide-i18n="default">默认值</th><th data-guide-i18n="purpose">说明</th></tr></thead><tbody>
-<tr><td><code>item-id</code></td><td data-guide-i18n="required">必填</td><td data-guide-i18n="itemHelp">物品 ID，例如 587。</td></tr><tr><td><code>equipment</code></td><td><code>[]</code></td><td data-guide-i18n="equipmentAttribute">装备 ID 数组，例如 [484,484]，按顺序自动挂载。</td></tr>
-<tr><td><code>lang</code></td><td data-guide-i18n="inherit">跟随页面</td><td data-guide-i18n="langHelp"><code>en</code> 或 <code>zh-CN</code>，设置组件语言。</td></tr>
-<tr><td><code>background</code></td><td><code>auto</code></td><td data-guide-i18n="backgroundHelp"><code>auto</code> 自动选择背景，<code>none</code> 不显示背景，也可传入场景 ID。</td></tr>
-<tr><td><code>control-panel</code></td><td data-guide-i18n="off">关</td><td data-guide-i18n="controlsHelp">显示原版视觉设置。</td></tr>
-<tr><td><code>white-model</code></td><td data-guide-i18n="off">关</td><td data-guide-i18n="whiteHelp">查看白模，可随时切回。</td></tr>
-<tr><td><code>effects</code></td><td data-guide-i18n="on">开</td><td data-guide-i18n="effectsHelp"><code>effects="false"</code> 关闭特效。</td></tr>
-<tr><td><code>auto-rotate</code></td><td data-guide-i18n="off">关</td><td data-guide-i18n="rotateHelp">自动旋转。</td></tr>
-<tr><td><code>antialias</code></td><td><code>auto</code></td><td><code>auto / none / smaa / msaa2 / msaa4 / msaa8</code></td></tr>
-<tr><td><code>exposure</code></td><td><code>0.7</code></td><td data-guide-i18n="exposureHelp">亮度，范围 0.1–3。</td></tr>
-<tr><td><code>reflection</code></td><td><code>0.7</code></td><td data-guide-i18n="reflectionHelp">反射强度，范围 0–3。</td></tr>
-<tr><td><code>kill-count</code></td><td><code>0</code></td><td data-guide-i18n="killsHelp">击杀标记数量，0–999；需模型支持。</td></tr>
-<tr><td><code>show-hardpoints</code></td><td data-guide-i18n="off">关</td><td data-guide-i18n="markersHelp">显示装备挂点标记。</td></tr>
-</tbody></table></div>
-<p class="note" data-guide-i18n="booleanNote">布尔属性以是否存在表示开关。关闭时移除属性，别写 <code>white-model="false"</code>。<code>effects</code> 除外，按上表传值。</p>
-</section>
-<footer class="guide-footer"><a data-guide-i18n="back" href="./index.html">返回图鉴 ↗</a><span data-guide-i18n="copyright">EVE Online 模型与游戏资源归 CCP Games 所有。</span></footer>
-</main></div><div aria-live="polite" id="copy-status" role="status"></div>
-</body></html>
+&lt;/html&gt;</code></pre>
+          </div>
+          <p class="note" data-guide-i18n="quickNote">
+            Models and textures load from our asset service. No extra dependencies are needed. Set a
+            height on the element.
+          </p>
+        </section>
+        <section class="doc-section" id="examples">
+          <div class="section-heading">
+            <span class="section-number">02</span>
+            <div>
+              <h2 data-guide-i18n="examples">Examples</h2>
+              <p data-guide-i18n="examplesIntro">
+                Run an example to update the preview. Import the component once per page.
+              </p>
+            </div>
+          </div>
+          <div class="example-list" id="example-list"></div>
+        </section>
+        <section class="doc-section" id="equipment">
+          <div class="section-heading">
+            <span class="section-number">03</span>
+            <div><h2 data-guide-i18n="equipment">Equipment mounting</h2></div>
+          </div>
+          <p data-guide-i18n="equipmentIntro">
+            Pass an array of item IDs in <code>equipment</code>. The component checks each item in
+            order and assigns compatible free mounts.
+          </p>
+          <div class="mount-flow">
+            <div>
+              <small data-guide-i18n="configuration">Configuration</small
+              ><strong data-guide-i18n="slot">[503,503]</strong>
+            </div>
+            <span aria-hidden="true">→</span>
+            <div>
+              <small data-guide-i18n="family">Equipment mount type</small
+              ><strong>locator_launcher_</strong>
+            </div>
+            <span aria-hidden="true">→</span>
+            <div>
+              <small data-guide-i18n="hull">Ship 12032</small
+              ><strong data-guide-i18n="available">Free launcher mounts</strong>
+            </div>
+          </div>
+          <p data-guide-i18n="equipmentNote">
+            587 + 484 demonstrates turrets; 12032 + 503 demonstrates launchers. An empty array
+            <code>[]</code> clears equipment. If an item cannot fit, its position and ID are
+            reported and the previous fitting is retained.
+          </p>
+        </section>
+        <section class="doc-section" id="attributes">
+          <div class="section-heading">
+            <span class="section-number">04</span>
+            <div><h2 data-guide-i18n="attributes">Attributes</h2></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th data-guide-i18n="attribute">Attribute</th>
+                  <th data-guide-i18n="default">Default</th>
+                  <th data-guide-i18n="purpose">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>item-id</code></td>
+                  <td data-guide-i18n="required">Required</td>
+                  <td data-guide-i18n="itemHelp">Item ID, for example 587.</td>
+                </tr>
+                <tr>
+                  <td><code>equipment</code></td>
+                  <td><code>[]</code></td>
+                  <td data-guide-i18n="equipmentAttribute">
+                    Item ID array, for example <code>[484,484]</code>, mounted automatically in
+                    order.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>lang</code></td>
+                  <td data-guide-i18n="inherit">Page language</td>
+                  <td data-guide-i18n="langHelp">
+                    Set the component language to <code>en</code> or <code>zh-CN</code>.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>hangar</code></td>
+                  <td><code>""</code></td>
+                  <td data-guide-i18n="hangarHelp">
+                    Hangar key, e.g. amarr; empty returns to space.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>subsystems</code></td>
+                  <td>—</td>
+                  <td data-guide-i18n="subsystemsHelp">
+                    Four-digit strategic cruiser subsystem configuration.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>background</code></td>
+                  <td><code>auto</code></td>
+                  <td data-guide-i18n="backgroundHelp">
+                    <code>auto</code> selects a background; <code>none</code> hides it. A scene ID
+                    is also accepted.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>control-panel</code></td>
+                  <td data-guide-i18n="off">Off</td>
+                  <td data-guide-i18n="controlsHelp">
+                    Show visual, fitting, subsystem and hangar controls.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>white-model</code></td>
+                  <td data-guide-i18n="off">Off</td>
+                  <td data-guide-i18n="whiteHelp">
+                    View the white model; switch back at any time.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>effects</code></td>
+                  <td data-guide-i18n="on">On</td>
+                  <td data-guide-i18n="effectsHelp">
+                    Use <code>effects="false"</code> to disable effects.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>auto-rotate</code></td>
+                  <td data-guide-i18n="off">Off</td>
+                  <td data-guide-i18n="rotateHelp">Rotate automatically.</td>
+                </tr>
+                <tr>
+                  <td><code>antialias</code></td>
+                  <td><code>auto</code></td>
+                  <td><code>auto / none / smaa / msaa2 / msaa4 / msaa8</code></td>
+                </tr>
+                <tr>
+                  <td><code>exposure</code></td>
+                  <td><code>0.7</code></td>
+                  <td data-guide-i18n="exposureHelp">Exposure, from 0.1 to 3.</td>
+                </tr>
+                <tr>
+                  <td><code>reflection</code></td>
+                  <td><code>0.7</code></td>
+                  <td data-guide-i18n="reflectionHelp">Reflection strength, from 0 to 3.</td>
+                </tr>
+                <tr>
+                  <td><code>kill-count</code></td>
+                  <td><code>0</code></td>
+                  <td data-guide-i18n="killsHelp">Kill marks, 0–999; requires model support.</td>
+                </tr>
+                <tr>
+                  <td><code>show-hardpoints</code></td>
+                  <td data-guide-i18n="off">Off</td>
+                  <td data-guide-i18n="markersHelp">Show equipment hardpoint markers.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="note" data-guide-i18n="booleanNote">
+            Boolean attributes are enabled by their presence. Remove them to turn them off; do not
+            use <code>white-model="false"</code>. <code>effects</code> is the exception: use the
+            value shown above.
+          </p>
+        </section>
+        <footer class="guide-footer">
+          <a data-guide-i18n="back" href="./index.html">Back to catalog ↗</a
+          ><span data-guide-i18n="copyright"
+            >EVE Online models and game assets belong to CCP Games.</span
+          >
+        </footer>
+      </main>
+    </div>
+    <div aria-live="polite" id="copy-status" role="status"></div>
+  </body>
+</html>

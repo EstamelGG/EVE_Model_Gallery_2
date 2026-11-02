@@ -1,4 +1,4 @@
-import {siteLocale,browserLocale,languagePreference,saveLanguagePreference,languageStorageKey} from './locale.mjs?v=3d1da1d840c92b10';
+import {siteLocale,browserLocale,languagePreference,saveLanguagePreference,languageStorageKey} from './locale.mjs?v=39b269378ac17ed1';
 let preference=languagePreference(),locale=siteLocale();
 export const demoText=(zh,en)=>locale==='en'?en:zh;
 const selector=document.createElement('select');selector.id='demo-language';
