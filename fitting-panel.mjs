@@ -1,13 +1,14 @@
-import {loadJSON} from './resource-activity.mjs?v=326cd5c374d54460';
-import {resourceURL} from './resource-location.mjs?v=326cd5c374d54460';
+import {loadJSON} from './resource-activity.mjs?v=a697e41514d32632';
+import {resourceURL} from './resource-location.mjs?v=a697e41514d32632';
 
 export function createFittingPanel({root,currentViewer,currentItem,translate:t,name,groupName,nativeSettings}) {
  const $=id=>root.querySelector('#'+id),saved=new Map();
  let active=false,context=null,generation=0,pending=null,dataPromise=null,data=null,limit=40;
+ let statusKey='fittingHint',statusValues;
  const valid=c=>context===c&&currentViewer()===c.viewer&&currentItem()===c.item;
  function state(id){if(!saved.has(id))saved.set(id,{choices:new Map(),selected:new Set(),initialized:false,deployed:true});return saved.get(id);}
  const selection=()=>context?state(context.item.id).selected:new Set();
- function status(key,values){$('fitting-status').textContent=t(key,values);}
+ function status(key,values){if(key!==undefined){statusKey=key;statusValues=values;}$('fitting-status').textContent=t(statusKey,statusValues);}
  function totals(){const fitting=context?.viewer.fitting;if(fitting)status('fittingReady',{groups:fitting.slots.length,count:fitting.count});}
  function closePicker(restore=false){$('fitting-picker').hidden=true;$('fitting-choose').setAttribute('aria-expanded','false');if(restore)$('fitting-choose').focus({preventScroll:true});}
  function refreshSelection(){
@@ -60,7 +61,7 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
   $('fitting-picker-title').textContent=t('fittingBatchChoose');$('fitting-search').value='';results();$('fitting-search').focus({preventScroll:true});
  }
  function render(){
-  closePicker();const fitting=context?.viewer.fitting;$('fitting-slots').replaceChildren();$('fitting-controls').hidden=!fitting;if(!fitting)return;
+  closePicker();const fitting=context?.viewer.fitting;$('fitting-slots').replaceChildren();$('fitting-controls').hidden=!fitting;if(!fitting){status();return;}
   const s=state(context.item.id);$('fitting-deployed').checked=s.deployed;
   if(!s.initialized){if(fitting.slots.length)s.selected.add(fitting.slots[0].slot);s.initialized=true;}
   for(const slot of fitting.slots){
@@ -73,9 +74,9 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
   $('fitting-category').value=category;refreshSelection();totals();
  }
  async function ensure(){
-  const c=context;if(!c||!valid(c))return;if(c.viewer.fitting){c.viewer.fitting.setEditing(active);return;}if(pending)return pending;
+  const c=context;if(!c){if(active)status('fittingWaitingModel');return;}if(!valid(c))return;if(c.viewer.fitting){c.viewer.fitting.setEditing(active);return;}if(pending)return pending;
   if(c.item.categoryID!==6||c.item.subsystemParts||c.item.groupID===963){status('fittingUnavailable');return;}
-  status('fittingLoading');const token=generation;
+  status('fittingLoadingHardpoints');const token=generation;
   const job=(async()=>{try{
    dataPromise ||= loadJSON(resourceURL('data/fitting.json')).catch(error=>{dataPromise=null;throw error;});data=await dataPromise;
    if(!valid(c)||token!==generation)return;const locators=data.ships?.[c.item.id];
@@ -97,7 +98,7 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
  $('fitting-clear').addEventListener('click',()=>void applySelection(null));
  return {
   connect(viewer,item,module){generation++;pending=null;closePicker();viewer.lifecycle.release('fitting');context={viewer,item,module};$('fitting-controls').hidden=true;$('fitting-slots').replaceChildren();status('fittingHint');if(active||saved.get(item.id)?.choices.size)void ensure();},
-  reset(){generation++;pending=null;closePicker();context?.viewer.fitting?.setEditing(false);context=null;$('fitting-controls').hidden=true;$('fitting-slots').replaceChildren();status('fittingHint');},
+  reset(){generation++;pending=null;closePicker();context?.viewer.fitting?.setEditing(false);context=null;$('fitting-controls').hidden=true;$('fitting-slots').replaceChildren();status(active?'fittingWaitingModel':'fittingHint');},
   setActive(value){active=value;if(!active)closePicker();context?.viewer.fitting?.setEditing(active);if(active)void ensure();},render,
  };
 }

@@ -1,27 +1,27 @@
-import {configureHullAnimations} from './viewer-presentation.mjs?v=326cd5c374d54460';
-import {createViewerRuntime} from './viewer-runtime.mjs?v=326cd5c374d54460';
+import {configureHullAnimations} from './viewer-presentation.mjs?v=a697e41514d32632';
+import {createViewerRuntime} from './viewer-runtime.mjs?v=a697e41514d32632';
 import {
   locale,
   t,
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=326cd5c374d54460';
-import {createViewerSettings} from './viewer-settings.mjs?v=326cd5c374d54460';
-import {createFittingPanel} from './fitting-panel.mjs?v=326cd5c374d54460';
-import {createHangarPanel,supportsHangar} from './hangar-panel.mjs?v=326cd5c374d54460';
-import {createCardGrid} from './card-grid.mjs?v=326cd5c374d54460';
-import {createCatalogState} from './catalog-state.mjs?v=326cd5c374d54460';
-import { createCatalogLoader } from './catalog-loader.mjs?v=326cd5c374d54460';
-import { hullKey } from './hull-variants.mjs?v=326cd5c374d54460';
-import { createAffiliationResolver } from './affiliation.mjs?v=326cd5c374d54460';
-import { createViewerTransition } from './viewer-transition.mjs?v=326cd5c374d54460';
-import { configureResourceBase, resourceURL } from './resource-location.mjs?v=326cd5c374d54460';
-import { loadJSON } from './resource-activity.mjs?v=326cd5c374d54460';
-import { prepareRenderImages } from './render-images.mjs?v=326cd5c374d54460';
-import {createLoadingPanel} from './loading-panel.mjs?v=326cd5c374d54460';
-import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName, subsystemGroups, subsystemSlots, isStrategicCruiser, withSubsystems } from './subsystems.mjs?v=326cd5c374d54460';
-import { resetView } from './view-reset.mjs?v=326cd5c374d54460';
+} from './i18n.mjs?v=a697e41514d32632';
+import {createViewerSettings} from './viewer-settings.mjs?v=a697e41514d32632';
+import {createFittingPanel} from './fitting-panel.mjs?v=a697e41514d32632';
+import {createHangarPanel,supportsHangar} from './hangar-panel.mjs?v=a697e41514d32632';
+import {createCardGrid} from './card-grid.mjs?v=a697e41514d32632';
+import {createCatalogState} from './catalog-state.mjs?v=a697e41514d32632';
+import { createCatalogLoader } from './catalog-loader.mjs?v=a697e41514d32632';
+import { hullKey } from './hull-variants.mjs?v=a697e41514d32632';
+import { createAffiliationResolver } from './affiliation.mjs?v=a697e41514d32632';
+import { createViewerTransition } from './viewer-transition.mjs?v=a697e41514d32632';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=a697e41514d32632';
+import { loadJSON } from './resource-activity.mjs?v=a697e41514d32632';
+import { prepareRenderImages } from './render-images.mjs?v=a697e41514d32632';
+import {createLoadingPanel} from './loading-panel.mjs?v=a697e41514d32632';
+import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName, subsystemGroups, subsystemSlots, isStrategicCruiser, withSubsystems } from './subsystems.mjs?v=a697e41514d32632';
+import { resetView } from './view-reset.mjs?v=a697e41514d32632';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -213,7 +213,7 @@ function changeSubsystems(code) {
 const viewerTransition = createViewerTransition($('viewer-stage'), $('viewer-snapshot'));
 const viewing = createViewerRuntime({
   mount: $('viewer-mount'), transition: viewerTransition,
-  loadRenderer: () => import('./vendor/model-viewer-ao.min.js?v=326cd5c374d54460'),
+  loadRenderer: () => import('./vendor/model-viewer-ao.min.js?v=a697e41514d32632'),
   view: {
     dimensionFrame: $('dimension-frame'),
     label: item => t('modelAlt', {name:localizedName(item.name)}),
@@ -1012,7 +1012,7 @@ async function init() {
     configureResourceBase(config.resourceBaseURL, config.backgroundBaseURL, config.backgroundFiles);
     const [index, identities, fallbackIndex] = await Promise.all([
       loadJSON(resourceURL('./data/catalog-index.json'), {cache:'no-cache'}),
-      loadJSON('./icons/identities.json?v=326cd5c374d54460'),
+      loadJSON('./icons/identities.json?v=a697e41514d32632'),
       loadJSON(resourceURL('./assets/renders/index.json'), {cache:'no-cache'}, {optional:true}).catch(() => ({})),
     ]);
     data = index;

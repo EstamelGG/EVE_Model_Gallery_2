@@ -19,6 +19,8 @@ const messages = {
   tabSubsystems: ['子系统设置', 'Subsystems'],
   subsystemNotApplicable: ['此模型不支持子系统搭配。', 'This model has no configurable subsystems.'],
   fittingHint: ['切换到装配设置以读取可用挂点。', 'Open Fitting to load available hardpoints.'],
+  fittingWaitingModel: ['正在加载模型，完成后将自动读取挂点…', 'Loading model; hardpoints will load automatically when ready…'],
+  fittingLoadingHardpoints: ['正在加载挂点…', 'Loading hardpoints…'],
   fittingSearch: ['搜索装备名称或编号', 'Search equipment name or ID'],
   fittingCategory: ['装备类型', 'Equipment type'],
   fittingClose: ['关闭装备选择', 'Close equipment picker'],
