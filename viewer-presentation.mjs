@@ -1,4 +1,4 @@
-import { postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=338000519833d037';
+import { postprocessingBudget, occlusionRadius } from './viewer-profile.mjs?v=ea36611e9054d4c5';
 
 export function createViewerPostprocessing(viewer, { triangles, nativePreview }) {
   // Preserve HDR precision and multisample the geometry before postprocessing.

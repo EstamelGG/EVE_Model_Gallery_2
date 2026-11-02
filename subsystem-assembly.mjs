@@ -1,5 +1,5 @@
 // Combine descriptors only. Geometry buffers and texture files stay shared.
-import { resourceURL } from './resource-location.mjs?v=338000519833d037';
+import { resourceURL } from './resource-location.mjs?v=ea36611e9054d4c5';
 const arrays = [
   'buffers',
   'bufferViews',
@@ -191,7 +191,7 @@ export async function assembleEffects(parts, loadJSON, resolveURL) {
 
 export async function prepareSubsystemModel(session, item, source, pageURL) {
   if (!item.subsystemParts) return;
-  const resolveURL = (url) => new URL(resourceURL(url), pageURL).href;
+  const resolveURL = (url) => new URL((session.resolveURL || resourceURL)(url), pageURL).href;
   const parts = await Promise.all(
     item.subsystemParts.map(async (part) => {
       const url = new URL(resolveURL(part.model));

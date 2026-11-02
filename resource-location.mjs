@@ -29,3 +29,17 @@ export function resourceURL(value) {
   const base = (background && globalThis.__eveBackgroundBase) || globalThis.__eveResourceBase;
   return base ? new URL(path, base).href : value;
 }
+
+// An embed owns its URLs; it never writes the host application's configuration.
+export function createResourceLocator(value, backgrounds = '', files = undefined) {
+  const base = validatedBase(value), backgroundBase = validatedBase(backgrounds);
+  if (files !== undefined && (!Array.isArray(files) || files.some(p => typeof p !== 'string' || !/^assets\/backgrounds\/[A-Za-z0-9_-][A-Za-z0-9_.-]*$/.test(p))))
+    throw new Error('Invalid backgroundFiles allowlist');
+  const allowlist = files === undefined ? null : new Set(files);
+  return value => {
+    if (!value || /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(value)) return value;
+    const path = value.replace(/^\.?\//, '');
+    const selected = backgroundBase && allowlist?.has(path.split(/[?#]/)[0]) ? backgroundBase : base;
+    return selected ? new URL(path, selected).href : value;
+  };
+}

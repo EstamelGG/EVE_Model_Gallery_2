@@ -1907,9 +1907,9 @@ button.ship-annotation:focus-visible { outline: 2px solid var(--annotation-accen
 .settings-tabs [role=tab]:focus-visible { outline:1px solid #bad0db; outline-offset:-3px; }
 .viewer-settings[hidden], #fitting-controls[hidden] { display:none; }
 .fitting-status,.fitting-note { color:#98aab5; font-size:11px; line-height:1.6; margin:6px 0; }
-.fitting-toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; margin-bottom:4px; }
-.viewer-settings .fitting-toolbar .toggle-row { margin:0 auto 0 0; gap:8px; }
-.fitting-actions { display:flex; flex:1 0 100%; justify-content:flex-end; gap:6px; }
+.fitting-toolbar { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:center; gap:8px 12px; margin-bottom:4px; }
+.viewer-settings .fitting-toolbar .toggle-row { margin:0; gap:8px; }
+.fitting-actions { grid-column:1 / -1; display:flex; justify-content:flex-end; gap:6px; }
 .fitting-toolbar .fitting-actions button { width:auto; margin:0; padding:4px 7px; font-size:11px; }
 .fitting-rows { display:flex; flex-direction:column; gap:4px; margin:6px 0 8px; }
 .fitting-row-container { display:flex; gap:4px; min-width:0; }

@@ -1,11 +1,11 @@
-import {createViewerRuntime} from './viewer-runtime.mjs?v=338000519833d037';
-import {createViewerTransition} from './viewer-transition.mjs?v=338000519833d037';
-import {createCatalogLoader} from './catalog-loader.mjs?v=338000519833d037';
-import {configureResourceBase,resourceURL} from './resource-location.mjs?v=338000519833d037';
-import {normalizeRenderSettings,renderDefaultsForDNA} from './render-settings.mjs?v=338000519833d037';
-import {normalizeDisplaySettings} from './display-settings.mjs?v=338000519833d037';
-import {createResourceBatch} from './resource-activity.mjs?v=338000519833d037';
-import {normalizeKillCount} from './kill-count.mjs?v=338000519833d037';
+import {createViewerRuntime} from './viewer-runtime.mjs?v=ea36611e9054d4c5';
+import {createViewerTransition} from './viewer-transition.mjs?v=ea36611e9054d4c5';
+import {createCatalogLoader} from './catalog-loader.mjs?v=ea36611e9054d4c5';
+import {configureResourceBase,resourceURL} from './resource-location.mjs?v=ea36611e9054d4c5';
+import {normalizeRenderSettings,renderDefaultsForDNA} from './render-settings.mjs?v=ea36611e9054d4c5';
+import {normalizeDisplaySettings} from './display-settings.mjs?v=ea36611e9054d4c5';
+import {createResourceBatch} from './resource-activity.mjs?v=ea36611e9054d4c5';
+import {normalizeKillCount} from './kill-count.mjs?v=ea36611e9054d4c5';
 const batch=createResourceBatch();
 const $=id=>document.getElementById(id),parentOrigin=new URL(document.referrer||location.href).origin;
 const send=(type,value,id,error)=>parent.postMessage({channel:'eve-viewer',type,value,id,error},parentOrigin);
@@ -13,7 +13,7 @@ const json=async url=>{const response=await fetch(url);if(!response.ok)throw Err
 let options={},index,loader,base,api,settings,lastError,revision=0,currentItem,backgroundTask;
 let fittingData,loadedItem;
 const runtime=createViewerRuntime({mount:$('mount'),transition:createViewerTransition($('stage'),$('snapshot')),
- loadRenderer:async()=>api=await import('./vendor/model-viewer-ao.min.js?v=338000519833d037'),view:{
+ loadRenderer:async()=>api=await import('./vendor/model-viewer-ao.min.js?v=ea36611e9054d4c5'),view:{
   dimensionFrame:$('dimensions'),label:item=>item.name?.zh||item.name?.en||String(item.id),
   settings:()=>settings,batch:()=>batch,dimensions(){},
   progress:phase=>{$('status').textContent=`加载中 · ${phase}/5`;send('progress',{phase,total:5});},

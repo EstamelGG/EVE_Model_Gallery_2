@@ -1,11 +1,11 @@
-import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=338000519833d037';
-import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=338000519833d037';
-import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=338000519833d037';
-import {viewerProfile} from './viewer-profile.mjs?v=338000519833d037';
-import {resourceURL} from './resource-location.mjs?v=338000519833d037';
-import {trackResource} from './resource-activity.mjs?v=338000519833d037';
-import {applyPostprocessingSettings, effectsEnabled} from './display-settings.mjs?v=338000519833d037';
-import {recenterView} from './view-reset.mjs?v=338000519833d037';
+import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=ea36611e9054d4c5';
+import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=ea36611e9054d4c5';
+import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=ea36611e9054d4c5';
+import {viewerProfile} from './viewer-profile.mjs?v=ea36611e9054d4c5';
+import {resourceURL} from './resource-location.mjs?v=ea36611e9054d4c5';
+import {trackResource} from './resource-activity.mjs?v=ea36611e9054d4c5';
+import {applyPostprocessingSettings, effectsEnabled} from './display-settings.mjs?v=ea36611e9054d4c5';
+import {recenterView} from './view-reset.mjs?v=ea36611e9054d4c5';
 
 // Wait for the actual model event, and detach listeners on success, failure,
 // cancellation or a synchronous setup failure. Shared asset requests continue.
@@ -30,11 +30,11 @@ export function waitForModel(viewer, signal, start) {
 
 // The runtime owns loading and rendering order. The view supplies settings and
 // presents progress/results; it never installs materials or replaces geometry.
-export function createViewerRuntime({mount, transition, loadRenderer, view}) {
+export function createViewerRuntime({mount, transition, loadRenderer, view, resolveURL = resourceURL, createSession}) {
   const controller = createViewerController();
   let api, pendingModule;
   const sourceURL = item => {
-    const url = new URL(resourceURL(item.model), location.href);
+    const url = new URL(resolveURL(item.model), location.href);
     url.searchParams.set('v', item.modelRevision);
     return url.href;
   };
@@ -89,7 +89,7 @@ export function createViewerRuntime({mount, transition, loadRenderer, view}) {
   async function prepare(viewer, item, context) {
     const {settings, operation} = context, source = sourceURL(item);
     if (item.subsystemParts) {
-      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=338000519833d037');
+      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=ea36611e9054d4c5');
       await trackResource(source, () => prepareSubsystemModel(viewer.assetSession, item, source, location.href), 'resourceModel');
       if (!operation.isCurrent()) return null;
     }
@@ -224,7 +224,7 @@ export function createViewerRuntime({mount, transition, loadRenderer, view}) {
     const viewer = document.createElement('model-viewer');
     viewer.lifecycle = createViewerLifecycle(viewer);
     viewer.lifecycle.set('disposeAnnotationFocus', api.installAnnotationFocus(viewer));
-    viewer.assetSession = controller.session(() => api.createViewerSession());
+    viewer.assetSession = controller.session(() => createSession ? createSession(api) : api.createViewerSession());
     viewer.assetSession.race ||= item.dna?.split(':')[2] || 'gallente';
     viewer.previewRace = viewer.assetSession.race;
     if (!operation.attach(viewer)) return false;
