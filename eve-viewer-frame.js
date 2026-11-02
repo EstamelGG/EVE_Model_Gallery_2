@@ -1,11 +1,11 @@
-import {createViewerRuntime} from './viewer-runtime.mjs?v=d7de0dd71fe048ce';
-import {createViewerTransition} from './viewer-transition.mjs?v=d7de0dd71fe048ce';
-import {createCatalogLoader} from './catalog-loader.mjs?v=d7de0dd71fe048ce';
-import {configureResourceBase,resourceURL} from './resource-location.mjs?v=d7de0dd71fe048ce';
-import {normalizeRenderSettings,renderDefaultsForDNA} from './render-settings.mjs?v=d7de0dd71fe048ce';
-import {normalizeDisplaySettings} from './display-settings.mjs?v=d7de0dd71fe048ce';
-import {createResourceBatch} from './resource-activity.mjs?v=d7de0dd71fe048ce';
-import {normalizeKillCount} from './kill-count.mjs?v=d7de0dd71fe048ce';
+import {createViewerRuntime} from './viewer-runtime.mjs?v=338000519833d037';
+import {createViewerTransition} from './viewer-transition.mjs?v=338000519833d037';
+import {createCatalogLoader} from './catalog-loader.mjs?v=338000519833d037';
+import {configureResourceBase,resourceURL} from './resource-location.mjs?v=338000519833d037';
+import {normalizeRenderSettings,renderDefaultsForDNA} from './render-settings.mjs?v=338000519833d037';
+import {normalizeDisplaySettings} from './display-settings.mjs?v=338000519833d037';
+import {createResourceBatch} from './resource-activity.mjs?v=338000519833d037';
+import {normalizeKillCount} from './kill-count.mjs?v=338000519833d037';
 const batch=createResourceBatch();
 const $=id=>document.getElementById(id),parentOrigin=new URL(document.referrer||location.href).origin;
 const send=(type,value,id,error)=>parent.postMessage({channel:'eve-viewer',type,value,id,error},parentOrigin);
@@ -13,7 +13,7 @@ const json=async url=>{const response=await fetch(url);if(!response.ok)throw Err
 let options={},index,loader,base,api,settings,lastError,revision=0,currentItem,backgroundTask;
 let fittingData,loadedItem;
 const runtime=createViewerRuntime({mount:$('mount'),transition:createViewerTransition($('stage'),$('snapshot')),
- loadRenderer:async()=>api=await import('./vendor/model-viewer-ao.min.js?v=d7de0dd71fe048ce'),view:{
+ loadRenderer:async()=>api=await import('./vendor/model-viewer-ao.min.js?v=338000519833d037'),view:{
   dimensionFrame:$('dimensions'),label:item=>item.name?.zh||item.name?.en||String(item.id),
   settings:()=>settings,batch:()=>batch,dimensions(){},
   progress:phase=>{$('status').textContent=`加载中 · ${phase}/5`;send('progress',{phase,total:5});},
@@ -108,7 +108,7 @@ window.addEventListener('message',async event=>{
   else if(method==='export-skybox')result=runtime.exportSkybox();
   else throw Error('Unknown viewer method');
   send('result',result,id);
- }catch(error){if(error.name!=='AbortError')$('status').textContent=error.message;send('result',null,id,{name:error.name,message:error.message||'Model loading failed'});}
+ }catch(error){if(error.name!=='AbortError')$('status').textContent=error.message||'Model loading failed';send('result',null,id,{name:error.name,message:error.message||'Model loading failed'});}
 });
 window.addEventListener('pagehide',()=>{runtime.close();batch.stop();});
 send('frame-ready');

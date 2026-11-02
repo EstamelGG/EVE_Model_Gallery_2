@@ -13,9 +13,9 @@
     <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png?v=2" />
     <link rel="icon" type="image/svg+xml" sizes="any" href="./mark.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png?v=2" />
-    <link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=d7de0dd71fe048ce" />
-    <link rel="stylesheet" href="./styles.css?v=d7de0dd71fe048ce" />
-    <script type="module" src="./app.js?v=d7de0dd71fe048ce"></script>
+    <link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=338000519833d037" />
+    <link rel="stylesheet" href="./styles.css?v=338000519833d037" />
+    <script type="module" src="./app.js?v=338000519833d037"></script>
   </head>
   <body>
     <svg class="icon-defs" aria-hidden="true">
@@ -380,7 +380,10 @@
               <div class="fitting-toolbar">
                 <label class="toggle-row" for="fitting-deployed"><span data-i18n="fittingDeployed">Deploy equipment</span><input id="fitting-deployed" type="checkbox" checked><span class="toggle-visual" aria-hidden="true"></span></label>
                 <label class="toggle-row" for="fitting-show-mounts"><span data-i18n="fittingShowMounts">Show hardpoints</span><input id="fitting-show-mounts" type="checkbox" checked><span class="toggle-visual" aria-hidden="true"></span></label>
-                <button id="fitting-undo" type="button" class="reset-button" data-i18n="fittingUndo" disabled>Undo</button>
+                <div class="fitting-actions">
+                  <button id="fitting-undo" type="button" class="reset-button" data-i18n="fittingUndo" disabled>Undo</button>
+                  <button id="fitting-clear-all" type="button" class="reset-button" data-i18n="fittingClearAll" disabled>Clear all equipment</button>
+                </div>
               </div>
               <p class="fitting-note fitting-selection-help" data-i18n="fittingSelectionHelp">Choose equipment for each slot; mounts are assigned automatically.</p>
               <div id="fitting-slots" class="fitting-rows" role="group" data-i18n-aria-label="fittingMounts" aria-label="Equipment slots"></div>

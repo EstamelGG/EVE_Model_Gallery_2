@@ -1,5 +1,5 @@
-import {loadJSON} from './resource-activity.mjs?v=d7de0dd71fe048ce';
-import {resourceURL} from './resource-location.mjs?v=d7de0dd71fe048ce';
+import {loadJSON} from './resource-activity.mjs?v=338000519833d037';
+import {resourceURL} from './resource-location.mjs?v=338000519833d037';
 
 export function createFittingPanel({root,currentViewer,currentItem,translate:t,name,groupName,nativeSettings,loading}) {
  const $=id=>root.querySelector('#'+id),saved=new Map(),rows=new Map(),focusButtons=new Map();
@@ -42,6 +42,7 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
    button.replaceChildren(id,equipmentIcon(item),text,arrow);
   }
   $('fitting-undo').disabled=busy()||!s.undo;
+  $('fitting-clear-all').disabled=busy()||!fitting.slots.some(({slot})=>fitting.get(slot));
  }
  function selectSlot(slot,{open=false}={}){
   const fitting=context?.viewer.fitting;
@@ -75,6 +76,21 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
    if(undo)s.undo=null;else if(previous!==id)s.undo={slot,id:previous};
    if(!undo&&id!=null){lastEquipment=id;try{globalThis.localStorage?.setItem(recentKey,String(id));}catch{}}
   }
+  refreshRows();
+  if(error){status('fittingFailed');console.warn(error);}else totals();
+ }
+ async function replaceEquipment(choices,undo=false){
+  const c=context;if(!c?.viewer.fitting||busy())return;
+  const fitting=c.viewer.fitting,s=state(c.item.id);
+  const previous=new Map(fitting.slots.flatMap(({slot})=>fitting.get(slot)?[[slot,fitting.get(slot).id]]:[]));
+  if(!undo&&!previous.size)return;
+  fitting.previewSlot?.(null);closePicker();const current={context:c};operation=current;
+  refreshRows();status('fittingLoading');const task=choices.size?loadingTask('fittingLoading'):null;
+  let changed,error;
+  try{changed=await fitting.replace(choices);}catch(reason){error=reason;}
+  finally{task?.finish();if(operation===current)operation=null;}
+  if(!valid(c))return;
+  if(changed!==false&&!error){s.choices=new Map(choices);s.undo=undo?null:{choices:previous};}
   refreshRows();
   if(error){status('fittingFailed');console.warn(error);}else totals();
  }
@@ -189,7 +205,8 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
  $('fitting-picker').addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closePicker(true);}if(event.key==='ArrowDown'&&event.target===$('fitting-search')){event.preventDefault();(selectedCategory===null&&!$('fitting-search').value.trim()?$('fitting-category'):$('fitting-results')).querySelector('button')?.focus();}});
  $('fitting-deployed').addEventListener('change',()=>{if(context?.viewer.fitting){state(context.item.id).deployed=$('fitting-deployed').checked;context.viewer.fitting.setDeployed($('fitting-deployed').checked);}});
  $('fitting-show-mounts').addEventListener('change',()=>{showMounts=$('fitting-show-mounts').checked;context?.viewer.fitting?.setEditing(active&&showMounts);});
- $('fitting-undo').addEventListener('click',()=>{const undo=context&&state(context.item.id).undo;if(undo)void applyEquipment(undo.slot,undo.id,true);});
+ $('fitting-clear-all').addEventListener('click',()=>void replaceEquipment(new Map()));
+ $('fitting-undo').addEventListener('click',()=>{const undo=context&&state(context.item.id).undo;if(undo){if(undo.choices)void replaceEquipment(undo.choices,true);else void applyEquipment(undo.slot,undo.id,true);}});
  return {
   // A failed background request must not block startup; opening Fitting retries.
   preload(){return loadData().then(()=>true,()=>false);},

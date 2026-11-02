@@ -1,5 +1,5 @@
 // Framework-free public element. Each frame owns its renderer, settings and caches.
-const frameURL=new URL('./eve-viewer-frame.html?v=d7de0dd71fe048ce',import.meta.url);
+const frameURL=new URL('./eve-viewer-frame.html?v=338000519833d037',import.meta.url);
 const attributes=['item-id','resource-base','background','exposure','reflection','kill-count','effects','white-model','auto-rotate','control-panel','antialias'];
 export class EveModelViewer extends HTMLElement {
  static observedAttributes=attributes;

@@ -40,6 +40,7 @@ const messages = {
   fittingChooseEquipment: ['选择装备', 'Choose equipment'],
   fittingLastChoice: ['上次选择', 'Last selected'],
   fittingUndo: ['撤销上步', 'Undo last change'],
+  fittingClearAll: ['清除全部挂载', 'Clear all equipment'],
   fittingSelectionHelp: ['逐行选择装备，自动分配到合适的挂点。', 'Choose equipment for each slot; mounts are assigned automatically.'],
   fittingNoFreeMount: ['没有空闲的兼容挂点', 'No free compatible mounts'],
   fittingNoCompatible: ['暂无兼容装备', 'No compatible equipment'],
