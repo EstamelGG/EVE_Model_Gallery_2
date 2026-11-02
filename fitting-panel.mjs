@@ -1,5 +1,5 @@
-import {loadJSON} from './resource-activity.mjs?v=723b21dc0a55263b';
-import {resourceURL} from './resource-location.mjs?v=723b21dc0a55263b';
+import {loadJSON} from './resource-activity.mjs?v=b76447195da58cc4';
+import {resourceURL} from './resource-location.mjs?v=b76447195da58cc4';
 
 export function createFittingPanel({root,currentViewer,currentItem,translate:t,name,groupName,nativeSettings,loading}) {
  const $=id=>root.querySelector('#'+id),saved=new Map();
@@ -30,6 +30,7 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
   if(!slots.size)closePicker();
  }
  function toggle(slot,follow=true){
+  if(context?.viewer.fitting?.slots.find(s=>s.slot===slot)?.available===false)return;
   const slots=selection();if(slots.has(slot))slots.delete(slot);else{slots.add(slot);if(follow)context?.viewer.fitting?.focus(slot);}
   refreshSelection();if(!$('fitting-picker').hidden)results();
  }
@@ -73,9 +74,11 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
  function render(){
   closePicker();const fitting=context?.viewer.fitting;$('fitting-slots').replaceChildren();$('fitting-controls').hidden=!fitting;if(!fitting){status();return;}
   const s=state(context.item.id);$('fitting-deployed').checked=s.deployed;
-  if(!s.initialized){if(fitting.slots.length)s.selected.add(fitting.slots[0].slot);s.initialized=true;}
+  for(const slot of s.selected)if(!fitting.slots.some(def=>def.slot===slot&&def.available!==false))s.selected.delete(slot);
+  if(!s.initialized){const first=fitting.slots.find(slot=>slot.available!==false);if(first)s.selected.add(first.slot);s.initialized=true;}
   for(const slot of fitting.slots){
    const button=document.createElement('button');button.type='button';button.dataset.slot=slot.slot;button.dataset.count=slot.mounts.length;
+   button.disabled=slot.available===false;
    button.textContent=String(slot.slot).padStart(2,'0');button.setAttribute('aria-label',t('fittingSlot',{slot:slot.slot,count:slot.mounts.length}));
    button.onclick=()=>toggle(slot.slot);$('fitting-slots').append(button);
   }
@@ -92,13 +95,13 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
    if(!valid(c)||token!==generation)return;const locators=data.ships?.[c.item.id];
    if(data.version!==2||!locators?.length){status('fittingUnavailable');return;}
    const settings=await nativeSettings(c.viewer);if(!valid(c)||token!==generation)return;
-   const fitting=c.module.installFitting(c.viewer,{locators,equipment:data.equipment,settings,hull:c.item,onSelect:slot=>{if(valid(c))toggle(slot,false);}});
+   const fitting=c.module.installFitting(c.viewer,{locators,equipment:data.equipment,settings,hullCategory:c.item.categoryID,onSelect:slot=>{if(valid(c))toggle(slot,false);}});
    c.viewer.lifecycle.set('fitting',fitting);fitting.setEditing(active);const s=state(c.item.id);fitting.setDeployed(s.deployed);render();
    await Promise.all([...s.choices].filter(([slot,id])=>id!=null&&fitting.slots.some(s=>s.slot===slot)).map(([slot,id])=>change(c,slot,id)));if(valid(c)){refreshSelection();totals();}
   }catch(error){if(valid(c)&&token===generation){status('fittingFailed');console.warn('Fitting metadata failed',error);}}finally{task?.finish();}})();
   pending=job;try{await job;}finally{if(pending===job)pending=null;}
  }
- $('fitting-all').addEventListener('click',()=>{if(!context?.viewer.fitting)return;closePicker();const slots=selection();for(const s of context.viewer.fitting.slots)slots.add(s.slot);refreshSelection();});
+ $('fitting-all').addEventListener('click',()=>{if(!context?.viewer.fitting)return;closePicker();const slots=selection();for(const s of context.viewer.fitting.slots)if(s.available!==false)slots.add(s.slot);refreshSelection();});
  $('fitting-none').addEventListener('click',()=>{selection().clear();refreshSelection();});
  $('fitting-choose').addEventListener('click',()=>$('fitting-picker').hidden?openPicker():closePicker());
  $('fitting-search').addEventListener('input',()=>{limit=40;results();});$('fitting-category').addEventListener('change',()=>{limit=40;results();});
