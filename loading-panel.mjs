@@ -1,9 +1,9 @@
-import {resourceActivity, createResourceBatch} from './resource-activity.mjs?v=3a05d216c0ea8c0d';
+import {resourceActivity, createResourceBatch} from './resource-activity.mjs?v=3d1da1d840c92b10';
 
 const steps = ['loadingCatalog', 'loadingAssets', 'loadingMaterials', 'loadingEnvironment', 'preparing'];
 
 // One owner for the model stages, resource batch, and late background downloads.
-export function createLoadingPanel({root, translate:t, backgroundPending}) {
+export function createLoadingPanel({root, translate:t, backgroundPending, automaticResources = true}) {
   const find = id => root.getElementById(id);
   const panel = find('viewer-loading'), title = panel.querySelector('strong');
   const detail = find('loading-detail'), progress = find('model-progress'), count = find('loading-count');
@@ -45,7 +45,7 @@ export function createLoadingPanel({root, translate:t, backgroundPending}) {
     const pending = resourceActivity.snapshot(), current = pending.at(-1);
     // Any tracked data request can use the same corner panel, even outside a
     // model task. Explicit tasks keep it visible through parsing/setup gaps.
-    if (!batch && current) {
+    if (!batch && current && automaticResources) {
       automatic=true;complete=true;taskTitle='loadingResources';
       batch=createResourceBatch();batch.plan([]);
     } else if (automatic && !current) {
@@ -63,7 +63,7 @@ export function createLoadingPanel({root, translate:t, backgroundPending}) {
     }
     render();
   }
-  resourceActivity.subscribe(() => {
+  const unsubscribe = resourceActivity.subscribe(() => {
     // Throttling allows a busy stream to keep updating the display.
     if (!timer) timer = setTimeout(() => {timer = null; refresh();}, 80);
   });
@@ -97,6 +97,15 @@ export function createLoadingPanel({root, translate:t, backgroundPending}) {
     },
     backgroundSettled() { if (complete) finish(); else render(); },
     refresh,
+    dispose() {
+      unsubscribe();
+      clearTimeout(timer);
+      generation++;
+      rows.reset();
+      batch?.stop();
+      batch = null;
+      panel.hidden = true;
+    },
   };
 }
 

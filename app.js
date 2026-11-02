@@ -1,27 +1,27 @@
-import {configureHullAnimations} from './viewer-presentation.mjs?v=3a05d216c0ea8c0d';
-import {createViewerRuntime} from './viewer-runtime.mjs?v=3a05d216c0ea8c0d';
+import {configureHullAnimations} from './viewer-presentation.mjs?v=3d1da1d840c92b10';
+import {createViewerRuntime} from './viewer-runtime.mjs?v=3d1da1d840c92b10';
 import {
   locale,
   t,
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=3a05d216c0ea8c0d';
-import {createViewerSettings} from './viewer-settings.mjs?v=3a05d216c0ea8c0d';
-import {createFittingPanel} from './fitting-panel.mjs?v=3a05d216c0ea8c0d';
-import {createHangarPanel,supportsHangar} from './hangar-panel.mjs?v=3a05d216c0ea8c0d';
-import {createCardGrid} from './card-grid.mjs?v=3a05d216c0ea8c0d';
-import {createCatalogState} from './catalog-state.mjs?v=3a05d216c0ea8c0d';
-import { createCatalogLoader } from './catalog-loader.mjs?v=3a05d216c0ea8c0d';
-import { hullKey } from './hull-variants.mjs?v=3a05d216c0ea8c0d';
-import { createAffiliationResolver } from './affiliation.mjs?v=3a05d216c0ea8c0d';
-import { createViewerTransition } from './viewer-transition.mjs?v=3a05d216c0ea8c0d';
-import { configureResourceBase, resourceURL } from './resource-location.mjs?v=3a05d216c0ea8c0d';
-import { loadJSON } from './resource-activity.mjs?v=3a05d216c0ea8c0d';
-import { prepareRenderImages } from './render-images.mjs?v=3a05d216c0ea8c0d';
-import {createLoadingPanel} from './loading-panel.mjs?v=3a05d216c0ea8c0d';
-import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName, subsystemGroups, subsystemSlots, isStrategicCruiser, withSubsystems } from './subsystems.mjs?v=3a05d216c0ea8c0d';
-import { resetView } from './view-reset.mjs?v=3a05d216c0ea8c0d';
+} from './i18n.mjs?v=3d1da1d840c92b10';
+import {createViewerSettings} from './viewer-settings.mjs?v=3d1da1d840c92b10';
+import {createFittingPanel} from './fitting-panel.mjs?v=3d1da1d840c92b10';
+import {createHangarPanel,supportsHangar} from './hangar-panel.mjs?v=3d1da1d840c92b10';
+import {createCardGrid} from './card-grid.mjs?v=3d1da1d840c92b10';
+import {createCatalogState} from './catalog-state.mjs?v=3d1da1d840c92b10';
+import { createCatalogLoader } from './catalog-loader.mjs?v=3d1da1d840c92b10';
+import { hullKey } from './hull-variants.mjs?v=3d1da1d840c92b10';
+import { createAffiliationResolver } from './affiliation.mjs?v=3d1da1d840c92b10';
+import { createViewerTransition } from './viewer-transition.mjs?v=3d1da1d840c92b10';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=3d1da1d840c92b10';
+import { loadJSON } from './resource-activity.mjs?v=3d1da1d840c92b10';
+import { prepareRenderImages } from './render-images.mjs?v=3d1da1d840c92b10';
+import {createLoadingPanel} from './loading-panel.mjs?v=3d1da1d840c92b10';
+import { subsystemConfiguration, subsystemItem, subsystemOptionAvailable, subsystemOptionName, subsystemGroups, subsystemSlots, isStrategicCruiser, withSubsystems } from './subsystems.mjs?v=3d1da1d840c92b10';
+import { resetView } from './view-reset.mjs?v=3d1da1d840c92b10';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -30,13 +30,9 @@ const esc = (value) =>
     /[&<>"']/g,
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
   );
+import {formatDimension, renderViewerHeading} from './viewer-overlay.mjs?v=3d1da1d840c92b10';
 const fmt = (value) => Number(value).toLocaleString(locale);
 const itemDimensions = new WeakMap();
-function formatDimension(meters) {
-  if (!Number.isFinite(meters) || meters <= 0) return '—';
-  const rounded = Math.round(meters);
-  return rounded >= 1000 ? `${Number((rounded / 1000).toFixed(2))}KM` : `${rounded}M`;
-}
 function renderDimensions(dimensions) {
   for (const axis of ['x', 'y', 'z']) {
     $('dimension-' + axis).textContent = formatDimension(dimensions?.[axis]);
@@ -213,7 +209,7 @@ function changeSubsystems(code) {
 const viewerTransition = createViewerTransition($('viewer-stage'), $('viewer-snapshot'));
 const viewing = createViewerRuntime({
   mount: $('viewer-mount'), transition: viewerTransition,
-  loadRenderer: () => import('./vendor/model-viewer-ao.min.js?v=3a05d216c0ea8c0d'),
+  loadRenderer: () => import('./vendor/model-viewer-ao.min.js?v=3d1da1d840c92b10'),
   view: {
     dimensionFrame: $('dimension-frame'),
     label: item => t('modelAlt', {name:localizedName(item.name)}),
@@ -776,9 +772,7 @@ function renderDetail() {
   $('detail-title').textContent = localizedName(item.name) || `ID ${item.id}`;
   $('skybox-select').closest('label').hidden = item.renderKind === 'equipment';
   if (item.renderKind === 'equipment') $('skybox-status').hidden = true;
-  $('stage-title').textContent = $('detail-title').textContent;
-  $('stage-subtitle').textContent = item.name?.en || '';
-  $('stage-subtitle').hidden = !item.name?.en || item.name.en === $('stage-title').textContent;
+  renderViewerHeading(document, item, $('detail-title').textContent);
   $('detail-dna').textContent = item.dna ? `DNA: ${item.dna}` : '';
   $('detail-dna').title = item.dna || '';
   $('detail-dna').hidden = !item.dna;
@@ -1032,7 +1026,7 @@ async function init() {
     void fittingPanel.preload();
     const [index, identities, fallbackIndex] = await Promise.all([
       loadJSON(resourceURL('./data/catalog-index.json'), {cache:'no-cache'}),
-      loadJSON('./icons/identities.json?v=3a05d216c0ea8c0d'),
+      loadJSON('./icons/identities.json?v=3d1da1d840c92b10'),
       loadJSON(resourceURL('./assets/renders/index.json'), {cache:'no-cache'}, {optional:true}).catch(() => ({})),
     ]);
     data = index;

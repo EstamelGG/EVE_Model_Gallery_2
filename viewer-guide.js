@@ -1,5 +1,5 @@
-import {guideCopy,caseCopy} from './viewer-guide-copy.mjs?v=3a05d216c0ea8c0d';
-import {siteLocale,browserLocale,languagePreference,saveLanguagePreference,languageStorageKey} from './locale.mjs?v=3a05d216c0ea8c0d';
+import {guideCopy,caseCopy} from './viewer-guide-copy.mjs?v=3d1da1d840c92b10';
+import {siteLocale,browserLocale,languagePreference,saveLanguagePreference,languageStorageKey} from './locale.mjs?v=3d1da1d840c92b10';
 
 const $=id=>document.getElementById(id);
 let preference=languagePreference(),locale=siteLocale(),currentCase='minimal',previewState={kind:'initial'},viewer,resourceBase,caseRevision=0,toastTimer;
@@ -90,7 +90,7 @@ for(const [index,example] of cases.entries()){
 
 function message(text){$('copy-status').textContent=text;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('copy-status').textContent='',2800);}
 async function initialize(){
- await import('./eve-model-viewer.js?v=3a05d216c0ea8c0d');
+ await import('./eve-model-viewer.js?v=3d1da1d840c92b10');
  // The documentation uses the site's resource configuration for local previews.
  // Copied examples and the component itself keep the production CDN default.
  try{const response=await fetch('./site-config.json');if(response.ok)resourceBase=(await response.json()).resourceBaseURL;}catch{}
