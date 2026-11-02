@@ -32,10 +32,6 @@ export const guideCopy={
     "属性",
     "Attributes"
   ],
-  "api": [
-    "JavaScript API",
-    "JavaScript API"
-  ],
   "heading": [
     "EVE 模型组件",
     "EVE model component"
@@ -61,8 +57,8 @@ export const guideCopy={
     "Hardpoint markers"
   ],
   "reset": [
-    "重置视角 ↶",
-    "Reset view ↶"
+    "重置视角",
+    "Reset view"
   ],
   "loading": [
     "加载中…",
@@ -97,16 +93,16 @@ export const guideCopy={
     "Run an example to update the preview. Import the component once per page."
   ],
   "equipmentIntro": [
-    "<code>slot</code> 是逻辑装备槽，不是原生挂点编号。传入装备 ID 后，组件会按装备类型选择兼容挂点，并检查位置是否已被占用。",
-    "<code>slot</code> is a logical equipment slot, not a native hardpoint number. The component uses the equipment type to select compatible, unoccupied mounts."
+    "<code>equipment</code> 传入装备 ID 数组。组件按顺序检查类型、空闲位置和容量，自动选择挂点。",
+    "Pass an array of item IDs in <code>equipment</code>. The component checks each item in order and assigns compatible free mounts."
   ],
   "configuration": [
     "配置",
     "Configuration"
   ],
   "slot": [
-    "slot 1 → 装备 503",
-    "slot 1 → item 503"
+    "[503,503]",
+    "[503,503]"
   ],
   "family": [
     "装备挂点类型",
@@ -121,8 +117,8 @@ export const guideCopy={
     "Free launcher mounts"
   ],
   "equipmentNote": [
-    "587 + 484 演示炮塔，12032 + 503 演示发射器。运行后可查看挂点标记和实际分配结果。这里只做模型展示，不校验 CPU、能量栅格等游戏内配装限制。",
-    "587 + 484 demonstrates turrets; 12032 + 503 demonstrates launchers. Run either to inspect markers and assignments. This is a visual preview; CPU, power grid and other in-game fitting limits are not checked."
+    "587 + 484 演示炮塔，12032 + 503 演示发射器。空数组 <code>[]</code> 清空装备。某一项无法安装时会返回其位置和 ID，并保留原装配。",
+    "587 + 484 demonstrates turrets; 12032 + 503 demonstrates launchers. An empty array <code>[]</code> clears equipment. If an item cannot fit, its position and ID are reported and the previous fitting is retained."
   ],
   "attribute": [
     "属性",
@@ -200,49 +196,13 @@ export const guideCopy={
     "布尔属性以是否存在表示开关。关闭时移除属性，别写 <code>white-model=\"false\"</code>。<code>effects</code> 除外，按上表传值。",
     "Boolean attributes are enabled by their presence. Remove them to turn them off; do not use <code>white-model=\"false\"</code>. <code>effects</code> is the exception: use the value shown above."
   ],
-  "apiIntro": [
-    "复杂参数通过 configure() 传入。等待 Promise 完成后再读取结果。",
-    "Pass complex options to configure(). Wait for its Promise before reading results."
-  ],
-  "apiNote": [
-    "<code>configure()</code> 会合并已有参数。传入 <code>fitting</code> 时给出完整装备列表；<code>equipment: []</code> 清空装备。",
-    "<code>configure()</code> merges existing options. Provide the full equipment list in <code>fitting</code>; <code>equipment: []</code> clears it."
-  ],
-  "method": [
-    "方法 / 事件",
-    "Method / event"
-  ],
-  "placementsHelp": [
-    "查询实际挂载结果。",
-    "Read actual mount assignments."
-  ],
-  "equipmentHelp": [
-    "装配初始化后，查询逻辑槽可用的装备。",
-    "Query equipment for a logical slot after fitting initialization."
-  ],
-  "exportHelp": [
-    "返回含 Blob 的模型导出结果。",
-    "Return a model export containing a Blob."
-  ],
-  "skyboxHelp": [
-    "背景加载后，返回 HDR 文件的 Blob 和名称。",
-    "Return the HDR Blob and filename after a background has loaded."
-  ],
-  "eventsHelp": [
-    "加载进度、完成、错误事件，数据在 <code>event.detail</code> 中。",
-    "Loading progress, completion and errors. Read data from <code>event.detail</code>."
-  ],
-  "settingsHelp": [
-    "用户修改控制区时触发。",
-    "Fires when a user changes visual settings."
-  ],
-  "errorNote": [
-    "显式调用 <code>configure()</code> 时用 <code>try / catch</code> 处理错误。不要在同一页再加载其他版本的 model-viewer。",
-    "Handle <code>configure()</code> errors with <code>try / catch</code>. Do not load another model-viewer version on the same page."
-  ],
   "copyright": [
     "EVE Online 模型与游戏资源归 CCP Games 所有。",
     "EVE Online models and game assets belong to CCP Games."
+  ],
+  "equipmentAttribute": [
+    "装备 ID 数组，例如 <code>[484,484]</code>，按顺序自动挂载。",
+    "Item ID array, for example <code>[484,484]</code>, mounted automatically in order."
   ]
 };
 export const caseCopy={

@@ -1,4 +1,4 @@
-import {siteLocale,browserLocale,languagePreference,saveLanguagePreference,languageStorageKey} from './locale.mjs?v=266b7f67b867752a';
+import {siteLocale,browserLocale,languagePreference,saveLanguagePreference,languageStorageKey} from './locale.mjs?v=3a05d216c0ea8c0d';
 const messages = {
   viewerGuide: ['组件使用指南', 'Component guide'],
   settingsTabs: ['查看器设置', 'Viewer settings'],

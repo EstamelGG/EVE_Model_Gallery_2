@@ -2,11 +2,11 @@
 <html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>EVE 标签 · 参数与装备示例</title>
 <style>html,body{margin:0;height:100%;background:#10171e;color:#cbd5de;font:14px system-ui}body{display:flex;flex-direction:column}nav{padding:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}button,a{background:#213140;color:inherit;border:1px solid #405568;padding:6px 12px}eve-model-viewer{flex:1;min-height:0}</style>
-<script type="module" src="./eve-model-viewer.js?v=266b7f67b867752a"></script>
-<nav><a href="./demo.html?v=266b7f67b867752a">最小示例</a><button id="white">切换白模</button><button id="panel">切换控制区</button><button id="fit">安装鱼雷发射器 II</button><span id="message" role="status"></span></nav>
+<script type="module" src="./eve-model-viewer.js?v=3a05d216c0ea8c0d"></script>
+<nav><a href="./demo.html?v=3a05d216c0ea8c0d">最小示例</a><button id="white">切换白模</button><button id="panel">切换控制区</button><button id="fit">安装鱼雷发射器 II</button><span id="message" role="status"></span></nav>
 <eve-model-viewer item-id="12038" background="none"></eve-model-viewer>
 <script type="module">
-import {demoText} from './demo-language.mjs?v=266b7f67b867752a';
+import {demoText} from './demo-language.mjs?v=3a05d216c0ea8c0d';
 await customElements.whenDefined('eve-model-viewer');
 const viewer=document.querySelector('eve-model-viewer'),message=document.querySelector('#message');
 let whiteModel=false,controlPanel=false;
@@ -15,6 +15,6 @@ window.addEventListener('demo-language-change',refreshMessage);
 const run=async options=>{message.textContent=demoText('更新中…','Updating…');try{const result=await viewer.configure(options);message.dataset.item=String(result.itemId);message.dataset.count=String(result.placements.length);refreshMessage();}catch(error){message.textContent=error.message;}};
 document.querySelector('#white').onclick=()=>run({whiteModel:whiteModel=!whiteModel});
 document.querySelector('#panel').onclick=()=>run({controlPanel:controlPanel=!controlPanel});
-document.querySelector('#fit').onclick=()=>run({fitting:{deployed:true,equipment:[{slot:1,itemId:2420},{slot:2,itemId:2420}]}});
+document.querySelector('#fit').onclick=()=>run({equipment:[2420,2420]});
 viewer.addEventListener('error',event=>message.textContent=event.detail.message);
 </script></html>

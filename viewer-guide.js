@@ -1,5 +1,5 @@
-import {guideCopy,caseCopy} from './viewer-guide-copy.mjs?v=266b7f67b867752a';
-import {siteLocale,browserLocale,languagePreference,saveLanguagePreference,languageStorageKey} from './locale.mjs?v=266b7f67b867752a';
+import {guideCopy,caseCopy} from './viewer-guide-copy.mjs?v=3a05d216c0ea8c0d';
+import {siteLocale,browserLocale,languagePreference,saveLanguagePreference,languageStorageKey} from './locale.mjs?v=3a05d216c0ea8c0d';
 
 const $=id=>document.getElementById(id);
 let preference=languagePreference(),locale=siteLocale(),currentCase='minimal',previewState={kind:'initial'},viewer,resourceBase,caseRevision=0,toastTimer;
@@ -8,7 +8,7 @@ const text=(zh,english)=>en()?english:zh;
 const caseTitle=example=>en()?caseCopy[example.id][0]:example.title;
 const caseDescription=example=>en()?caseCopy[example.id][1]:example.description;
 const codeSources=new Map();
-const codeEnglish=value=>value.replaceAll('lang="zh-CN"','lang="en"').replaceAll('我的 EVE 模型','My EVE model').replaceAll('// 装配初始化后，查询指定逻辑槽当前可用的装备。','// Query equipment for a logical slot after fitting initialization.').replaceAll("// 也支持 'obj'","// Also supports 'obj'").replaceAll('// 先选中并加载背景，再导出。','// Select and load a background before exporting.').replaceAll('// .hdr，保留 HDR 亮度范围','// .hdr preserves the HDR brightness range').replaceAll('阶段 ${detail.phase}/${detail.total}','Stage ${detail.phase}/${detail.total}').replaceAll("'已加载'","'Loaded'").replaceAll("'用户修改了控制区'","'Settings changed by the user'");
+const codeEnglish=value=>value.replaceAll('lang="zh-CN"','lang="en"');
 function updateStatus(){
  const {kind,phase,total,result,error}=previewState;
  $('preview-status').textContent=kind==='progress'?text(`加载中 · ${phase}/${total}`,`Loading · ${phase}/${total}`):kind==='loaded'?text(`飞船 ${result.itemId} · ${result.placements.length} 个逻辑装备槽 · 拖动旋转，滚轮缩放`,`Ship ${result.itemId} · ${result.placements.length} logical slots · Drag to orbit, scroll to zoom`):kind==='error'?text(`加载失败：${error}`,`Loading failed: ${error}`):kind==='applying'?text('正在应用案例…','Applying example…'):text('准备加载飞船 587','Preparing ship 587');
@@ -27,7 +27,7 @@ function applyLanguage(){
  viewer?.setAttribute('lang',locale);updateStatus();
 }
 
-const baseline={itemId:587,background:'none',controlPanel:false,whiteModel:false,effects:true,autoRotate:false,showHardpoints:false,killCount:0,render:{exposure:.7,reflection:.7,bloom:.2,sun:1,fill:1,f0:1,roughness:1,dirt:1,depthOfField:1},display:{antialiasMode:'auto',occlusion:true,bloom:true,depthOfField:false,textures:{}},fitting:{deployed:true,equipment:[]}};
+const baseline={itemId:587,background:'none',controlPanel:false,whiteModel:false,effects:true,autoRotate:false,showHardpoints:false,killCount:0,render:{exposure:.7,reflection:.7,bloom:.2,sun:1,fill:1,f0:1,roughness:1,dirt:1,depthOfField:1},display:{antialiasMode:'auto',occlusion:true,bloom:true,depthOfField:false,textures:{}},equipment:[]};
 const cases=[
  {id:'minimal',title:'最简嵌入',description:'飞船 587，关闭背景。',options:{},code:`<eve-model-viewer
   item-id="587"
@@ -60,32 +60,18 @@ const cases=[
   antialias="smaa"
   style="height:500px">
 </eve-model-viewer>`},
- {id:'turrets',title:'普通炮塔自动挂载 · 587 + 484',description:'裂谷级安装两组 125mm 加特林自动加农炮 I。',options:{fitting:{deployed:true,equipment:[{slot:1,itemId:484},{slot:2,itemId:484}]}},code:`<eve-model-viewer id="ship" item-id="587"
-  background="none" style="height:500px">
-</eve-model-viewer>
-<script type="module">
-  import 'https://eve.vanquisher.online/eve-model-viewer.js';
-  await document.querySelector('#ship').configure({
-    fitting: { equipment: [
-      { slot: 1, itemId: 484 },
-      { slot: 2, itemId: 484 }
-    ] }
-  });
-</script>`},
- {id:'launchers',title:'特殊装备自动挂载 · 12032 + 503',description:'蝎尾怪级安装两组鱼雷发射器 I，自动匹配发射器挂点。',options:{itemId:12032,fitting:{deployed:true,equipment:[{slot:1,itemId:503},{slot:2,itemId:503}]}},code:`<eve-model-viewer id="bomber" item-id="12032"
-  background="none" style="height:500px">
-</eve-model-viewer>
-<script type="module">
-  import 'https://eve.vanquisher.online/eve-model-viewer.js';
-  const viewer = document.querySelector('#bomber');
-  await viewer.configure({
-    fitting: { equipment: [
-      { slot: 1, itemId: 503 },
-      { slot: 2, itemId: 503 }
-    ] }
-  });
-  console.log(await viewer.getPlacements());
-</script>`}
+ {id:'turrets',title:'普通炮塔自动挂载 · 587 + 484',description:'裂谷级安装两组 125mm 加特林自动加农炮 I。',options:{equipment:[484,484]},code:`<eve-model-viewer
+  item-id="587"
+  equipment="[484,484]"
+  background="none"
+  style="height:500px">
+</eve-model-viewer>`},
+ {id:'launchers',title:'特殊装备自动挂载 · 12032 + 503',description:'蝎尾怪级安装两组鱼雷发射器 I，自动匹配发射器挂点。',options:{itemId:12032,equipment:[503,503]},code:`<eve-model-viewer
+  item-id="12032"
+  equipment="[503,503]"
+  background="none"
+  style="height:500px">
+</eve-model-viewer>`}
 ];
 for(const [index,example] of cases.entries()){
  const card=document.createElement('article');card.className='example-card';card.id='example-'+example.id;
@@ -97,14 +83,14 @@ for(const [index,example] of cases.entries()){
  const description=document.createElement('p');description.textContent=caseDescription(example);
  const block=document.createElement('div');block.className='code-block';
  const bar=document.createElement('div');bar.className='code-heading';
- const language=document.createElement('span');language.textContent=example.id==='turrets'||example.id==='launchers'?'HTML + JavaScript':'HTML';
+ const language=document.createElement('span');language.textContent='HTML';
  const copy=document.createElement('button');copy.type='button';copy.className='text-button';copy.dataset.copy='code-'+example.id;copy.textContent=text('复制代码','Copy code');bar.append(language,copy);
  const pre=document.createElement('pre'),code=document.createElement('code');code.id='code-'+example.id;code.textContent=example.code;pre.append(code);block.append(bar,pre);card.append(heading,title,description,block);$('example-list').append(card);
 }
 
 function message(text){$('copy-status').textContent=text;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('copy-status').textContent='',2800);}
 async function initialize(){
- await import('./eve-model-viewer.js?v=266b7f67b867752a');
+ await import('./eve-model-viewer.js?v=3a05d216c0ea8c0d');
  // The documentation uses the site's resource configuration for local previews.
  // Copied examples and the component itself keep the production CDN default.
  try{const response=await fetch('./site-config.json');if(response.ok)resourceBase=(await response.json()).resourceBaseURL;}catch{}
@@ -113,6 +99,7 @@ async function initialize(){
  viewer.addEventListener('progress',({detail})=>status('progress',detail));
  viewer.addEventListener('error',({detail})=>{status('error',{error:detail.message});$('preview-status').dataset.error='true';});
  $('preview-mount').replaceChildren(viewer);
+ document.querySelector('#preview-reset svg').replaceWith(viewer.shadowRoot.querySelector('#reset svg').cloneNode(true));
  await Promise.resolve();
  await runCase('minimal');
 }
