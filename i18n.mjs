@@ -46,7 +46,7 @@ const messages = {
   fittingLoading: ['正在读取装配资源…', 'Loading fitting resources…'],
   fittingFailed: ['装配资源读取失败，请重新进入此标签页重试。', 'Could not load fitting resources. Reopen this tab to retry.'],
   fittingUnavailable: ['此模型暂无可用挂点数据。战略巡洋舰的动态挂点尚未接入。', 'No fitting data for this model. Dynamic strategic cruiser mounts are not yet supported.'],
-  fittingNote: ['按图形挂点展示外观，不校验实际配装限制。装备暂不随船体动作移动。', 'Visual hardpoints only; fitting restrictions are not enforced. Mounts do not yet follow hull animations.'],
+  fittingNote: ['按挂点与舰船适配条件筛选装备，不检查 CPU、能量栅格和槽位上限。装备暂不随船体动作移动。', 'Equipment is filtered by hardpoint and hull compatibility; CPU, powergrid and slot limits are not checked. Mounts do not yet follow hull animations.'],
   app: ['EVE Model Viewer 2.0', 'EVE Model Viewer 2.0'],
   home: ['EVE Model Viewer 2.0 首页', 'EVE Model Viewer 2.0 home'],
   language: ['语言', 'Language'],

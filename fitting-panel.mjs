@@ -1,5 +1,5 @@
-import {loadJSON} from './resource-activity.mjs?v=f2b54b9a7437fa7e';
-import {resourceURL} from './resource-location.mjs?v=f2b54b9a7437fa7e';
+import {loadJSON} from './resource-activity.mjs?v=723b21dc0a55263b';
+import {resourceURL} from './resource-location.mjs?v=723b21dc0a55263b';
 
 export function createFittingPanel({root,currentViewer,currentItem,translate:t,name,groupName,nativeSettings,loading}) {
  const $=id=>root.querySelector('#'+id),saved=new Map();
@@ -51,8 +51,13 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
  }
  function results(){
   if(!context)return;const query=$('fitting-search').value.trim().toLowerCase(),category=$('fitting-category').value;
-  const matches=data.equipment.filter(e=>(!category||String(e.groupID)===category)&&(!query||`${e.id} ${e.name?.zh} ${e.name?.en}`.toLowerCase().includes(query)));
   const slots=[...selection()],choices=state(context.item.id).choices;
+  const available=data.equipment.filter(e=>slots.length&&slots.every(slot=>context.viewer.fitting.canFit(slot,e)));
+  const categories=[...new Set(available.map(e=>e.groupID))].sort((a,b)=>String(groupName(a)).localeCompare(String(groupName(b))));
+  $('fitting-category').replaceChildren(new Option(t('fittingAllCategories'),''),...categories.map(id=>new Option(groupName(id),String(id))));
+  const selectedCategory=categories.some(id=>String(id)===category)?category:'';
+  $('fitting-category').value=selectedCategory;
+  const matches=available.filter(e=>(!selectedCategory||String(e.groupID)===selectedCategory)&&(!query||`${e.id} ${e.name?.zh} ${e.name?.en}`.toLowerCase().includes(query)));
   $('fitting-results').replaceChildren(...[null,...matches.slice(0,limit)].map(item=>{
    const button=document.createElement('button');button.type='button';const label=document.createElement('span'),id=document.createElement('small');
    label.textContent=item?name(item.name):t('fittingEmpty');id.textContent=item?String(item.id):'—';button.append(label,id);
@@ -87,7 +92,7 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
    if(!valid(c)||token!==generation)return;const locators=data.ships?.[c.item.id];
    if(data.version!==2||!locators?.length){status('fittingUnavailable');return;}
    const settings=await nativeSettings(c.viewer);if(!valid(c)||token!==generation)return;
-   const fitting=c.module.installFitting(c.viewer,{locators,equipment:data.equipment,settings,onSelect:slot=>{if(valid(c))toggle(slot,false);}});
+   const fitting=c.module.installFitting(c.viewer,{locators,equipment:data.equipment,settings,hull:c.item,onSelect:slot=>{if(valid(c))toggle(slot,false);}});
    c.viewer.lifecycle.set('fitting',fitting);fitting.setEditing(active);const s=state(c.item.id);fitting.setDeployed(s.deployed);render();
    await Promise.all([...s.choices].filter(([slot,id])=>id!=null&&fitting.slots.some(s=>s.slot===slot)).map(([slot,id])=>change(c,slot,id)));if(valid(c)){refreshSelection();totals();}
   }catch(error){if(valid(c)&&token===generation){status('fittingFailed');console.warn('Fitting metadata failed',error);}}finally{task?.finish();}})();
