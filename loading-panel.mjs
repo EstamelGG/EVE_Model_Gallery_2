@@ -1,4 +1,4 @@
-import {resourceActivity, createResourceBatch} from './resource-activity.mjs?v=a697e41514d32632';
+import {resourceActivity, createResourceBatch} from './resource-activity.mjs?v=6066d50d2fa0dfb8';
 
 const steps = ['loadingCatalog', 'loadingAssets', 'loadingMaterials', 'loadingEnvironment', 'preparing'];
 
@@ -11,7 +11,7 @@ export function createLoadingPanel({root, translate:t, backgroundPending}) {
   const statuses = [...root.querySelectorAll('[data-resource-status]')].map(element => ({
     element, ring:element.querySelector('.loading-ring'), text:element.querySelector('.resource-status-text'),
   }));
-  let batch, stage = 1, complete = false, timer, generation=0, taskTitle=null;
+  let batch, stage = 1, complete = false, timer, generation=0, taskTitle=null, automatic=false;
   function render() {
     if (!batch) return;
     const {pending, completed, total, planned, failed} = batch.snapshot();
@@ -43,6 +43,14 @@ export function createLoadingPanel({root, translate:t, backgroundPending}) {
   }
   function refresh() {
     const pending = resourceActivity.snapshot(), current = pending.at(-1);
+    // Any tracked data request can use the same corner panel, even outside a
+    // model task. Explicit tasks keep it visible through parsing/setup gaps.
+    if (!batch && current) {
+      automatic=true;complete=true;taskTitle='loadingResources';
+      batch=createResourceBatch();batch.plan([]);
+    } else if (automatic && !current) {
+      finish();automatic=false;taskTitle=null;
+    }
     const percent = current?.total > 0 ? Math.min(100, Math.floor(current.loaded / current.total * 100)) : null;
     const label = current ? `${t(current.kind)} · ${current.name}${percent !== null ? ` · ${percent}%` : ''}${pending.length > 1 ? ` (+${pending.length-1})` : ''}` : '';
     const tooltip = pending.map(item => `${t(item.kind)} · ${item.name}`).join('\n');
@@ -62,7 +70,7 @@ export function createLoadingPanel({root, translate:t, backgroundPending}) {
   return {
     get batch() { return batch; },
     begin() {
-      generation++;taskTitle=null;
+      generation++;taskTitle=null;automatic=false;
       updateStatus.hidden = true;
       complete = false; stage = 1;
       rows.reset();

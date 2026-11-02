@@ -1,7 +1,7 @@
-import {loadJSON} from './resource-activity.mjs?v=a697e41514d32632';
-import {resourceURL} from './resource-location.mjs?v=a697e41514d32632';
+import {loadJSON} from './resource-activity.mjs?v=6066d50d2fa0dfb8';
+import {resourceURL} from './resource-location.mjs?v=6066d50d2fa0dfb8';
 
-export function createFittingPanel({root,currentViewer,currentItem,translate:t,name,groupName,nativeSettings}) {
+export function createFittingPanel({root,currentViewer,currentItem,translate:t,name,groupName,nativeSettings,loading}) {
  const $=id=>root.querySelector('#'+id),saved=new Map();
  let active=false,context=null,generation=0,pending=null,dataPromise=null,data=null,limit=40;
  let statusKey='fittingHint',statusValues;
@@ -9,6 +9,7 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
  function state(id){if(!saved.has(id))saved.set(id,{choices:new Map(),selected:new Set(),initialized:false,deployed:true});return saved.get(id);}
  const selection=()=>context?state(context.item.id).selected:new Set();
  function status(key,values){if(key!==undefined){statusKey=key;statusValues=values;}$('fitting-status').textContent=t(statusKey,statusValues);}
+ function loadingTask(title){const task=loading?.beginTask(title);task?.plan([]);task?.progress(2);return task;}
  function totals(){const fitting=context?.viewer.fitting;if(fitting)status('fittingReady',{groups:fitting.slots.length,count:fitting.count});}
  function closePicker(restore=false){$('fitting-picker').hidden=true;$('fitting-choose').setAttribute('aria-expanded','false');if(restore)$('fitting-choose').focus({preventScroll:true});}
  function refreshSelection(){
@@ -38,7 +39,9 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
  async function applySelection(id){
   const c=context,slots=[...selection()];if(!c||!slots.length)return;
   closePicker(true);status('fittingLoading');
-  const settled=await Promise.allSettled(slots.map(slot=>change(c,slot,id)));
+  const task=id==null?null:loadingTask('fittingLoading');
+  let settled;
+  try{settled=await Promise.allSettled(slots.map(slot=>change(c,slot,id)));}finally{task?.finish();}
   if(!valid(c))return;
   refreshSelection();
   if(settled.some(result=>result.status==='rejected')){status('fittingFailed');for(const result of settled)if(result.status==='rejected')console.warn(result.reason);}
@@ -76,7 +79,7 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
  async function ensure(){
   const c=context;if(!c){if(active)status('fittingWaitingModel');return;}if(!valid(c))return;if(c.viewer.fitting){c.viewer.fitting.setEditing(active);return;}if(pending)return pending;
   if(c.item.categoryID!==6||c.item.subsystemParts||c.item.groupID===963){status('fittingUnavailable');return;}
-  status('fittingLoadingHardpoints');const token=generation;
+  status('fittingLoadingHardpoints');const token=generation,task=loadingTask('fittingLoadingHardpoints');
   const job=(async()=>{try{
    dataPromise ||= loadJSON(resourceURL('data/fitting.json')).catch(error=>{dataPromise=null;throw error;});data=await dataPromise;
    if(!valid(c)||token!==generation)return;const locators=data.ships?.[c.item.id];
@@ -85,7 +88,7 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
    const fitting=c.module.installFitting(c.viewer,{locators,equipment:data.equipment,settings,onSelect:slot=>{if(valid(c))toggle(slot,false);}});
    c.viewer.lifecycle.set('fitting',fitting);fitting.setEditing(active);const s=state(c.item.id);fitting.setDeployed(s.deployed);render();
    await Promise.all([...s.choices].filter(([slot,id])=>id!=null&&fitting.slots.some(s=>s.slot===slot)).map(([slot,id])=>change(c,slot,id)));if(valid(c)){refreshSelection();totals();}
-  }catch(error){if(valid(c)&&token===generation){status('fittingFailed');console.warn('Fitting metadata failed',error);}}})();
+  }catch(error){if(valid(c)&&token===generation){status('fittingFailed');console.warn('Fitting metadata failed',error);}}finally{task?.finish();}})();
   pending=job;try{await job;}finally{if(pending===job)pending=null;}
  }
  $('fitting-all').addEventListener('click',()=>{if(!context?.viewer.fitting)return;closePicker();const slots=selection();for(const s of context.viewer.fitting.slots)slots.add(s.slot);refreshSelection();});
