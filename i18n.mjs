@@ -1,4 +1,5 @@
 const messages = {
+  viewerGuide: ['组件使用指南', 'Component guide'],
   settingsTabs: ['查看器设置', 'Viewer settings'],
   tabVisual: ['视觉设置', 'Visual'],
   tabFitting: ['装配设置', 'Fitting'],
@@ -27,6 +28,7 @@ const messages = {
   fittingAllCategories: ['全部装备类型', 'All equipment types'],
   fittingChoose: ['为槽位 {slot} 选择装备', 'Choose equipment for slot {slot}'],
   fittingFocus: ['聚焦 {name}', 'Focus {name}'],
+  fittingFocusCycle: ['聚焦 {name}（再次点击切换位置）', 'Focus {name} (click again to cycle positions)'],
   fittingNoResults: ['没有匹配的装备', 'No matching equipment'],
   fittingMore: ['显示更多', 'Show more'],
   exportSkybox: ['天空盒 HDR', 'Skybox HDR'],

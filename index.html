@@ -13,9 +13,9 @@
     <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png?v=2" />
     <link rel="icon" type="image/svg+xml" sizes="any" href="./mark.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png?v=2" />
-    <link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=ea36611e9054d4c5" />
-    <link rel="stylesheet" href="./styles.css?v=ea36611e9054d4c5" />
-    <script type="module" src="./app.js?v=ea36611e9054d4c5"></script>
+    <link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=fcc16a8bca1d0ed2" />
+    <link rel="stylesheet" href="./styles.css?v=fcc16a8bca1d0ed2" />
+    <script type="module" src="./app.js?v=fcc16a8bca1d0ed2"></script>
   </head>
   <body>
     <svg class="icon-defs" aria-hidden="true">
@@ -65,6 +65,7 @@
       <span class="developer-credit"><span data-i18n="developer">Developed by</span> <strong>EstamelGG</strong></span>
       </div>
       <nav class="header-actions" aria-label="About and links" data-i18n-aria-label="aboutLinks">
+        <a class="header-button" href="./viewer-guide.html?v=fcc16a8bca1d0ed2"><svg aria-hidden="true"><use href="#i-cube"/></svg><span data-i18n="viewerGuide">Component guide</span></a>
         <button id="open-about" class="header-button" aria-haspopup="dialog"><svg aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="about">About</span></button>
         <a class="header-button" href="https://github.com/EstamelGG/EVE_Model_Gallery_2" target="_blank" rel="noopener noreferrer" aria-label="GitHub website repository (new tab)" data-i18n-aria-label="webRepository"><img class="github-mark" src="./icons/github-invertocat-white.svg" alt="" width="98" height="96"/><span>GitHub</span></a>
       <select
@@ -379,7 +380,7 @@
             <div id="fitting-controls" hidden>
               <div class="fitting-toolbar">
                 <label class="toggle-row" for="fitting-deployed"><span data-i18n="fittingDeployed">Deploy equipment</span><input id="fitting-deployed" type="checkbox" checked><span class="toggle-visual" aria-hidden="true"></span></label>
-                <label class="toggle-row" for="fitting-show-mounts"><span data-i18n="fittingShowMounts">Show hardpoints</span><input id="fitting-show-mounts" type="checkbox" checked><span class="toggle-visual" aria-hidden="true"></span></label>
+                <label class="toggle-row" for="fitting-show-mounts"><span data-i18n="fittingShowMounts">Show hardpoints</span><input id="fitting-show-mounts" type="checkbox"><span class="toggle-visual" aria-hidden="true"></span></label>
                 <div class="fitting-actions">
                   <button id="fitting-undo" type="button" class="reset-button" data-i18n="fittingUndo" disabled>Undo</button>
                   <button id="fitting-clear-all" type="button" class="reset-button" data-i18n="fittingClearAll" disabled>Clear all equipment</button>

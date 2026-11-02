@@ -1,9 +1,9 @@
-import {loadJSON} from './resource-activity.mjs?v=ea36611e9054d4c5';
-import {resourceURL} from './resource-location.mjs?v=ea36611e9054d4c5';
+import {loadJSON} from './resource-activity.mjs?v=fcc16a8bca1d0ed2';
+import {resourceURL} from './resource-location.mjs?v=fcc16a8bca1d0ed2';
 
 export function createFittingPanel({root,currentViewer,currentItem,translate:t,name,groupName,nativeSettings,loading}) {
  const $=id=>root.querySelector('#'+id),saved=new Map(),rows=new Map(),focusButtons=new Map();
- let active=false,showMounts=true,context=null,generation=0,pending=null,dataPromise=null,data=null,limit=40,selectedCategory=null,operation=null;
+ let active=false,showMounts=false,context=null,generation=0,pending=null,dataPromise=null,data=null,limit=40,selectedCategory=null,operation=null;
  let statusKey='fittingHint',statusValues;
  const recentKey='eve-fitting-last-equipment';let lastEquipment=null;
  try{const id=Number(globalThis.localStorage?.getItem(recentKey));if(Number.isSafeInteger(id)&&id>0)lastEquipment=id;}catch{}
@@ -33,7 +33,7 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
    button.setAttribute('aria-current',String(s.slot===slot));
    button.disabled=busy()||definition.available===false;
    const focus=focusButtons.get(slot);focus.hidden=!item;focus.disabled=busy()||!item;
-   focus.title=t('fittingFocus',{name:item?name(item.name):''});focus.setAttribute('aria-label',focus.title);
+   focus.title=t(count>1?'fittingFocusCycle':'fittingFocus',{name:item?name(item.name):''});focus.setAttribute('aria-label',focus.title);
    const id=document.createElement('span');id.className='fitting-row-number';id.textContent=number;
    const text=document.createElement('span');text.className='fitting-row-text';
    const label=document.createElement('span');label.className='fitting-row-name';label.textContent=item?name(item.name):t(definition.available===false?'fittingNoCompatible':'fittingChooseEquipment');
