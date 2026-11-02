@@ -33,8 +33,8 @@ export const guideCopy = {
   download: ['下载 HTML ↓', 'Download HTML ↓'],
   copy: ['复制代码', 'Copy code'],
   quickNote: [
-    '模型和贴图由我们的资源服务加载，无需另外安装依赖。记得给标签设置高度。',
-    'Models and textures load from our asset service. No extra dependencies are needed. Set a height on the element.',
+    '模型和贴图由我们的资源服务加载，无需另外安装依赖。默认宽度填满父容器，高度跟随窗口（最小 240px）。嵌入局部区域时可用 CSS 设置高度；父容器有明确高度时，也可使用 height:100%。',
+    'Models and textures load from our asset service. No extra dependencies are needed. Width fills the parent by default; height follows the viewport (minimum 240px). Set a CSS height for an embedded area, or use height:100% inside a parent with a defined height.',
   ],
   examplesIntro: [
     '点击运行，查看上方效果。每页只需 import 一次。',

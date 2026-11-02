@@ -12,9 +12,9 @@
     />
     <title data-guide-i18n="pageTitle">EVE model component · Guide</title>
     <link href="./mark.svg" rel="icon" type="image/svg+xml" />
-    <link href="./github-assets/fonts/fonts.css?v=39b269378ac17ed1" rel="stylesheet" />
-    <link href="./viewer-guide.css?v=39b269378ac17ed1" rel="stylesheet" />
-    <script src="./viewer-guide.js?v=39b269378ac17ed1" type="module"></script>
+    <link href="./github-assets/fonts/fonts.css?v=d0cb198114894f1b" rel="stylesheet" />
+    <link href="./viewer-guide.css?v=d0cb198114894f1b" rel="stylesheet" />
+    <script src="./viewer-guide.js?v=d0cb198114894f1b" type="module"></script>
   </head>
   <body>
     <header class="guide-header">
@@ -131,19 +131,20 @@
 &lt;meta charset="utf-8"&gt;
 &lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;
 &lt;title&gt;EVE Model&lt;/title&gt;
+&lt;style&gt;body { margin: 0; }&lt;/style&gt;
 &lt;script type="module"&gt;
   import 'https://eve.vanquisher.online/eve-model-viewer.js';
 &lt;/script&gt;
 &lt;eve-model-viewer
   item-id="587"
-  background="none"
-  style="width:100%;height:520px"&gt;
+  background="none"&gt;
 &lt;/eve-model-viewer&gt;
 &lt;/html&gt;</code></pre>
           </div>
           <p class="note" data-guide-i18n="quickNote">
-            Models and textures load from our asset service. No extra dependencies are needed. Set a
-            height on the element.
+            Models and textures load from our asset service. No extra dependencies are needed. Width
+            fills the parent by default; height follows the viewport (minimum 240px). Set a CSS
+            height for an embedded area, or use height:100% inside a parent with a defined height.
           </p>
         </section>
         <section class="doc-section" id="examples">

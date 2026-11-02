@@ -1,11 +1,11 @@
-import { guideText } from './viewer-guide-copy.mjs?v=39b269378ac17ed1';
+import { guideText } from './viewer-guide-copy.mjs?v=d0cb198114894f1b';
 import {
   siteLocale,
   browserLocale,
   languagePreference,
   saveLanguagePreference,
   languageStorageKey,
-} from './locale.mjs?v=39b269378ac17ed1';
+} from './locale.mjs?v=d0cb198114894f1b';
 
 const $ = (id) => document.getElementById(id);
 let preference = languagePreference(),
@@ -222,7 +222,7 @@ function message(text) {
   toastTimer = setTimeout(() => ($('copy-status').textContent = ''), 2800);
 }
 async function initialize() {
-  await import('./eve-model-viewer.js?v=39b269378ac17ed1');
+  await import('./eve-model-viewer.js?v=d0cb198114894f1b');
   // The documentation uses the site's resource configuration for local previews.
   // Copied examples and the component itself keep the production CDN default.
   try {

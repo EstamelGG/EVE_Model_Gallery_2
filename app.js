@@ -1,19 +1,19 @@
-import './eve-model-viewer.js?v=39b269378ac17ed1';
+import './eve-model-viewer.js?v=d0cb198114894f1b';
 import {
   locale,
   t,
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=39b269378ac17ed1';
-import { createCardGrid } from './card-grid.mjs?v=39b269378ac17ed1';
-import { createCatalogState } from './catalog-state.mjs?v=39b269378ac17ed1';
-import { createCatalogLoader } from './catalog-loader.mjs?v=39b269378ac17ed1';
-import { hullKey } from './hull-variants.mjs?v=39b269378ac17ed1';
-import { createAffiliationResolver } from './affiliation.mjs?v=39b269378ac17ed1';
-import { configureResourceBase, resourceURL } from './resource-location.mjs?v=39b269378ac17ed1';
-import { loadJSON } from './resource-activity.mjs?v=39b269378ac17ed1';
-import { prepareRenderImages } from './render-images.mjs?v=39b269378ac17ed1';
+} from './i18n.mjs?v=d0cb198114894f1b';
+import { createCardGrid } from './card-grid.mjs?v=d0cb198114894f1b';
+import { createCatalogState } from './catalog-state.mjs?v=d0cb198114894f1b';
+import { createCatalogLoader } from './catalog-loader.mjs?v=d0cb198114894f1b';
+import { hullKey } from './hull-variants.mjs?v=d0cb198114894f1b';
+import { createAffiliationResolver } from './affiliation.mjs?v=d0cb198114894f1b';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=d0cb198114894f1b';
+import { loadJSON } from './resource-activity.mjs?v=d0cb198114894f1b';
+import { prepareRenderImages } from './render-images.mjs?v=d0cb198114894f1b';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -581,11 +581,7 @@ function renderDetail() {
   $('detail-group').textContent = localizedName(groupsByID.get(item.groupID)?.name);
   const factionVariant = [4, 52].includes(Number(item.metaGroupID));
   $('detail-tech').hidden = !factionVariant && !item.techLevel;
-  $('detail-tech').textContent = factionVariant
-    ? locale.startsWith('zh')
-      ? '势力'
-      : 'Faction'
-    : `T${item.techLevel}`;
+  $('detail-tech').textContent = factionVariant ? t('faction') : `T${item.techLevel}`;
   $('detail-race').innerHTML =
     `${raceMark(item.affiliationID)}${esc(raceName(item.affiliationID))}`;
   $('detail-id').textContent = item.id;
@@ -813,7 +809,7 @@ async function init() {
     } catch {}
     const [index, identities, fallbackIndex] = await Promise.all([
       loadJSON(resourceURL('./data/catalog-index.json'), { cache: 'no-cache' }),
-      loadJSON('./icons/identities.json?v=39b269378ac17ed1'),
+      loadJSON('./icons/identities.json?v=d0cb198114894f1b'),
       loadJSON(
         resourceURL('./assets/renders/index.json'),
         { cache: 'no-cache' },
