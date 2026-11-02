@@ -1,5 +1,5 @@
-import {loadJSON} from './resource-activity.mjs?v=6066d50d2fa0dfb8';
-import {resourceURL} from './resource-location.mjs?v=6066d50d2fa0dfb8';
+import {loadJSON} from './resource-activity.mjs?v=9ef3d531955fac58';
+import {resourceURL} from './resource-location.mjs?v=9ef3d531955fac58';
 
 export function createFittingPanel({root,currentViewer,currentItem,translate:t,name,groupName,nativeSettings,loading}) {
  const $=id=>root.querySelector('#'+id),saved=new Map();
@@ -17,6 +17,8 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
   context?.viewer.fitting?.select([...slots]);
   for(const button of $('fitting-slots').children){
    const slot=Number(button.dataset.slot),item=data?.equipment.find(e=>e.id===s?.choices.get(slot));
+   button.dataset.count=context.viewer.fitting.activeMounts(slot).length;
+   button.setAttribute('aria-label',t('fittingSlot',{slot,count:button.dataset.count}));
    button.setAttribute('aria-pressed',String(slots.has(slot)));
    button.title=t('fittingSlot',{slot,count:button.dataset.count})+' · '+(item?name(item.name):t('fittingEmpty'));
    button.classList.toggle('equipped',!!item);
@@ -81,9 +83,9 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
   if(c.item.categoryID!==6||c.item.subsystemParts||c.item.groupID===963){status('fittingUnavailable');return;}
   status('fittingLoadingHardpoints');const token=generation,task=loadingTask('fittingLoadingHardpoints');
   const job=(async()=>{try{
-   dataPromise ||= loadJSON(resourceURL('data/fitting.json')).catch(error=>{dataPromise=null;throw error;});data=await dataPromise;
+   dataPromise ||= loadJSON(resourceURL('data/fitting.json')).then(value=>({...value,equipment:value.equipment?.filter(e=>e.supported!==false)})).catch(error=>{dataPromise=null;throw error;});data=await dataPromise;
    if(!valid(c)||token!==generation)return;const locators=data.ships?.[c.item.id];
-   if(data.version!==1||!locators?.length){status('fittingUnavailable');return;}
+   if(data.version!==2||!locators?.length){status('fittingUnavailable');return;}
    const settings=await nativeSettings(c.viewer);if(!valid(c)||token!==generation)return;
    const fitting=c.module.installFitting(c.viewer,{locators,equipment:data.equipment,settings,onSelect:slot=>{if(valid(c))toggle(slot,false);}});
    c.viewer.lifecycle.set('fitting',fitting);fitting.setEditing(active);const s=state(c.item.id);fitting.setDeployed(s.deployed);render();
