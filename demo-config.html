@@ -2,11 +2,11 @@
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>EVE component · Settings and equipment</title>
 <style>html,body{margin:0;height:100%;background:#10171e;color:#cbd5de;font:14px system-ui}body{display:flex;flex-direction:column}nav{padding:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}button,a{background:#213140;color:inherit;border:1px solid #405568;padding:6px 12px}eve-model-viewer{flex:1;min-height:0}</style>
-<script type="module" src="./eve-model-viewer.js?v=240addf4aa86d02c"></script>
+<script type="module" src="./eve-model-viewer.js?v=1e7c07f20b13802d"></script>
 <nav><a href="./demo.html">Minimal example</a><button id="white">Toggle white model</button><button id="panel">Toggle controls</button><button id="fit">Fit Torpedo Launcher II</button><span id="message" role="status"></span></nav>
 <eve-model-viewer item-id="12038" background="none"></eve-model-viewer>
 <script type="module">
-import {demoText} from './demo-language.mjs?v=240addf4aa86d02c';
+import {demoText} from './demo-language.mjs?v=1e7c07f20b13802d';
 await customElements.whenDefined('eve-model-viewer');
 const viewer=document.querySelector('eve-model-viewer'),message=document.querySelector('#message');
 let whiteModel=false,controlPanel=false;
