@@ -1,11 +1,11 @@
-import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=9ef3d531955fac58';
-import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=9ef3d531955fac58';
-import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=9ef3d531955fac58';
-import {viewerProfile} from './viewer-profile.mjs?v=9ef3d531955fac58';
-import {resourceURL} from './resource-location.mjs?v=9ef3d531955fac58';
-import {trackResource} from './resource-activity.mjs?v=9ef3d531955fac58';
-import {applyPostprocessingSettings} from './display-settings.mjs?v=9ef3d531955fac58';
-import {recenterView} from './view-reset.mjs?v=9ef3d531955fac58';
+import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=f2b54b9a7437fa7e';
+import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=f2b54b9a7437fa7e';
+import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=f2b54b9a7437fa7e';
+import {viewerProfile} from './viewer-profile.mjs?v=f2b54b9a7437fa7e';
+import {resourceURL} from './resource-location.mjs?v=f2b54b9a7437fa7e';
+import {trackResource} from './resource-activity.mjs?v=f2b54b9a7437fa7e';
+import {applyPostprocessingSettings} from './display-settings.mjs?v=f2b54b9a7437fa7e';
+import {recenterView} from './view-reset.mjs?v=f2b54b9a7437fa7e';
 
 // Wait for the actual model event, and detach listeners on success, failure,
 // cancellation or a synchronous setup failure. Shared asset requests continue.
@@ -89,7 +89,7 @@ export function createViewerRuntime({mount, transition, loadRenderer, view}) {
   async function prepare(viewer, item, context) {
     const {settings, operation} = context, source = sourceURL(item);
     if (item.subsystemParts) {
-      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=9ef3d531955fac58');
+      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=f2b54b9a7437fa7e');
       await trackResource(source, () => prepareSubsystemModel(viewer.assetSession, item, source, location.href), 'resourceModel');
       if (!operation.isCurrent()) return null;
     }

@@ -165,6 +165,7 @@ const messages = {
   showOcclusion: ['环境遮蔽', 'Ambient occlusion'],
   showBloom: ['泛光', 'Bloom'],
   hullTextures: ['船体贴图', 'Hull textures'],
+  noColor: ['不显示颜色', 'Hide colors'],
   allTextures: ['全部贴图', 'All textures'],
   textureAlbedo: ['颜色纹理', 'Color texture'],
   textureNormal: ['法线细节', 'Normal detail'],

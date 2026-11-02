@@ -11,6 +11,7 @@ export function normalizeDisplaySettings(values = {}) {
     bloom: values.bloom !== false,
     depthOfField: values.depthOfField === true,
     effects: values.effects !== false,
+    noColor: values.noColor === true,
     textures: Object.fromEntries(textureRoles.map(role => [role, values.textures?.[role] !== false])),
   };
 }
@@ -18,7 +19,7 @@ export function normalizeDisplaySettings(values = {}) {
 export const performanceControls = Object.freeze({
   antialias: 'show-antialias', effects: 'show-effects',
   occlusion: 'show-occlusion', bloom: 'show-bloom',
-  depthOfField: 'show-dof',
+  depthOfField: 'show-dof', noColor: 'no-color',
 });
 
 export function applyPostprocessingSettings(viewer) {
