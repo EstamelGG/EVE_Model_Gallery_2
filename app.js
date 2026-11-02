@@ -1,19 +1,19 @@
-import './eve-model-viewer.js?v=be2e9d4ce746abf3';
+import './eve-model-viewer.js?v=f7513a145da60deb';
 import {
   locale,
   t,
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=be2e9d4ce746abf3';
-import { createCardGrid } from './card-grid.mjs?v=be2e9d4ce746abf3';
-import { createCatalogState } from './catalog-state.mjs?v=be2e9d4ce746abf3';
-import { createCatalogLoader } from './catalog-loader.mjs?v=be2e9d4ce746abf3';
-import { hullKey } from './hull-variants.mjs?v=be2e9d4ce746abf3';
-import { createAffiliationResolver } from './affiliation.mjs?v=be2e9d4ce746abf3';
-import { configureResourceBase, resourceURL } from './resource-location.mjs?v=be2e9d4ce746abf3';
-import { loadJSON } from './resource-activity.mjs?v=be2e9d4ce746abf3';
-import { prepareRenderImages } from './render-images.mjs?v=be2e9d4ce746abf3';
+} from './i18n.mjs?v=f7513a145da60deb';
+import { createCardGrid } from './card-grid.mjs?v=f7513a145da60deb';
+import { createCatalogState } from './catalog-state.mjs?v=f7513a145da60deb';
+import { createCatalogLoader } from './catalog-loader.mjs?v=f7513a145da60deb';
+import { hullKey } from './hull-variants.mjs?v=f7513a145da60deb';
+import { createAffiliationResolver } from './affiliation.mjs?v=f7513a145da60deb';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=f7513a145da60deb';
+import { loadJSON } from './resource-activity.mjs?v=f7513a145da60deb';
+import { prepareRenderImages } from './render-images.mjs?v=f7513a145da60deb';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -646,6 +646,7 @@ function closeDetail(route = true) {
     $('model-dialog').close();
   }
   viewer.clear();
+  delete viewerConfig.hangar;
   currentItem = null;
   variantState = { hull: '', open: false, groups: null, status: '' };
   catalog.update({ item: 0 });
@@ -814,7 +815,7 @@ async function init() {
     } catch {}
     const [index, identities, fallbackIndex] = await Promise.all([
       loadJSON(resourceURL('./data/catalog-index.json'), { cache: 'no-cache' }),
-      loadJSON('./icons/identities.json?v=be2e9d4ce746abf3'),
+      loadJSON('./icons/identities.json?v=f7513a145da60deb'),
       loadJSON(
         resourceURL('./assets/renders/index.json'),
         { cache: 'no-cache' },

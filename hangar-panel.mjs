@@ -1,5 +1,5 @@
-import { loadJSON } from './resource-activity.mjs?v=be2e9d4ce746abf3';
-import { resourceURL } from './resource-location.mjs?v=be2e9d4ce746abf3';
+import { loadJSON } from './resource-activity.mjs?v=f7513a145da60deb';
+import { resourceURL } from './resource-location.mjs?v=f7513a145da60deb';
 
 export const supportsHangar = (item) => !!item?.available && [3, 6, 65].includes(item.categoryID);
 export function createHangarPanel({
@@ -21,6 +21,7 @@ export function createHangarPanel({
     metadata = null,
     pendingMetadata = null,
     ships = null,
+    resourceRevision = 0,
     revision = 0;
   const state = () => {
     const id = currentItem()?.id;
@@ -28,7 +29,7 @@ export function createHangarPanel({
     return saved.get(id);
   };
   const valid = (c) =>
-    c === context && c.viewer === currentViewer() && c.item.id === currentItem()?.id;
+    !!c && c === context && c.viewer === currentViewer() && c.item.id === currentItem()?.id;
   const status = (key) => ($('hangar-status').textContent = key ? t(key) : '');
   function loadingTask(viewer) {
     const task = loading?.beginTask('hangarLoading', {fixedPlan: true});
@@ -56,14 +57,15 @@ export function createHangarPanel({
     render();
   }
   async function metadataReady() {
+    const generation = resourceRevision;
     pendingMetadata ||= loadResource('data/hangars.json')
       .then((value) => {
         if (value.version !== 1) throw Error('Unsupported hangars');
-        metadata = value;
+        if (generation === resourceRevision) metadata = value;
         return value;
       })
       .catch((error) => {
-        pendingMetadata = null;
+        if (generation === resourceRevision) pendingMetadata = null;
         throw error;
       });
     return pendingMetadata;
@@ -107,6 +109,7 @@ export function createHangarPanel({
     const finish = loadingTask(c.viewer);
     try {
       await metadataReady();
+      if (!valid(c) || token !== revision) return;
       const room = metadata.hangars.find((r) => r.key === s.room);
       const ship = room && c.item.categoryID !== 6 ? await catalog().item(s.ship) : null;
       const settings = await nativeSettings(c.viewer);
@@ -139,10 +142,14 @@ export function createHangarPanel({
   }
   async function open() {
     if (!supportsHangar(currentItem())) return;
+    const c = context, token = revision;
     status('hangarLoading');
     try {
       await metadataReady();
-      ships ||= (await catalog().search()).filter((i) => i.available && i.categoryID === 6);
+      if (!valid(c) || token !== revision) return;
+      const choices = ships || (await catalog().search()).filter((i) => i.available && i.categoryID === 6);
+      if (!valid(c) || token !== revision) return;
+      ships = choices;
       render();
       status(currentViewer()?.hangar?.active ? 'hangarReady' : 'hangarHint');
     } catch (error) {
@@ -193,6 +200,7 @@ export function createHangarPanel({
     render,
     resetResources() {
       revision++;
+      resourceRevision++;
       metadata = null;
       pendingMetadata = null;
       ships = null;
@@ -203,9 +211,11 @@ export function createHangarPanel({
     },
     async configure(value = {}) {
       if (!context) throw Error('This model does not support hangars');
+      const c = context, token = revision;
       const next = { room: '', mode: 'dock', ship: 638, ...value };
       if (!['dock', 'interior'].includes(next.mode)) throw Error('Invalid hangar mode');
       const metadata = await metadataReady();
+      if (!valid(c) || token !== revision) return;
       if (next.room && !metadata.hangars.some((room) => room.key === next.room))
         throw Error('Unknown hangar: ' + next.room);
       Object.assign(state(), next);

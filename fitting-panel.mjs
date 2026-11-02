@@ -1,5 +1,5 @@
-import { loadJSON } from './resource-activity.mjs?v=be2e9d4ce746abf3';
-import { resourceURL } from './resource-location.mjs?v=be2e9d4ce746abf3';
+import { loadJSON } from './resource-activity.mjs?v=f7513a145da60deb';
+import { resourceURL } from './resource-location.mjs?v=f7513a145da60deb';
 
 export function createFittingPanel({
   root,

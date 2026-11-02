@@ -1,5 +1,5 @@
-import {siteLocale,browserLocale,languagePreference,saveLanguagePreference,languageStorageKey} from './locale.mjs?v=be2e9d4ce746abf3';
-import {messages} from './messages.mjs?v=be2e9d4ce746abf3';
+import {siteLocale,browserLocale,languagePreference,saveLanguagePreference,languageStorageKey} from './locale.mjs?v=f7513a145da60deb';
+import {messages} from './messages.mjs?v=f7513a145da60deb';
 let preference=languagePreference(),locale=siteLocale();
 export const demoText=(key,values={})=>(messages[key]?.[locale==='en'?1:0]??key).replace(/\{(\w+)\}/g,(_,name)=>values[name]??'');
 const selector=document.createElement('select');selector.id='demo-language';

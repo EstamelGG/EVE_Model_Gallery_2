@@ -1,11 +1,11 @@
-import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=be2e9d4ce746abf3';
-import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=be2e9d4ce746abf3';
-import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=be2e9d4ce746abf3';
-import {viewerProfile} from './viewer-profile.mjs?v=be2e9d4ce746abf3';
-import {resourceURL} from './resource-location.mjs?v=be2e9d4ce746abf3';
-import {trackResource} from './resource-activity.mjs?v=be2e9d4ce746abf3';
-import {applyPostprocessingSettings, effectsEnabled} from './display-settings.mjs?v=be2e9d4ce746abf3';
-import {recenterView} from './view-reset.mjs?v=be2e9d4ce746abf3';
+import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=f7513a145da60deb';
+import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=f7513a145da60deb';
+import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=f7513a145da60deb';
+import {viewerProfile} from './viewer-profile.mjs?v=f7513a145da60deb';
+import {resourceURL} from './resource-location.mjs?v=f7513a145da60deb';
+import {trackResource} from './resource-activity.mjs?v=f7513a145da60deb';
+import {applyPostprocessingSettings, effectsEnabled} from './display-settings.mjs?v=f7513a145da60deb';
+import {recenterView} from './view-reset.mjs?v=f7513a145da60deb';
 
 // Wait for the actual model event, and detach listeners on success, failure,
 // cancellation or a synchronous setup failure. Shared asset requests continue.
@@ -89,14 +89,14 @@ export function createViewerRuntime({mount, transition, loadRenderer, view, reso
   async function prepare(viewer, item, context) {
     const {settings, operation} = context, source = sourceURL(item);
     if (item.subsystemParts) {
-      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=be2e9d4ce746abf3');
+      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=f7513a145da60deb');
       await trackResource(source, () => prepareSubsystemModel(viewer.assetSession, item, source, location.href), 'resourceModel');
       if (!operation.isCurrent()) return null;
     }
     await plan(viewer, {...item, model:source}, context);
     if (!operation.isCurrent()) return null;
     if (item.renderKind === 'equipment') viewer.equipmentPreview = await api.loadEquipmentPreview(viewer, item.effects);
-    else void api.prefetchViewerAssets(viewer, item.effects, !!settings.nativePreview).catch(() => {});
+    else void api.prefetchViewerAssets(viewer, item.effects, !!settings.nativePreview, source).catch(() => {});
     if (!operation.isCurrent()) return null;
     // Observe early errors while warming settings; the installer awaits this
     // same session-cached promise and failed requests remain retryable.
@@ -175,7 +175,7 @@ export function createViewerRuntime({mount, transition, loadRenderer, view, reso
       if (!new URL(source).pathname.endsWith('.gltf')) return false;
       await plan(viewer, {...item, model:source}, context);
       if (!operation.isCurrent()) return false;
-      void api.prefetchViewerAssets(viewer, item.effects, !!settings.nativePreview).catch(() => {});
+      void api.prefetchViewerAssets(viewer, item.effects, !!settings.nativePreview, source).catch(() => {});
       const document = await viewer.assetSession.json(source);
       if (!operation.isCurrent()) return false;
       if (!api.canReuseHull(viewer.baseDocument || viewer.originalGltfJson, viewer.src, document, source)) return false;
