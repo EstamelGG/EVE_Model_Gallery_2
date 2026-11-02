@@ -1,9 +1,9 @@
-import {loadJSON} from './resource-activity.mjs?v=d0ea833b9a6e274c';
-import {resourceURL} from './resource-location.mjs?v=d0ea833b9a6e274c';
+import {loadJSON} from './resource-activity.mjs?v=3917cd56cb3b22aa';
+import {resourceURL} from './resource-location.mjs?v=3917cd56cb3b22aa';
 
 export function createFittingPanel({root,currentViewer,currentItem,translate:t,name,groupName,nativeSettings,loading}) {
- const $=id=>root.querySelector('#'+id),saved=new Map(),rows=new Map();
- let active=false,context=null,generation=0,pending=null,dataPromise=null,data=null,limit=40,selectedCategory=null,operation=null;
+ const $=id=>root.querySelector('#'+id),saved=new Map(),rows=new Map(),focusButtons=new Map();
+ let active=false,showMounts=true,context=null,generation=0,pending=null,dataPromise=null,data=null,limit=40,selectedCategory=null,operation=null;
  let statusKey='fittingHint',statusValues;
  const recentKey='eve-fitting-last-equipment';let lastEquipment=null;
  try{const id=Number(globalThis.localStorage?.getItem(recentKey));if(Number.isSafeInteger(id)&&id>0)lastEquipment=id;}catch{}
@@ -32,6 +32,8 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
    button.setAttribute('aria-label',description);button.title=description;
    button.setAttribute('aria-current',String(s.slot===slot));
    button.disabled=busy()||definition.available===false;
+   const focus=focusButtons.get(slot);focus.hidden=!item;focus.disabled=busy()||!item;
+   focus.title=t('fittingFocus',{name:item?name(item.name):''});focus.setAttribute('aria-label',focus.title);
    const id=document.createElement('span');id.className='fitting-row-number';id.textContent=number;
    const text=document.createElement('span');text.className='fitting-row-text';
    const label=document.createElement('span');label.className='fitting-row-name';label.textContent=item?name(item.name):t(definition.available===false?'fittingNoCompatible':'fittingChooseEquipment');
@@ -61,6 +63,7 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
  async function applyEquipment(slot,id,undo=false){
   const c=context;if(!c||busy()||slot==null)return;
   const s=state(c.item.id),previous=c.viewer.fitting.get(slot)?.id??null;
+  c.viewer.fitting.previewSlot?.(null);
   s.slot=slot;const current={context:c};operation=current;
   closePicker(true);refreshRows();status('fittingLoading');
   const task=id==null?null:loadingTask('fittingLoading');
@@ -134,28 +137,34 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
  function openPicker(){
   if(busy()||!context)return;
   const slot=state(context.item.id).slot,button=rows.get(slot);if(!button||button.disabled)return;
-  limit=40;selectedCategory=null;button.after($('fitting-picker'));
+  limit=40;selectedCategory=null;button.parentElement.after($('fitting-picker'));
   $('fitting-picker').hidden=false;button.setAttribute('aria-expanded','true');
   $('fitting-picker-title').textContent=t('fittingChoose',{slot:String(slot).padStart(2,'0')});
   $('fitting-search').value='';results();$('fitting-search').focus({preventScroll:true});
  }
  function render(){
-  closePicker();rows.clear();const fitting=context?.viewer.fitting;$('fitting-slots').replaceChildren();$('fitting-controls').hidden=!fitting;if(!fitting){status();return;}
-  const s=state(context.item.id);$('fitting-deployed').checked=s.deployed;
+  context?.viewer.fitting?.previewSlot?.(null);closePicker();rows.clear();focusButtons.clear();const fitting=context?.viewer.fitting;$('fitting-slots').replaceChildren();$('fitting-controls').hidden=!fitting;if(!fitting){status();return;}
+  const s=state(context.item.id);$('fitting-deployed').checked=s.deployed;$('fitting-show-mounts').checked=showMounts;
   if(!fitting.slots.some(def=>def.slot===s.slot&&def.available!==false))s.slot=fitting.slots.find(def=>def.available!==false)?.slot??null;
   for(const slot of fitting.slots){
    const button=document.createElement('button');button.type='button';button.className='fitting-row';button.dataset.slot=String(slot.slot);
+   const row=document.createElement('div');row.className='fitting-row-container';
+   row.addEventListener('pointerenter',()=>{if(active)fitting.previewSlot?.(slot.slot);});
+   row.addEventListener('pointerleave',()=>fitting.previewSlot?.(null));
+   const focus=document.createElement('button');focus.type='button';focus.className='fitting-row-focus';
+   focus.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="6"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/></svg>';
+   focus.onclick=()=>{if(active&&!busy()&&fitting.get(slot.slot))fitting.focusSlot(slot.slot);};
    button.setAttribute('aria-controls','fitting-picker');button.setAttribute('aria-expanded','false');
    button.onclick=()=>{
     if(busy())return;
     if(state(context.item.id).slot===slot.slot&&!$('fitting-picker').hidden)closePicker(true);
     else selectSlot(slot.slot,{open:true});
-   };rows.set(slot.slot,button);$('fitting-slots').append(button);
+   };rows.set(slot.slot,button);focusButtons.set(slot.slot,focus);row.append(button,focus);$('fitting-slots').append(row);
   }
   refreshRows();totals();
  }
  async function ensure(){
-  const c=context;if(!c){if(active)status('fittingWaitingModel');return;}if(!valid(c))return;if(c.viewer.fitting){c.viewer.fitting.setEditing(active);return;}if(pending)return pending;
+  const c=context;if(!c){if(active)status('fittingWaitingModel');return;}if(!valid(c))return;if(c.viewer.fitting){c.viewer.fitting.setEditing(active&&showMounts);return;}if(pending)return pending;
   if(c.item.categoryID!==6||c.item.subsystemParts||c.item.groupID===963){status('fittingUnavailable');return;}
   status('fittingLoadingHardpoints');const token=generation,task=loadingTask('fittingLoadingHardpoints');
   const job=(async()=>{try{
@@ -164,7 +173,7 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
    if(data.version!==2||!locators?.length){status('fittingUnavailable');return;}
    const settings=await nativeSettings(c.viewer);if(!valid(c)||token!==generation)return;
    const fitting=c.module.installFitting(c.viewer,{locators,equipment:data.equipment,settings,hullCategory:c.item.categoryID});
-   c.viewer.lifecycle.set('fitting',fitting);fitting.setEditing(active);const s=state(c.item.id);fitting.setDeployed(s.deployed);
+   c.viewer.lifecycle.set('fitting',fitting);fitting.setEditing(active&&showMounts);const s=state(c.item.id);fitting.setDeployed(s.deployed);
    const restore=[...s.choices].filter(([slot,id])=>id!=null&&fitting.slots.some(s=>s.slot===slot)),restoring={context:c};
    if(restore.length)operation=restoring;render();
    let restored;
@@ -179,12 +188,13 @@ export function createFittingPanel({root,currentViewer,currentItem,translate:t,n
  $('fitting-more').addEventListener('click',()=>{limit+=40;results();});$('fitting-picker-close').addEventListener('click',()=>closePicker(true));
  $('fitting-picker').addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closePicker(true);}if(event.key==='ArrowDown'&&event.target===$('fitting-search')){event.preventDefault();(selectedCategory===null&&!$('fitting-search').value.trim()?$('fitting-category'):$('fitting-results')).querySelector('button')?.focus();}});
  $('fitting-deployed').addEventListener('change',()=>{if(context?.viewer.fitting){state(context.item.id).deployed=$('fitting-deployed').checked;context.viewer.fitting.setDeployed($('fitting-deployed').checked);}});
+ $('fitting-show-mounts').addEventListener('change',()=>{showMounts=$('fitting-show-mounts').checked;context?.viewer.fitting?.setEditing(active&&showMounts);});
  $('fitting-undo').addEventListener('click',()=>{const undo=context&&state(context.item.id).undo;if(undo)void applyEquipment(undo.slot,undo.id,true);});
  return {
   // A failed background request must not block startup; opening Fitting retries.
   preload(){return loadData().then(()=>true,()=>false);},
-  connect(viewer,item,module){generation++;pending=null;closePicker();rows.clear();viewer.lifecycle.release('fitting');context={viewer,item,module};$('fitting-controls').hidden=true;$('fitting-slots').replaceChildren();status('fittingHint');if(active||saved.get(item.id)?.choices.size)void ensure();},
-  reset(){generation++;pending=null;closePicker();rows.clear();context?.viewer.fitting?.setEditing(false);context=null;$('fitting-controls').hidden=true;$('fitting-slots').replaceChildren();status(active?'fittingWaitingModel':'fittingHint');},
-  setActive(value){active=value;if(!active)closePicker();context?.viewer.fitting?.setEditing(active);if(active)void ensure();},render,
+  connect(viewer,item,module){generation++;pending=null;closePicker();rows.clear();focusButtons.clear();viewer.lifecycle.release('fitting');context={viewer,item,module};$('fitting-controls').hidden=true;$('fitting-slots').replaceChildren();status('fittingHint');if(active||saved.get(item.id)?.choices.size)void ensure();},
+  reset(){context?.viewer.fitting?.previewSlot?.(null);generation++;pending=null;closePicker();rows.clear();focusButtons.clear();context?.viewer.fitting?.setEditing(false);context=null;$('fitting-controls').hidden=true;$('fitting-slots').replaceChildren();status(active?'fittingWaitingModel':'fittingHint');},
+  setActive(value){active=value;if(!active){context?.viewer.fitting?.previewSlot?.(null);closePicker();}context?.viewer.fitting?.setEditing(active&&showMounts);if(active)void ensure();},render,
  };
 }
