@@ -1,4 +1,4 @@
-import { hullKey, createHullVariantIndex } from './hull-variants.mjs?v=3917cd56cb3b22aa';
+import { hullKey, createHullVariantIndex } from './hull-variants.mjs?v=d7de0dd71fe048ce';
 // Cache pending requests too, so route changes and item dialogs share one load.
 export function createCatalogLoader(index, fetchJSON, decorate = (item) => item) {
   if (index.variantIndexVersion !== 1) throw Error('Unsupported catalog index: regenerate metadata with variantIndexVersion 1');
