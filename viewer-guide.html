@@ -1,150 +1,104 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#101518">
-  <meta name="description" content="EVE 模型标签使用指南：引入一个 JS，在自己的网页中展示飞船、背景、特效和自动挂载装备。包含可运行案例和完整 HTML。">
-  <title>模型标签 · 使用指南 — EVE Model Viewer</title>
-  <link rel="icon" href="./mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=fcc16a8bca1d0ed2">
-  <link rel="stylesheet" href="./viewer-guide.css?v=fcc16a8bca1d0ed2">
-  <script type="module" src="./viewer-guide.js?v=fcc16a8bca1d0ed2"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101518">
+<meta name="description" content="EVE 模型组件：引入一个 JS，用物品 ID 展示飞船和装备。">
+<title>EVE 模型组件 · 使用指南</title>
+<link rel="icon" href="./mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./github-assets/fonts/fonts.css?v=266b7f67b867752a"><link rel="stylesheet" href="./viewer-guide.css?v=266b7f67b867752a">
+<script type="module" src="./viewer-guide.js?v=266b7f67b867752a"></script>
 </head>
 <body>
 <header class="guide-header">
-  <a class="brand" href="./index.html?v=fcc16a8bca1d0ed2"><img src="./mark.svg" width="28" height="28" alt=""><span>EVE Model Viewer <small>开发者指南</small></span></a>
-  <nav aria-label="页面导航"><a href="./index.html?v=fcc16a8bca1d0ed2">返回模型图鉴 ↗</a><a class="button small" href="./eve-model-viewer.js?v=fcc16a8bca1d0ed2" download>下载组件 JS ↓</a></nav>
+<a class="brand" href="./index.html?v=266b7f67b867752a"><img src="./mark.svg" width="28" height="28" alt=""><span>EVE Model Viewer <small data-guide-i18n="developer">组件文档</small></span></a>
+<nav aria-label="页面导航"><label class="guide-language-label"><span id="language-label">语言</span><select id="guide-language" aria-labelledby="language-label"><option value="auto">自动识别</option><option value="zh-CN">中文</option><option value="en">English</option></select></label><a href="./index.html?v=266b7f67b867752a" data-guide-i18n="back">返回图鉴 ↗</a></nav>
 </header>
 <div class="docs-layout">
-  <aside class="docs-nav" aria-label="指南目录"><p>模型标签</p><a href="#overview">概览与预览</a><a href="#quick-start">快速开始</a><a href="#examples">典型案例 <span>07</span></a><a href="#equipment">自动挂载装备</a><a href="#attributes">HTML 属性</a><a href="#javascript">JavaScript API</a><a href="#events">加载与事件</a><a href="#deployment">部署与常见问题</a><div class="nav-note"><code>&lt;eve-model-viewer&gt;</code><br>一个 JS，直接嵌入。</div></aside>
-  <main>
-    <section id="overview" class="intro">
-      <div class="eyebrow"><span></span> WEB COMPONENT / EVE ONLINE</div>
-      <h1>把 EVE 模型，<br>放进你的网页。</h1>
-      <p class="lede">引入一个 JavaScript 文件，写一个标签。沿用原版的材质、反射、特效与装备挂载，模型资源由现有服务提供。</p>
-      <div class="intro-actions"><a class="button primary" href="#quick-start">开始使用 <span>↓</span></a><a href="#examples">浏览可运行案例 →</a></div>
-      <div class="feature-strip"><span>原生 HTML 标签</span><span>无需框架或 iframe</span><span>模型资源按需加载</span></div>
-    </section>
-    <section class="playground" aria-labelledby="preview-heading">
-      <div class="preview-bar"><div><span class="live-dot"></span><strong id="preview-heading">实时预览</strong><span id="case-name">最简嵌入 · 587</span></div><div class="preview-actions"><button id="preview-mounts" class="text-button" type="button" aria-pressed="false" hidden>挂点标记</button><button id="preview-reset" class="text-button" type="button">重置视角 ↶</button></div></div>
-      <div id="preview-mount" class="preview-mount"><p class="preview-placeholder">正在加载模型组件…</p></div>
-      <div class="preview-footer"><span id="preview-status" role="status" aria-live="polite">准备加载飞船 587</span><a href="#examples">选择案例 ↓</a></div>
-      <details id="placement-details" hidden><summary>查看实际挂载结果</summary><pre id="placement-output"></pre></details>
-    </section>
-    <section id="quick-start" class="doc-section">
-      <div class="section-heading"><span class="section-number">01</span><div><h2>三步开始</h2><p>无需安装 npm 包。用普通 HTML 页面即可运行。</p></div></div>
-      <div class="steps"><article><span>1</span><h3>保存组件</h3><p><a href="./eve-model-viewer.js?v=fcc16a8bca1d0ed2" download>下载 eve-model-viewer.js</a>，放在 HTML 文件旁边。</p></article><article><span>2</span><h3>引入并添加标签</h3><p>使用 <code>type="module"</code> 导入，设置物品 ID，并给标签一个高度。</p></article><article><span>3</span><h3>通过 HTTP 打开</h3><p>使用项目的开发服务器或静态托管。不要直接双击打开 <code>file://</code> 文件。</p></article></div>
-      <div class="code-block"><div class="code-heading"><span>index.html · 完整可运行示例</span><div><button type="button" class="text-button" data-download="starter-code">下载 HTML ↓</button><button type="button" class="text-button" data-copy="starter-code">复制代码</button></div></div><pre><code id="starter-code">&lt;!doctype html&gt;
+<aside class="docs-nav" aria-label="指南目录"><p data-guide-i18n="contents">使用指南</p><a href="#overview" data-guide-i18n="overview">预览</a><a href="#quick-start" data-guide-i18n="quick">引入组件</a><a href="#examples" data-guide-i18n="examples">案例</a><a href="#equipment" data-guide-i18n="equipment">装备挂载</a><a href="#attributes" data-guide-i18n="attributes">属性</a><a href="#javascript" data-guide-i18n="api">JavaScript API</a><div class="nav-note"><code>&lt;eve-model-viewer&gt;</code></div></aside>
+<main>
+<section id="overview" class="intro">
+<div class="eyebrow"><span></span> EVE MODEL VIEWER / WEB COMPONENT</div>
+<h1 data-guide-i18n="heading">EVE 模型组件</h1>
+<p class="lede" data-guide-i18n="intro">引入一个 JS，用物品 ID 展示模型。支持原版视觉设置和装备自动挂载。</p>
+<div class="intro-actions"><a class="button primary" href="#quick-start" data-guide-i18n="start">查看用法 ↓</a><a href="#examples" data-guide-i18n="browse">运行案例 →</a></div>
+</section>
+<section class="playground" aria-labelledby="preview-heading">
+<div class="preview-bar"><div><span class="live-dot"></span><strong id="preview-heading" data-guide-i18n="preview">预览</strong><span id="case-name"></span></div><div class="preview-actions"><button id="preview-mounts" class="text-button" type="button" aria-pressed="false" hidden data-guide-i18n="markers">挂点标记</button><button id="preview-reset" class="text-button" type="button" data-guide-i18n="reset">重置视角 ↶</button></div></div>
+<div id="preview-mount" class="preview-mount"><p class="preview-placeholder" data-guide-i18n="loading">加载中…</p></div>
+<div class="preview-footer"><span id="preview-status" role="status" aria-live="polite"></span><a href="#examples" data-guide-i18n="choose">切换案例 ↓</a></div>
+<details id="placement-details" hidden><summary data-guide-i18n="assignments">挂载结果</summary><pre id="placement-output"></pre></details>
+</section>
+<section id="quick-start" class="doc-section">
+<div class="section-heading"><span class="section-number">01</span><div><h2 data-guide-i18n="quick">引入组件</h2><p data-guide-i18n="quickIntro">复制下面的 HTML 即可使用。</p></div></div>
+<div class="code-block"><div class="code-heading"><span>HTML</span><div><button type="button" class="text-button" data-download="starter-code" data-guide-i18n="download">下载 HTML ↓</button><button type="button" class="text-button" data-copy="starter-code" data-guide-i18n="copy">复制代码</button></div></div><pre><code id="starter-code">&lt;!doctype html&gt;
 &lt;html lang="zh-CN"&gt;
 &lt;meta charset="utf-8"&gt;
 &lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;
-&lt;title&gt;我的 EVE 模型&lt;/title&gt;
-&lt;style&gt;body { margin: 0; background: #101518; }&lt;/style&gt;
-
+&lt;title&gt;EVE Model&lt;/title&gt;
 &lt;script type="module"&gt;
-  import './eve-model-viewer.js?v=fcc16a8bca1d0ed2';
+  import 'https://eve.vanquisher.online/eve-model-viewer.js';
 &lt;/script&gt;
-
 &lt;eve-model-viewer
   item-id="587"
   background="none"
-  style="width:100%;height:600px"&gt;
+  style="width:100%;height:520px"&gt;
 &lt;/eve-model-viewer&gt;
 &lt;/html&gt;</code></pre></div>
-      <p class="note">默认从 <code>https://models.vanquisher.online/</code> 获取模型及贴图。你只需托管这个 JS，无需复制模型数据、额外 CSS 或 vendor 目录。</p>
-    </section>
-    <section id="examples" class="doc-section">
-      <div class="section-heading"><span class="section-number">02</span><div><h2>典型案例</h2><p>点击“运行案例”更新上方预览。每段代码可独立使用；页面只需导入组件一次。</p></div></div>
-      <div id="example-list" class="example-list"></div>
-    </section>
-    <section id="equipment" class="doc-section">
-      <div class="section-heading"><span class="section-number">03</span><div><h2>装备怎么自动挂载？</h2><p>告诉组件装什么装备，组件负责选择兼容的原生挂点。</p></div></div>
-      <div class="mount-flow"><div><small>你的配置</small><strong>逻辑槽 1 → 装备 503</strong></div><span aria-hidden="true">→</span><div><small>装备元数据</small><strong>locator_launcher_</strong></div><span aria-hidden="true">→</span><div><small>飞船 12032</small><strong>可用的发射器挂点</strong></div></div>
-      <p><code>slot</code> 是逻辑装备槽，<strong>不是原生挂点编号</strong>。例如，587 + 484 使用炮塔挂点，12032 + 503 使用发射器挂点。同一逻辑槽可能对应多个物理挂点；它们由船体资源定义，运行装配案例后，可用预览右上方的“挂点标记”查看位置，或展开预览下的实际结果。</p>
-      <p>支持 <code>locator_turret_</code>、<code>locator_launcher_</code>、<code>locator_bomb_</code>、<code>locator_xl_</code> 和 <code>locator_moonharvester_</code>。按装备原生类型严格匹配，并检查容量及物理位置占用；没有兼容挂点时会报错。</p>
-      <p class="note">这是模型展示装配，不校验 CPU、能量栅格或游戏内实际槽位限制。更换船体时，请同时提供适用的装备配置；<code>fitting: { equipment: [] }</code> 可清空装备。</p>
-    </section>
-    <section id="attributes" class="doc-section">
-      <div class="section-heading"><span class="section-number">04</span><div><h2>HTML 属性</h2><p>简单场景用属性配置，复杂场景使用 configure()。</p></div></div>
-      <div class="table-wrap"><table><thead><tr><th>属性</th><th>默认值</th><th>用途</th></tr></thead><tbody>
-        <tr><td><code>item-id</code></td><td>必填</td><td>物品 ID，例如 587。</td></tr><tr><td><code>background</code></td><td><code>auto</code></td><td>自动背景；<code>none</code> 关闭背景，也可指定背景资源的场景 ID。</td></tr><tr><td><code>control-panel</code></td><td>关</td><td>显示原版视觉设置控制区。</td></tr><tr><td><code>white-model</code></td><td>关</td><td>查看白模；保留已加载资源，支持随时切回。</td></tr><tr><td><code>effects</code></td><td>开</td><td>写成 <code>effects="false"</code> 可关闭特效。</td></tr><tr><td><code>auto-rotate</code></td><td>关</td><td>自动旋转模型。</td></tr><tr><td><code>antialias</code></td><td><code>auto</code></td><td><code>auto / none / smaa / msaa2 / msaa4 / msaa8</code>。</td></tr><tr><td><code>exposure</code></td><td><code>0.7</code></td><td>灯光亮度，范围 0.1–3。</td></tr><tr><td><code>reflection</code></td><td><code>0.7</code></td><td>反射强度，范围 0–3。</td></tr><tr><td><code>kill-count</code></td><td><code>0</code></td><td>击杀标记数量 0–999；需模型支持。</td></tr><tr><td><code>show-hardpoints</code></td><td>关</td><td>显示支持的装备挂点标记。</td></tr><tr><td><code>resource-base</code></td><td>现有模型服务</td><td>可选，自托管资源根地址，或本地同源代理地址。</td></tr>
-      </tbody></table></div>
-      <p class="note"><code>control-panel</code>、<code>white-model</code>、<code>auto-rotate</code>、<code>show-hardpoints</code> 以属性是否存在表示开关。关闭时移除属性；<code>white-model="false"</code> 仍然表示开启。</p>
-    </section>
-    <section id="javascript" class="doc-section">
-      <div class="section-heading"><span class="section-number">05</span><div><h2>JavaScript API</h2><p>configure() 返回 Promise。等待它完成后，再读取挂载结果或导出。</p></div></div>
-      <div class="code-block"><div class="code-heading"><span>更新参数与查询装备</span><button type="button" class="text-button" data-copy="api-code">复制代码</button></div><pre><code id="api-code">import './eve-model-viewer.js?v=fcc16a8bca1d0ed2';
+<p class="note" data-guide-i18n="quickNote">模型和贴图由我们的资源服务加载，无需另外安装依赖。记得给标签设置高度。</p>
+</section>
+<section id="examples" class="doc-section">
+<div class="section-heading"><span class="section-number">02</span><div><h2 data-guide-i18n="examples">案例</h2><p data-guide-i18n="examplesIntro">点击运行，查看上方效果。每页只需 import 一次。</p></div></div><div id="example-list" class="example-list"></div>
+</section>
+<section id="equipment" class="doc-section">
+<div class="section-heading"><span class="section-number">03</span><div><h2 data-guide-i18n="equipment">装备挂载</h2></div></div>
+<p data-guide-i18n="equipmentIntro"><code>slot</code> 是逻辑装备槽，不是原生挂点编号。传入装备 ID 后，组件会按装备类型选择兼容挂点，并检查位置是否已被占用。</p>
+<div class="mount-flow"><div><small data-guide-i18n="configuration">配置</small><strong data-guide-i18n="slot">slot 1 → 装备 503</strong></div><span aria-hidden="true">→</span><div><small data-guide-i18n="family">装备挂点类型</small><strong>locator_launcher_</strong></div><span aria-hidden="true">→</span><div><small data-guide-i18n="hull">飞船 12032</small><strong data-guide-i18n="available">空闲的发射器挂点</strong></div></div>
+<p data-guide-i18n="equipmentNote">587 + 484 演示炮塔，12032 + 503 演示发射器。运行后可查看挂点标记和实际分配结果。这里只做模型展示，不校验 CPU、能量栅格等游戏内配装限制。</p>
+</section>
+<section id="attributes" class="doc-section">
+<div class="section-heading"><span class="section-number">04</span><div><h2 data-guide-i18n="attributes">属性</h2></div></div>
+<div class="table-wrap"><table><thead><tr><th data-guide-i18n="attribute">属性</th><th data-guide-i18n="default">默认值</th><th data-guide-i18n="purpose">说明</th></tr></thead><tbody>
+<tr><td><code>item-id</code></td><td data-guide-i18n="required">必填</td><td data-guide-i18n="itemHelp">物品 ID，例如 587。</td></tr>
+<tr><td><code>lang</code></td><td data-guide-i18n="inherit">跟随页面</td><td data-guide-i18n="langHelp"><code>en</code> 或 <code>zh-CN</code>，设置组件语言。</td></tr>
+<tr><td><code>background</code></td><td><code>auto</code></td><td data-guide-i18n="backgroundHelp"><code>auto</code> 自动选择背景，<code>none</code> 不显示背景，也可传入场景 ID。</td></tr>
+<tr><td><code>control-panel</code></td><td data-guide-i18n="off">关</td><td data-guide-i18n="controlsHelp">显示原版视觉设置。</td></tr>
+<tr><td><code>white-model</code></td><td data-guide-i18n="off">关</td><td data-guide-i18n="whiteHelp">查看白模，可随时切回。</td></tr>
+<tr><td><code>effects</code></td><td data-guide-i18n="on">开</td><td data-guide-i18n="effectsHelp"><code>effects="false"</code> 关闭特效。</td></tr>
+<tr><td><code>auto-rotate</code></td><td data-guide-i18n="off">关</td><td data-guide-i18n="rotateHelp">自动旋转。</td></tr>
+<tr><td><code>antialias</code></td><td><code>auto</code></td><td><code>auto / none / smaa / msaa2 / msaa4 / msaa8</code></td></tr>
+<tr><td><code>exposure</code></td><td><code>0.7</code></td><td data-guide-i18n="exposureHelp">亮度，范围 0.1–3。</td></tr>
+<tr><td><code>reflection</code></td><td><code>0.7</code></td><td data-guide-i18n="reflectionHelp">反射强度，范围 0–3。</td></tr>
+<tr><td><code>kill-count</code></td><td><code>0</code></td><td data-guide-i18n="killsHelp">击杀标记数量，0–999；需模型支持。</td></tr>
+<tr><td><code>show-hardpoints</code></td><td data-guide-i18n="off">关</td><td data-guide-i18n="markersHelp">显示装备挂点标记。</td></tr>
+</tbody></table></div>
+<p class="note" data-guide-i18n="booleanNote">布尔属性以是否存在表示开关。关闭时移除属性，别写 <code>white-model="false"</code>。<code>effects</code> 除外，按上表传值。</p>
+</section>
+<section id="javascript" class="doc-section">
+<div class="section-heading"><span class="section-number">05</span><div><h2>JavaScript API</h2><p data-guide-i18n="apiIntro">复杂参数通过 configure() 传入。等待 Promise 完成后再读取结果。</p></div></div>
+<div class="code-block"><div class="code-heading"><span>JavaScript</span><button type="button" class="text-button" data-copy="api-code" data-guide-i18n="copy">复制代码</button></div><pre><code id="api-code">import 'https://eve.vanquisher.online/eve-model-viewer.js';
 
 const viewer = document.querySelector('eve-model-viewer');
 await viewer.configure({
   itemId: 587,
   background: 'none',
   controlPanel: true,
-  whiteModel: false,
-  effects: true,
-  render: { exposure: 0.7, reflection: 0.7, bloom: 0.2 },
-  display: { antialiasMode: 'auto', occlusion: true },
-  killCount: 0,
+  render: { reflection: 0.7, exposure: 0.7 },
   fitting: { equipment: [{ slot: 1, itemId: 484 }] }
 });
 
 console.log(await viewer.getPlacements());
-// 装配初始化后，查询指定逻辑槽当前可用的装备。
-console.log(await viewer.getAvailableEquipment(2));
 viewer.resetView();</code></pre></div>
-      <p><code>configure()</code> 合并顶层选项及 <code>render / display</code> 字段；传入 <code>fitting</code> 时，请给出完整的目标装备列表。<code>render</code> 还支持 <code>sun / fill / f0 / roughness / dirt / depthOfField</code>，<code>display</code> 还支持 <code>bloom / depthOfField / textures</code>。T3 子系统可用 <code>subsystems: '1231'</code> 指定组合，需对应资源可用。</p>
-      <details class="more-code"><summary>导出模型与 HDR 天空盒</summary><div class="code-block"><div class="code-heading"><span>导出结果由宿主页面保存</span><button type="button" class="text-button" data-copy="export-code">复制代码</button></div><pre><code id="export-code">function save(blob, name) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = name;
-  link.click();
-  setTimeout(() =&gt; URL.revokeObjectURL(url), 1000);
-}
-
-const model = await viewer.exportModel('glb'); // 也支持 'obj'
-save(model.blob, 'ship-587.glb');
-
-// 先选中并加载背景，再导出。
-await viewer.configure({ background: 'auto' });
-const skybox = await viewer.exportSkybox();
-save(skybox.blob, skybox.name); // .hdr，保留 HDR 亮度范围</code></pre></div></details>
-    </section>
-    <section id="events" class="doc-section">
-      <div class="section-heading"><span class="section-number">06</span><div><h2>加载与事件</h2><p>将组件接入自己项目的加载状态和错误提示。</p></div></div>
-      <div class="code-block"><div class="code-heading"><span>事件监听</span><button type="button" class="text-button" data-copy="events-code">复制代码</button></div><pre><code id="events-code">viewer.addEventListener('progress', ({ detail }) =&gt; {
-  console.log(`阶段 ${detail.phase}/${detail.total}`);
-});
-viewer.addEventListener('load', ({ detail }) =&gt; {
-  console.log('已加载', detail.itemId, detail.placements);
-});
-viewer.addEventListener('settings-change', ({ detail }) =&gt; {
-  console.log('用户修改了控制区', detail);
-});
-viewer.addEventListener('error', ({ detail }) =&gt; {
-  console.error(detail.message);
-});
-
-try {
-  await viewer.configure({ itemId: 587 });
-} catch (error) {
-  if (error.name !== 'AbortError') console.error(error.message);
-}</code></pre></div>
-      <p>属性变更触发的错误通过 <code>error</code> 事件报告；显式调用 <code>configure()</code> 的错误通过 Promise 拒绝。事件监听请在首次加载前添加，之后也可通过 <code>configure()</code> 等待加载完成。</p>
-    </section>
-    <section id="deployment" class="doc-section">
-      <div class="section-heading"><span class="section-number">07</span><div><h2>部署与常见问题</h2><p>从本站示例到你自己的项目。</p></div></div>
-      <details class="faq" open><summary>为什么在另一个域名下加载失败？</summary><p>模型资源服务需要允许你的网页来源跨域读取（CORS）。本站仓库的 <code>r2-cors.json</code> 已提供公开资源 GET/HEAD 规则，但仍需应用到资源桶，并检查 CDN 缓存的响应头。若使用跨域 JS 地址，该 JS 服务也需要允许跨域模块导入。组件不携带登录凭据。</p></details>
-      <details class="faq"><summary>为什么标签没有显示，或只有很小的高度？</summary><p>确认 JS 返回正确的 JavaScript 内容类型，页面通过 HTTP/HTTPS 打开，并为标签显式设置高度，例如 <code>style="height:600px"</code>。用浏览器控制台查看网络与加载错误。</p></details>
-      <details class="faq"><summary>React、Vue 或其他项目可以使用吗？</summary><p>可以。先导入 JS，然后像普通自定义标签一样使用它。HTML 属性用短横线形式（如 <code>item-id</code>）；装备列表等对象通过元素引用调用 <code>configure()</code> 传入。无需再安装 Three.js。</p></details>
-      <details class="faq"><summary>一个页面能放多个模型吗？</summary><p>可以，组件各自持有模型、设置和资源会话。多个复杂模型会增加 GPU 和内存开销；建议按需要插入，移除标签会释放对应场景，之后可以重新插入。</p></details>
-      <details class="faq"><summary>能和其他版本的 model-viewer 一起加载吗？</summary><p>当前组件会注册 <code>model-viewer</code> 及其后处理标签，不支持同页再加载另一版本的 model-viewer 或本站旧 vendor bundle。只导入本组件即可。</p></details>
-      <details class="faq"><summary>组件里包含哪些控制区？</summary><p><code>control-panel</code> 显示原版视觉设置：背景、画质与性能、船体外观、光照与材质。装备由 API 配置；当前不包含图鉴、装备选择器或机库场景。</p></details>
-    </section>
-    <footer class="guide-footer"><a href="./index.html?v=fcc16a8bca1d0ed2">← 返回 EVE Model Viewer</a><span>EVE Online 模型与游戏资源归 CCP Games 所有。</span></footer>
-  </main>
-</div>
-<div id="copy-status" role="status" aria-live="polite"></div>
-</body>
-</html>
+<p data-guide-i18n="apiNote"><code>configure()</code> 会合并已有参数。传入 <code>fitting</code> 时给出完整装备列表；<code>equipment: []</code> 清空装备。</p>
+<div class="table-wrap"><table><thead><tr><th data-guide-i18n="method">方法 / 事件</th><th data-guide-i18n="purpose">说明</th></tr></thead><tbody>
+<tr><td><code>getPlacements()</code></td><td data-guide-i18n="placementsHelp">查询实际挂载结果。</td></tr>
+<tr><td><code>getAvailableEquipment(slot)</code></td><td data-guide-i18n="equipmentHelp">装配初始化后，查询逻辑槽可用的装备。</td></tr>
+<tr><td><code>exportModel('glb' | 'obj')</code></td><td data-guide-i18n="exportHelp">返回含 Blob 的模型导出结果。</td></tr>
+<tr><td><code>exportSkybox()</code></td><td data-guide-i18n="skyboxHelp">背景加载后，返回 HDR 文件的 Blob 和名称。</td></tr>
+<tr><td><code>progress / load / error</code></td><td data-guide-i18n="eventsHelp">加载进度、完成、错误事件，数据在 <code>event.detail</code> 中。</td></tr>
+<tr><td><code>settings-change</code></td><td data-guide-i18n="settingsHelp">用户修改控制区时触发。</td></tr>
+</tbody></table></div>
+<p class="note" data-guide-i18n="errorNote">显式调用 <code>configure()</code> 时用 <code>try / catch</code> 处理错误。不要在同一页再加载其他版本的 model-viewer。</p>
+</section>
+<footer class="guide-footer"><a href="./index.html?v=266b7f67b867752a" data-guide-i18n="back">返回图鉴 ↗</a><span data-guide-i18n="copyright">EVE Online 模型与游戏资源归 CCP Games 所有。</span></footer>
+</main></div><div id="copy-status" role="status" aria-live="polite"></div>
+</body></html>

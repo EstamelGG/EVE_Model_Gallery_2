@@ -1,5 +1,5 @@
-import {loadJSON} from './resource-activity.mjs?v=fcc16a8bca1d0ed2';
-import {resourceURL} from './resource-location.mjs?v=fcc16a8bca1d0ed2';
+import {loadJSON} from './resource-activity.mjs?v=266b7f67b867752a';
+import {resourceURL} from './resource-location.mjs?v=266b7f67b867752a';
 
 export function createFittingPanel({root,currentViewer,currentItem,translate:t,name,groupName,nativeSettings,loading}) {
  const $=id=>root.querySelector('#'+id),saved=new Map(),rows=new Map(),focusButtons=new Map();

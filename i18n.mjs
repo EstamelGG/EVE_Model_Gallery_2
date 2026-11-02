@@ -1,3 +1,4 @@
+import {siteLocale,browserLocale,languagePreference,saveLanguagePreference,languageStorageKey} from './locale.mjs?v=266b7f67b867752a';
 const messages = {
   viewerGuide: ['组件使用指南', 'Component guide'],
   settingsTabs: ['查看器设置', 'Viewer settings'],
@@ -55,6 +56,7 @@ const messages = {
   app: ['EVE Model Viewer 2.0', 'EVE Model Viewer 2.0'],
   home: ['EVE Model Viewer 2.0 首页', 'EVE Model Viewer 2.0 home'],
   language: ['语言', 'Language'],
+  languageAuto: ['自动识别', 'Automatic'],
   developer: ['开发者', 'Developed by'],
   about: ['关于', 'About'],
   aboutLinks: ['关于与链接', 'About and links'],
@@ -263,16 +265,9 @@ const messages = {
   SiegeLoop: ['展开循环', 'Deployed loop'],
 };
 
-const storageKey = 'ccpdec-language';
-const browserLanguages = navigator.languages?.length ? navigator.languages : [navigator.language];
-const preferredLanguage = browserLanguages.find(language => /^(zh|en)(-|$)/i.test(language)) || 'en';
-export let locale = /^zh(-|$)/i.test(preferredLanguage) ? 'zh-CN' : 'en';
-try {
-  const saved = localStorage.getItem(storageKey);
-  if (['zh-CN', 'en'].includes(saved)) locale = saved;
-} catch {
-  /* Language switching also works when storage is unavailable. */
-}
+const storageKey = languageStorageKey;
+let preference=languagePreference();
+export let locale = siteLocale();
 
 export function t(key, values = {}) {
   const text = messages[key]?.[locale === 'en' ? 1 : 0] ?? key;
@@ -284,15 +279,13 @@ export function localizedName(names) {
 }
 
 export function setLocale(value) {
-  if (!['zh-CN', 'en'].includes(value)) return;
-  locale = value;
-  try {
-    localStorage.setItem(storageKey, locale);
-  } catch {
-    /* Optional persistence. */
-  }
+  if (!['auto','zh-CN','en'].includes(value)) return;
+  preference=value;saveLanguagePreference(value);
+  locale = value==='auto'?browserLocale():value;
   applyTranslations();
 }
+window.addEventListener('storage',event=>{if(event.key===storageKey||event.key===null){preference=languagePreference();locale=siteLocale();applyTranslations();}});
+window.addEventListener('languagechange',()=>{if(preference==='auto'){preference=languagePreference();locale=siteLocale();applyTranslations();}});
 
 export function applyTranslations() {
   document.documentElement.lang = locale;
@@ -304,6 +297,6 @@ export function applyTranslations() {
       element.setAttribute(attribute, t(element.getAttribute(`data-i18n-${attribute}`)));
     }
   }
-  for (const select of document.querySelectorAll('[data-language]')) select.value = locale;
+  for (const select of document.querySelectorAll('[data-language]')) select.value = preference;
 }
 
