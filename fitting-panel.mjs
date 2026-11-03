@@ -1,5 +1,5 @@
-import { loadJSON } from './resource-activity.mjs?v=f495cca4d1f6128b';
-import { resourceURL } from './resource-location.mjs?v=f495cca4d1f6128b';
+import { loadJSON } from './resource-activity.mjs?v=1b879b65364f5290';
+import { resourceURL } from './resource-location.mjs?v=1b879b65364f5290';
 
 export function createFittingPanel({
   root,
@@ -468,6 +468,8 @@ export function createFittingPanel({
           locators,
           equipment: data.equipment,
           settings,
+          appearance: data.appearance,
+          dna: c.item.dna,
           hullCategory: c.item.categoryID,
         });
         c.viewer.lifecycle.set('fitting', fitting);
