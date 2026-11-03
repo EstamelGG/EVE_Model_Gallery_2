@@ -1,11 +1,11 @@
-import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=84c8d6f629de7eff';
-import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=84c8d6f629de7eff';
-import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=84c8d6f629de7eff';
-import {viewerProfile} from './viewer-profile.mjs?v=84c8d6f629de7eff';
-import {resourceURL} from './resource-location.mjs?v=84c8d6f629de7eff';
-import {trackResource} from './resource-activity.mjs?v=84c8d6f629de7eff';
-import {applyPostprocessingSettings, effectsEnabled} from './display-settings.mjs?v=84c8d6f629de7eff';
-import {recenterView} from './view-reset.mjs?v=84c8d6f629de7eff';
+import {createViewerController, viewerUpdateKind} from './viewer-controller.mjs?v=f7e4815b46e7c138';
+import {createViewerLifecycle} from './viewer-lifecycle.mjs?v=f7e4815b46e7c138';
+import {createViewerPostprocessing, initializeViewerCamera, configureViewerControls} from './viewer-presentation.mjs?v=f7e4815b46e7c138';
+import {viewerProfile} from './viewer-profile.mjs?v=f7e4815b46e7c138';
+import {resourceURL} from './resource-location.mjs?v=f7e4815b46e7c138';
+import {trackResource} from './resource-activity.mjs?v=f7e4815b46e7c138';
+import {applyPostprocessingSettings, effectsEnabled} from './display-settings.mjs?v=f7e4815b46e7c138';
+import {recenterView} from './view-reset.mjs?v=f7e4815b46e7c138';
 
 // Wait for the actual model event, and detach listeners on success, failure,
 // cancellation or a synchronous setup failure. Shared asset requests continue.
@@ -89,7 +89,7 @@ export function createViewerRuntime({mount, transition, loadRenderer, view, reso
   async function prepare(viewer, item, context) {
     const {settings, operation} = context, source = sourceURL(item);
     if (item.subsystemParts) {
-      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=84c8d6f629de7eff');
+      const {prepareSubsystemModel} = await import('./subsystem-assembly.mjs?v=f7e4815b46e7c138');
       await trackResource(source, () => prepareSubsystemModel(viewer.assetSession, item, source, location.href), 'resourceModel');
       if (!operation.isCurrent()) return null;
     }

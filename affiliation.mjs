@@ -10,7 +10,7 @@ const factionForDNA = new Map(Object.entries({
   soebase: 500016, soctbase: 500017, orebase: 500014,
   ore_consortium: 500014, triglavianbase: 500026,
   concordcivilian: 500006, deathless: 500029, roguebase: 500025,
-  drifter: 500024,
+  drifter: 500024, jovebase: 500005,
   concordbase: 500006, concordmilitary: 500006,
   'upwell-edencom': 500027,
   air: 500028, air_structure: 500028,

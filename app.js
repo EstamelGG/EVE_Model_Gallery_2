@@ -1,19 +1,19 @@
-import './eve-model-viewer.js?v=84c8d6f629de7eff';
+import './eve-model-viewer.js?v=f7e4815b46e7c138';
 import {
   locale,
   t,
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=84c8d6f629de7eff';
-import { createCardGrid } from './card-grid.mjs?v=84c8d6f629de7eff';
-import { createCatalogState } from './catalog-state.mjs?v=84c8d6f629de7eff';
-import { createCatalogLoader } from './catalog-loader.mjs?v=84c8d6f629de7eff';
-import { hullKey } from './hull-variants.mjs?v=84c8d6f629de7eff';
-import { createAffiliationResolver } from './affiliation.mjs?v=84c8d6f629de7eff';
-import { configureResourceBase, resourceURL } from './resource-location.mjs?v=84c8d6f629de7eff';
-import { loadJSON } from './resource-activity.mjs?v=84c8d6f629de7eff';
-import { prepareRenderImages } from './render-images.mjs?v=84c8d6f629de7eff';
+} from './i18n.mjs?v=f7e4815b46e7c138';
+import { createCardGrid } from './card-grid.mjs?v=f7e4815b46e7c138';
+import { createCatalogState } from './catalog-state.mjs?v=f7e4815b46e7c138';
+import { createCatalogLoader } from './catalog-loader.mjs?v=f7e4815b46e7c138';
+import { hullKey } from './hull-variants.mjs?v=f7e4815b46e7c138';
+import { createAffiliationResolver } from './affiliation.mjs?v=f7e4815b46e7c138';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=f7e4815b46e7c138';
+import { loadJSON } from './resource-activity.mjs?v=f7e4815b46e7c138';
+import { prepareRenderImages } from './render-images.mjs?v=f7e4815b46e7c138';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -819,7 +819,7 @@ async function init() {
     } catch {}
     const [index, identities, fallbackIndex] = await Promise.all([
       loadJSON(resourceURL('./data/catalog-index.json'), { cache: 'no-cache' }),
-      loadJSON('./icons/identities.json?v=84c8d6f629de7eff'),
+      loadJSON('./icons/identities.json?v=f7e4815b46e7c138'),
       loadJSON(
         resourceURL('./assets/renders/index.json'),
         { cache: 'no-cache' },
