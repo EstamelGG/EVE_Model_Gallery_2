@@ -1,19 +1,19 @@
-import './eve-model-viewer.js?v=db41ce1c6c6ffa82';
+import './eve-model-viewer.js?v=56c82b5db28dcc3d';
 import {
   locale,
   t,
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=db41ce1c6c6ffa82';
-import { createCardGrid } from './card-grid.mjs?v=db41ce1c6c6ffa82';
-import { createCatalogState } from './catalog-state.mjs?v=db41ce1c6c6ffa82';
-import { createCatalogLoader } from './catalog-loader.mjs?v=db41ce1c6c6ffa82';
-import { hullKey } from './hull-variants.mjs?v=db41ce1c6c6ffa82';
-import { createAffiliationResolver } from './affiliation.mjs?v=db41ce1c6c6ffa82';
-import { configureResourceBase, resourceURL } from './resource-location.mjs?v=db41ce1c6c6ffa82';
-import { loadJSON } from './resource-activity.mjs?v=db41ce1c6c6ffa82';
-import { prepareRenderImages } from './render-images.mjs?v=db41ce1c6c6ffa82';
+} from './i18n.mjs?v=56c82b5db28dcc3d';
+import { createCardGrid } from './card-grid.mjs?v=56c82b5db28dcc3d';
+import { createCatalogState } from './catalog-state.mjs?v=56c82b5db28dcc3d';
+import { createCatalogLoader } from './catalog-loader.mjs?v=56c82b5db28dcc3d';
+import { hullKey } from './hull-variants.mjs?v=56c82b5db28dcc3d';
+import { createAffiliationResolver } from './affiliation.mjs?v=56c82b5db28dcc3d';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=56c82b5db28dcc3d';
+import { loadJSON } from './resource-activity.mjs?v=56c82b5db28dcc3d';
+import { prepareRenderImages } from './render-images.mjs?v=56c82b5db28dcc3d';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -708,6 +708,7 @@ function setupEvents() {
     if ('query' in values) $('search').value = '';
     changeCatalog(values);
   });
+  $('viewer-performance').addEventListener('click', () => $('catalog-viewer').showPerformance());
   $('close-dialog').addEventListener('click', () => closeDetail());
   $('model-dialog').addEventListener('cancel', (event) => {
     event.preventDefault();
@@ -818,7 +819,7 @@ async function init() {
     } catch {}
     const [index, identities, fallbackIndex] = await Promise.all([
       loadJSON(resourceURL('./data/catalog-index.json'), { cache: 'no-cache' }),
-      loadJSON('./icons/identities.json?v=db41ce1c6c6ffa82'),
+      loadJSON('./icons/identities.json?v=56c82b5db28dcc3d'),
       loadJSON(
         resourceURL('./assets/renders/index.json'),
         { cache: 'no-cache' },
