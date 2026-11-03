@@ -10,6 +10,19 @@ const factionForDNA = new Map(Object.entries({
   soebase: 500016, soctbase: 500017, orebase: 500014,
   ore_consortium: 500014, triglavianbase: 500026,
   concordcivilian: 500006, deathless: 500029, roguebase: 500025,
+  drifter: 500024,
+  concordbase: 500006, concordmilitary: 500006,
+  'upwell-edencom': 500027,
+  air: 500028, air_structure: 500028,
+  ammatar: 500007, khanid: 500008, syndicate: 500009,
+  sansha_winter: 500019,
+}));
+// These exact SOF faction tokens have race identities rather than SDE factions.
+// The source remains dna-faction: it refers to DNA's second segment, not race.
+const raceForDNAFaction = new Map(Object.entries({
+  sleeperbase: 64,
+  upwell: 168, 'upwell-indy': 168, 'upwell-refinery': 168,
+  'upwell-defence': 168, 'upwell-ship': 168,
 }));
 
 export function createAffiliationResolver(identities) {
@@ -23,9 +36,11 @@ export function createAffiliationResolver(identities) {
     const explicit = identities.typeFactions?.[item.id];
     if (factions.has(explicit)) return factionResult(explicit, 'sde-faction');
     const parts = typeof item.dna === 'string' ? item.dna.split(':') : [];
-    const inferred = parts.length >= 3 && parts.slice(0, 3).every(Boolean)
-      ? factionForDNA.get(parts[1]) : undefined;
+    const token = parts.length >= 3 && parts.slice(0, 3).every(Boolean) ? parts[1] : undefined;
+    const inferred = factionForDNA.get(token);
     if (factions.has(inferred)) return factionResult(inferred, 'dna-faction');
+    const inferredRace = raceForDNAFaction.get(token);
+    if (races.has(inferredRace)) return { affiliationID: inferredRace, affiliationSource: 'dna-faction' };
     // Do not infer ownership from a hull prefix, display name, SOF race, or
     // nativeTypeID: different affiliations can share all of these resources.
     if (races.has(item.raceID)) return { affiliationID: item.raceID, affiliationSource: 'sde-race' };
