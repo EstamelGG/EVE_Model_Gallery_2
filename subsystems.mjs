@@ -1,4 +1,4 @@
-import { subsystemConnectors } from './subsystem-connectors.mjs?v=1e7c07f20b13802d';
+import { subsystemConnectors } from './subsystem-connectors.mjs?v=f495cca4d1f6128b';
 
 export const subsystemSlots = ['core', 'defensive', 'offensive', 'propulsion'];
 export const subsystemGroups = [958, 954, 956, 957];
