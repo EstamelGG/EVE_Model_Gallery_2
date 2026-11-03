@@ -1,5 +1,5 @@
 // Combine descriptors only. Geometry buffers and texture files stay shared.
-import { resourceURL } from './resource-location.mjs?v=817b947046bb55b1';
+import { resourceURL } from './resource-location.mjs?v=09bce01d5210ce70';
 const arrays = [
   'buffers',
   'bufferViews',

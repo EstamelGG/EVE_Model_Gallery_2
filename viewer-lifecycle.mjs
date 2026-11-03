@@ -1,4 +1,4 @@
-import { cancelViewReset } from './view-reset.mjs?v=817b947046bb55b1';
+import { cancelViewReset } from './view-reset.mjs?v=09bce01d5210ce70';
 
 // Effects must detach before native materials are restored. The asset session
 // belongs to the dialog and deliberately survives individual viewer instances.
