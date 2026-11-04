@@ -1,4 +1,4 @@
-import {resourceActivity, createResourceBatch} from './resource-activity.mjs?v=f7e4815b46e7c138';
+import {resourceActivity, createResourceBatch} from './resource-activity.mjs?v=6cfcc1c6346752ef';
 
 const steps = ['loadingCatalog', 'loadingAssets', 'loadingMaterials', 'loadingEnvironment', 'preparing'];
 

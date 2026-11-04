@@ -1,5 +1,5 @@
-import {prepareCatalogEngine} from './engine-entry.mjs?v=addebb9a0dbdd23ca190';
-import {engineHash, selectedEngine} from './engine-route.mjs?v=addebb9a0dbdd23ca190';
+import {prepareCatalogEngine} from './engine-entry.mjs?v=bef3328ec65c374f2ca2';
+import {engineHash, selectedEngine} from './engine-route.mjs?v=bef3328ec65c374f2ca2';
 const activeEngine = await prepareCatalogEngine();
 import {
   locale,
@@ -7,15 +7,15 @@ import {
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=f7e4815b46e7c138';
-import { createCardGrid } from './card-grid.mjs?v=f7e4815b46e7c138';
-import { createCatalogState } from './catalog-state.mjs?v=f7e4815b46e7c138';
-import { createCatalogLoader } from './catalog-loader.mjs?v=f7e4815b46e7c138';
-import { hullKey } from './hull-variants.mjs?v=f7e4815b46e7c138';
-import { createAffiliationResolver } from './affiliation.mjs?v=f7e4815b46e7c138';
-import { configureResourceBase, resourceURL } from './resource-location.mjs?v=f7e4815b46e7c138';
-import { loadJSON } from './resource-activity.mjs?v=f7e4815b46e7c138';
-import { prepareRenderImages } from './render-images.mjs?v=f7e4815b46e7c138';
+} from './i18n.mjs?v=6cfcc1c6346752ef';
+import { createCardGrid } from './card-grid.mjs?v=6cfcc1c6346752ef';
+import { createCatalogState } from './catalog-state.mjs?v=6cfcc1c6346752ef';
+import { createCatalogLoader } from './catalog-loader.mjs?v=6cfcc1c6346752ef';
+import { hullKey } from './hull-variants.mjs?v=6cfcc1c6346752ef';
+import { createAffiliationResolver } from './affiliation.mjs?v=6cfcc1c6346752ef';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=6cfcc1c6346752ef';
+import { loadJSON } from './resource-activity.mjs?v=6cfcc1c6346752ef';
+import { prepareRenderImages } from './render-images.mjs?v=6cfcc1c6346752ef';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -822,7 +822,7 @@ async function init() {
     } catch {}
     const [index, identities, fallbackIndex] = await Promise.all([
       loadJSON(resourceURL('./data/catalog-index.json'), { cache: 'no-cache' }),
-      loadJSON('./icons/identities.json?v=f7e4815b46e7c138'),
+      loadJSON('./icons/identities.json?v=6cfcc1c6346752ef'),
       loadJSON(
         resourceURL('./assets/renders/index.json'),
         { cache: 'no-cache' },

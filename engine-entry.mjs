@@ -1,10 +1,10 @@
-import {selectedEngine, engineHash} from './engine-route.mjs?v=addebb9a0dbdd23ca190';
+import {selectedEngine, engineHash} from './engine-route.mjs?v=bef3328ec65c374f2ca2';
 
 export async function prepareCatalogEngine() {
   const engine = selectedEngine(location.hash);
   document.documentElement.dataset.engine = engine;
   if (engine === 'web') {
-    await import('./eve-model-viewer.js?v=f7e4815b46e7c138');
+    await import('./eve-model-viewer.js?v=6cfcc1c6346752ef');
     return engine;
   }
   const response = await fetch(new URL('./unity-release.json', import.meta.url), {cache:'no-cache'});
