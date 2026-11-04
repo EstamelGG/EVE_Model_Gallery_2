@@ -1,6 +1,6 @@
 {
-  "version": "296795cc268b9b942df3",
-  "module": "https://models.vanquisher.online/unity/releases/296795cc268b9b942df3/eve-model-viewer-unity.js",
-  "engineBase": "https://models.vanquisher.online/unity/releases/296795cc268b9b942df3/engine/",
-  "hangarBase": "https://models.vanquisher.online/unity/releases/daf8c21ed419d4d3529d/hangar/"
+  "version": "fa87b8cd6c23acc52236",
+  "module": "https://models.vanquisher.online/unity/releases/fa87b8cd6c23acc52236/eve-model-viewer-unity.js",
+  "engineBase": "https://models.vanquisher.online/unity/releases/fa87b8cd6c23acc52236/engine/",
+  "resourceMode": "shared"
 }
