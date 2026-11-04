@@ -1,4 +1,4 @@
-import {selectedEngine, engineHash} from './engine-route.mjs?v=7a21d5f99b9572c33bde';
+import {selectedEngine, engineHash} from './engine-route.mjs?v=aa243a42310e126a982d';
 
 export async function prepareCatalogEngine() {
   const engine = selectedEngine(location.hash);
