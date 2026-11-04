@@ -1,5 +1,5 @@
-import {prepareCatalogEngine} from './engine-entry.mjs?v=53f2127dc66c089fb18f';
-import {engineHash, selectedEngine} from './engine-route.mjs?v=53f2127dc66c089fb18f';
+import {prepareCatalogEngine} from './engine-entry.mjs?v=296795cc268b9b942df3';
+import {engineHash, selectedEngine} from './engine-route.mjs?v=296795cc268b9b942df3';
 const activeEngine = await prepareCatalogEngine();
 import {
   locale,
