@@ -1,4 +1,6 @@
-import './eve-model-viewer.js?v=f7e4815b46e7c138';
+import {prepareCatalogEngine} from './engine-entry.mjs?v=daf8c21ed419d4d3529d';
+import {engineHash, selectedEngine} from './engine-route.mjs?v=daf8c21ed419d4d3529d';
+const activeEngine = await prepareCatalogEngine();
 import {
   locale,
   t,
@@ -314,7 +316,7 @@ function readRoute() {
 }
 
 function saveRoute(replace = false) {
-  history[replace ? 'replaceState' : 'pushState'](null, '', catalog.route());
+  history[replace ? 'replaceState' : 'pushState'](null, '', engineHash(catalog.route(), activeEngine));
 }
 
 function changeCatalog(values, replace = false) {
@@ -763,6 +765,7 @@ function setupEvents() {
     if (event.key === 'Escape') closeMenu();
   });
   window.addEventListener('hashchange', async () => {
+    if (selectedEngine(location.hash) !== activeEngine) { location.reload(); return; }
     clearTimeout(renderTimer);
     readRoute();
     const route = location.hash;
