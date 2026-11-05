@@ -1,21 +1,19 @@
-import {prepareCatalogEngine} from './engine-entry.mjs?v=457dcd84994eec7c06c6';
-import {engineHash, selectedEngine} from './engine-route.mjs?v=457dcd84994eec7c06c6';
-const activeEngine = await prepareCatalogEngine();
+import './eve-model-viewer.js?v=e294649cf7ef3708';
 import {
   locale,
   t,
   localizedName,
   setLocale,
   applyTranslations,
-} from './i18n.mjs?v=6cfcc1c6346752ef';
-import { createCardGrid } from './card-grid.mjs?v=6cfcc1c6346752ef';
-import { createCatalogState } from './catalog-state.mjs?v=6cfcc1c6346752ef';
-import { createCatalogLoader } from './catalog-loader.mjs?v=6cfcc1c6346752ef';
-import { hullKey } from './hull-variants.mjs?v=6cfcc1c6346752ef';
-import { createAffiliationResolver } from './affiliation.mjs?v=6cfcc1c6346752ef';
-import { configureResourceBase, resourceURL } from './resource-location.mjs?v=6cfcc1c6346752ef';
-import { loadJSON } from './resource-activity.mjs?v=6cfcc1c6346752ef';
-import { prepareRenderImages } from './render-images.mjs?v=6cfcc1c6346752ef';
+} from './i18n.mjs?v=e294649cf7ef3708';
+import { createCardGrid } from './card-grid.mjs?v=e294649cf7ef3708';
+import { createCatalogState } from './catalog-state.mjs?v=e294649cf7ef3708';
+import { createCatalogLoader } from './catalog-loader.mjs?v=e294649cf7ef3708';
+import { hullKey } from './hull-variants.mjs?v=e294649cf7ef3708';
+import { createAffiliationResolver } from './affiliation.mjs?v=e294649cf7ef3708';
+import { configureResourceBase, resourceURL } from './resource-location.mjs?v=e294649cf7ef3708';
+import { loadJSON } from './resource-activity.mjs?v=e294649cf7ef3708';
+import { prepareRenderImages } from './render-images.mjs?v=e294649cf7ef3708';
 const $ = (id) => document.getElementById(id);
 const icon = (name, cls = '') =>
   `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -316,7 +314,7 @@ function readRoute() {
 }
 
 function saveRoute(replace = false) {
-  history[replace ? 'replaceState' : 'pushState'](null, '', engineHash(catalog.route(), activeEngine));
+  history[replace ? 'replaceState' : 'pushState'](null, '', catalog.route());
 }
 
 function changeCatalog(values, replace = false) {
@@ -765,7 +763,6 @@ function setupEvents() {
     if (event.key === 'Escape') closeMenu();
   });
   window.addEventListener('hashchange', async () => {
-    if (selectedEngine(location.hash) !== activeEngine) { location.reload(); return; }
     clearTimeout(renderTimer);
     readRoute();
     const route = location.hash;
@@ -822,7 +819,7 @@ async function init() {
     } catch {}
     const [index, identities, fallbackIndex] = await Promise.all([
       loadJSON(resourceURL('./data/catalog-index.json'), { cache: 'no-cache' }),
-      loadJSON('./icons/identities.json?v=6cfcc1c6346752ef'),
+      loadJSON('./icons/identities.json?v=e294649cf7ef3708'),
       loadJSON(
         resourceURL('./assets/renders/index.json'),
         { cache: 'no-cache' },
